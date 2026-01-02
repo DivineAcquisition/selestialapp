@@ -1,5 +1,6 @@
 import Sidebar from './Sidebar';
 import Header from './Header';
+import QuickAddFAB from '@/components/quotes/QuickAddFAB';
 
 interface LayoutProps {
   title: string;
@@ -22,6 +23,9 @@ export default function Layout({ title, children }: LayoutProps) {
           {children}
         </main>
       </div>
+      
+      {/* Mobile FAB for quick quote entry */}
+      <QuickAddFAB />
     </div>
   );
 }
