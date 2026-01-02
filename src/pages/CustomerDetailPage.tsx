@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useCustomerDetail } from '@/hooks/useCustomerDetail';
 import { useRetentionSequences } from '@/hooks/useRetentionSequences';
+import { useReviewRequests } from '@/hooks/useReviewRequests';
 import { formatPhone, formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -45,6 +46,7 @@ import {
   Clock,
   RefreshCw,
   User,
+  Star,
 } from 'lucide-react';
 
 export default function CustomerDetailPage() {
@@ -52,6 +54,7 @@ export default function CustomerDetailPage() {
   const navigate = useNavigate();
   const { customer, quotes, activities, loading, updateNotes, updateCustomerType, startRetentionSequence } = useCustomerDetail(id || null);
   const { sequences } = useRetentionSequences();
+  const { sendReviewRequest } = useReviewRequests();
   
   const [notes, setNotes] = useState('');
   const [notesLoaded, setNotesLoaded] = useState(false);
@@ -59,6 +62,7 @@ export default function CustomerDetailPage() {
   const [selectedSequence, setSelectedSequence] = useState('');
   const [startingSequence, setStartingSequence] = useState(false);
   const [showSequenceDialog, setShowSequenceDialog] = useState(false);
+  const [sendingReview, setSendingReview] = useState(false);
 
   // Initialize notes when customer loads
   if (customer && !notesLoaded) {
@@ -100,6 +104,20 @@ export default function CustomerDetailPage() {
       toast.error('Failed to start sequence');
     } finally {
       setStartingSequence(false);
+    }
+  };
+
+  const handleRequestReview = async () => {
+    if (!customer) return;
+    setSendingReview(true);
+    try {
+      const { error } = await sendReviewRequest(customer.id);
+      if (error) throw error;
+      toast.success('Review request sent!');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send review request');
+    } finally {
+      setSendingReview(false);
     }
   };
 
@@ -161,43 +179,53 @@ export default function CustomerDetailPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Customers
           </Button>
-          <Dialog open={showSequenceDialog} onOpenChange={setShowSequenceDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Play className="h-4 w-4 mr-2" />
-                Start Retention Sequence
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Start Retention Sequence</DialogTitle>
-                <DialogDescription>
-                  Select a sequence to start for this customer
-                </DialogDescription>
-              </DialogHeader>
-              <Select value={selectedSequence} onValueChange={setSelectedSequence}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a sequence" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sequences.filter(s => s.is_active).map((seq) => (
-                    <SelectItem key={seq.id} value={seq.id}>
-                      {seq.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowSequenceDialog(false)}>
-                  Cancel
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleRequestReview} disabled={sendingReview}>
+              {sendingReview ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Star className="h-4 w-4 mr-2" />
+              )}
+              Request Review
+            </Button>
+            <Dialog open={showSequenceDialog} onOpenChange={setShowSequenceDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Retention Sequence
                 </Button>
-                <Button onClick={handleStartSequence} disabled={!selectedSequence || startingSequence}>
-                  {startingSequence && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Start Sequence
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Start Retention Sequence</DialogTitle>
+                  <DialogDescription>
+                    Select a sequence to start for this customer
+                  </DialogDescription>
+                </DialogHeader>
+                <Select value={selectedSequence} onValueChange={setSelectedSequence}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a sequence" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sequences.filter(s => s.is_active).map((seq) => (
+                      <SelectItem key={seq.id} value={seq.id}>
+                        {seq.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowSequenceDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleStartSequence} disabled={!selectedSequence || startingSequence}>
+                    {startingSequence && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Start Sequence
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

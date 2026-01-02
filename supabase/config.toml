@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.process-queue]
 verify_jwt = false
 
+[functions.process-retention-queue]
+verify_jwt = false
+
 [functions.sms-status-webhook]
 verify_jwt = false
 
