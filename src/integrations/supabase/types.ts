@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          business_id: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          quote_id: string | null
+        }
+        Insert: {
+          action: string
+          business_id: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          quote_id?: string | null
+        }
+        Update: {
+          action?: string
+          business_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          quote_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_audit_logs: {
         Row: {
           action: string
@@ -196,6 +241,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      businesses: {
+        Row: {
+          auto_start_sequence: boolean
+          business_days: number[]
+          business_hours_enabled: boolean
+          business_hours_end: string
+          business_hours_start: string
+          created_at: string
+          current_period_end: string | null
+          default_sequence_id: string | null
+          email: string
+          id: string
+          industry: string
+          name: string
+          notify_email_daily_digest: boolean
+          notify_email_lost: boolean
+          notify_email_won: boolean
+          notify_sms_response: boolean
+          owner_name: string
+          phone: string
+          stripe_customer_id: string | null
+          subscription_plan: string | null
+          subscription_status: string
+          timezone: string
+          trial_ends_at: string | null
+          twilio_phone_number: string | null
+          twilio_phone_sid: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          auto_start_sequence?: boolean
+          business_days?: number[]
+          business_hours_enabled?: boolean
+          business_hours_end?: string
+          business_hours_start?: string
+          created_at?: string
+          current_period_end?: string | null
+          default_sequence_id?: string | null
+          email: string
+          id?: string
+          industry?: string
+          name: string
+          notify_email_daily_digest?: boolean
+          notify_email_lost?: boolean
+          notify_email_won?: boolean
+          notify_sms_response?: boolean
+          owner_name: string
+          phone: string
+          stripe_customer_id?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string
+          timezone?: string
+          trial_ends_at?: string | null
+          twilio_phone_number?: string | null
+          twilio_phone_sid?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          auto_start_sequence?: boolean
+          business_days?: number[]
+          business_hours_enabled?: boolean
+          business_hours_end?: string
+          business_hours_start?: string
+          created_at?: string
+          current_period_end?: string | null
+          default_sequence_id?: string | null
+          email?: string
+          id?: string
+          industry?: string
+          name?: string
+          notify_email_daily_digest?: boolean
+          notify_email_lost?: boolean
+          notify_email_won?: boolean
+          notify_sms_response?: boolean
+          owner_name?: string
+          phone?: string
+          stripe_customer_id?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string
+          timezone?: string
+          trial_ends_at?: string | null
+          twilio_phone_number?: string | null
+          twilio_phone_sid?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
       }
       calendar_integrations: {
         Row: {
@@ -2538,6 +2676,91 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          business_id: string
+          channel: string
+          content: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          failed_at: string | null
+          from_address: string
+          id: string
+          quote_id: string
+          scheduled_for: string | null
+          sent_at: string | null
+          sequence_id: string | null
+          status: string
+          step_id: string | null
+          subject: string | null
+          to_address: string
+        }
+        Insert: {
+          business_id: string
+          channel: string
+          content: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          failed_at?: string | null
+          from_address: string
+          id?: string
+          quote_id: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string
+          step_id?: string | null
+          subject?: string | null
+          to_address: string
+        }
+        Update: {
+          business_id?: string
+          channel?: string
+          content?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          failed_at?: string | null
+          from_address?: string
+          id?: string
+          quote_id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string
+          step_id?: string | null
+          subject?: string | null
+          to_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_data: {
         Row: {
           completed: boolean | null
@@ -3365,6 +3588,96 @@ export type Database = {
           },
         ]
       }
+      quotes: {
+        Row: {
+          business_id: string
+          created_at: string
+          current_step_index: number
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          description: string | null
+          final_job_amount: number | null
+          id: string
+          lost_at: string | null
+          lost_reason: string | null
+          next_message_at: string | null
+          quote_amount: number
+          sequence_completed_at: string | null
+          sequence_id: string | null
+          sequence_paused_at: string | null
+          sequence_started_at: string | null
+          service_type: string
+          status: string
+          status_changed_at: string
+          updated_at: string
+          won_at: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          current_step_index?: number
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          description?: string | null
+          final_job_amount?: number | null
+          id?: string
+          lost_at?: string | null
+          lost_reason?: string | null
+          next_message_at?: string | null
+          quote_amount: number
+          sequence_completed_at?: string | null
+          sequence_id?: string | null
+          sequence_paused_at?: string | null
+          sequence_started_at?: string | null
+          service_type: string
+          status?: string
+          status_changed_at?: string
+          updated_at?: string
+          won_at?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          current_step_index?: number
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          description?: string | null
+          final_job_amount?: number | null
+          id?: string
+          lost_at?: string | null
+          lost_reason?: string | null
+          next_message_at?: string | null
+          quote_amount?: number
+          sequence_completed_at?: string | null
+          sequence_id?: string | null
+          sequence_paused_at?: string | null
+          sequence_started_at?: string | null
+          service_type?: string
+          status?: string
+          status_changed_at?: string
+          updated_at?: string
+          won_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_policies: {
         Row: {
           churn_reactivate_after_days: number | null
@@ -3801,6 +4114,50 @@ export type Database = {
           template_type?: string
         }
         Relationships: []
+      }
+      sequences: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          steps: Json
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          steps?: Json
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          steps?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequences_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_addons: {
         Row: {
@@ -5139,6 +5496,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_default_sequence: {
+        Args: { p_business_id: string }
+        Returns: string
+      }
       create_organization: { Args: { org_name: string }; Returns: string }
       create_service_from_template: {
         Args: {
@@ -5247,6 +5608,16 @@ export type Database = {
       is_saas_super_admin: { Args: never; Returns: boolean }
       is_saas_tenant_admin: { Args: { p_tenant_id: string }; Returns: boolean }
       is_superadmin_user: { Args: never; Returns: boolean }
+      log_activity: {
+        Args: {
+          p_action: string
+          p_business_id: string
+          p_description: string
+          p_metadata?: Json
+          p_quote_id?: string
+        }
+        Returns: string
+      }
       publish_booking_config: { Args: { p_company_id: string }; Returns: Json }
       schedule_trial_reminders: { Args: never; Returns: undefined }
       seed_onboarding_tasks: { Args: { org_id: string }; Returns: undefined }

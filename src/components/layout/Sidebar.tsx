@@ -1,6 +1,9 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Zap, Settings } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, FileText, Zap, Settings, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBusiness } from '@/contexts/BusinessContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -10,6 +13,19 @@ const navigation = [
 ];
 
 export default function Sidebar() {
+  const { business } = useBusiness();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const initials = business?.owner_name
+    ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U';
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
   return (
     <div className="flex h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
       {/* Logo */}
@@ -45,12 +61,19 @@ export default function Sidebar() {
       <div className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-            MJ
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">Mike Johnson</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">mike@email.com</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              {business?.owner_name || 'User'}
+            </p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">
+              {user?.email || ''}
+            </p>
           </div>
+          <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
