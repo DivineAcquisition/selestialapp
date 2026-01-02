@@ -6,6 +6,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toE164 } from '@/lib/formatters';
+import { sendWelcomeEmail } from '@/lib/emails';
 import { CheckCircle, Loader2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 import selestialLogo from '@/assets/selestial-logo.png';
 
@@ -66,7 +67,18 @@ export default function StepComplete() {
         p_description: 'Account setup completed',
       });
       
-      // 4. Refresh business context
+      // 4. Send welcome email
+      try {
+        await sendWelcomeEmail(data.email, {
+          userName: data.ownerName,
+          businessName: data.businessName,
+        });
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Non-fatal, continue
+      }
+      
+      // 5. Refresh business context
       await refetchBusiness();
       
       setStatus('success');
