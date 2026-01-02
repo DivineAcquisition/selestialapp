@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
 import type { Json } from '@/integrations/supabase/types';
+
+export interface RetentionStep {
   delay_days: number;
   delay_hours: number;
   channel: 'sms' | 'email';
