@@ -32,7 +32,11 @@ export default function StepComplete() {
     }
     
     try {
-      // 1. Create the business
+      // Calculate trial end date (14 days from now)
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+      // 1. Create the business with trial setup
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
@@ -42,6 +46,12 @@ export default function StepComplete() {
           email: data.email,
           phone: toE164(data.phone),
           industry: data.industry,
+          // Trial setup
+          subscription_status: 'trialing',
+          subscription_plan: 'starter',
+          trial_ends_at: trialEndsAt.toISOString(),
+          quotes_limit: 50,
+          sequences_limit: 3,
         })
         .select()
         .single();

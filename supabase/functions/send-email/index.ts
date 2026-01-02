@@ -9,6 +9,10 @@ import {
   getDailyDigestEmailHtml,
   getCustomerReplyEmailHtml,
   getCustomerReplyEmailText,
+  getPaymentFailedEmailHtml,
+  getPaymentFailedEmailText,
+  getTrialEndingEmailHtml,
+  getTrialEndingEmailText,
 } from '../_shared/email-templates.ts';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -122,6 +126,32 @@ serve(async (req) => {
           customerPhone: data.customerPhone as string,
           message: data.message as string,
           dashboardUrl: data.dashboardUrl as string,
+        });
+        break;
+
+      case 'payment_failed':
+        subject = '⚠️ Payment Failed - Action Required';
+        html = getPaymentFailedEmailHtml({
+          userName: data.userName as string,
+          updatePaymentUrl: data.updatePaymentUrl as string,
+        });
+        text = getPaymentFailedEmailText({
+          userName: data.userName as string,
+          updatePaymentUrl: data.updatePaymentUrl as string,
+        });
+        break;
+
+      case 'trial_ending':
+        subject = 'Your Selestial Trial is Ending Soon';
+        html = getTrialEndingEmailHtml({
+          userName: data.userName as string,
+          trialEndDate: data.trialEndDate as string,
+          billingUrl: data.billingUrl as string,
+        });
+        text = getTrialEndingEmailText({
+          userName: data.userName as string,
+          trialEndDate: data.trialEndDate as string,
+          billingUrl: data.billingUrl as string,
         });
         break;
         

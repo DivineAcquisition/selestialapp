@@ -101,15 +101,6 @@ export default function SettingsPage() {
     });
   };
   
-  const handleManageBilling = () => {
-    // TODO: Open Stripe Customer Portal
-    console.log('Open billing portal');
-  };
-  
-  const handleUpgrade = () => {
-    // TODO: Open upgrade flow
-    console.log('Open upgrade flow');
-  };
   
   const handleDeleteAccount = async () => {
     if (!business) return;
@@ -140,12 +131,6 @@ export default function SettingsPage() {
     );
   }
   
-  // Build subscription object from business data
-  const subscription = {
-    status: (business?.subscription_status || 'trialing') as 'trialing' | 'active' | 'cancelled',
-    plan: business?.subscription_plan || 'starter',
-    trialEndsAt: business?.trial_ends_at || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-  };
   
   return (
     <Layout title="Settings">
@@ -192,11 +177,7 @@ export default function SettingsPage() {
           </TabsContent>
           
           <TabsContent value="billing">
-            <SubscriptionCard
-              subscription={subscription}
-              onManageBilling={handleManageBilling}
-              onUpgrade={handleUpgrade}
-            />
+            <SubscriptionCard />
           </TabsContent>
         </Tabs>
       </div>

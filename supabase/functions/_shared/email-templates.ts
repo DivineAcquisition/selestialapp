@@ -399,3 +399,126 @@ Tip: Respond quickly to increase your chances of winning the job!
 Selestial
   `.trim();
 }
+
+export function getPaymentFailedEmailHtml(data: { 
+  userName: string; 
+  updatePaymentUrl: string;
+}): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Failed - Selestial</title>
+  <style>${baseStyles}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">S</div>
+      <div class="brand">Selestial</div>
+    </div>
+    
+    <div class="content">
+      <h1>⚠️ Payment Failed</h1>
+      
+      <p>Hi ${data.userName},</p>
+      
+      <p>We were unable to process your payment for your Selestial subscription. Please update your payment method to continue using all features.</p>
+      
+      <div style="text-align: center;">
+        <a href="${data.updatePaymentUrl}" class="button">Update Payment Method</a>
+      </div>
+      
+      <p class="muted">If you believe this is an error, please contact support or check with your bank.</p>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; ${new Date().getFullYear()} Selestial. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+export function getPaymentFailedEmailText(data: { 
+  userName: string; 
+  updatePaymentUrl: string;
+}): string {
+  return `
+Hi ${data.userName},
+
+We were unable to process your payment for your Selestial subscription. Please update your payment method to continue using all features.
+
+Update Payment Method: ${data.updatePaymentUrl}
+
+If you believe this is an error, please contact support or check with your bank.
+
+---
+Selestial
+  `.trim();
+}
+
+export function getTrialEndingEmailHtml(data: { 
+  userName: string; 
+  trialEndDate: string;
+  billingUrl: string;
+}): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trial Ending Soon - Selestial</title>
+  <style>${baseStyles}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">S</div>
+      <div class="brand">Selestial</div>
+    </div>
+    
+    <div class="content">
+      <h1>Your Trial is Ending Soon</h1>
+      
+      <p>Hi ${data.userName},</p>
+      
+      <p>Your free trial of Selestial ends on <strong>${data.trialEndDate}</strong>. To continue winning more jobs with automated follow-up, add a payment method before your trial expires.</p>
+      
+      <div style="text-align: center;">
+        <a href="${data.billingUrl}" class="button">Add Payment Method</a>
+      </div>
+      
+      <div style="background: #F0FDF4; border-radius: 8px; padding: 16px; margin-top: 24px;">
+        <p style="margin: 0; color: #166534;">💡 <strong>Keep your momentum!</strong> Don't let your follow-up sequences stop working for you.</p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>Questions? Just reply to this email — we're here to help!</p>
+      <p>&copy; ${new Date().getFullYear()} Selestial. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+export function getTrialEndingEmailText(data: { 
+  userName: string; 
+  trialEndDate: string;
+  billingUrl: string;
+}): string {
+  return `
+Hi ${data.userName},
+
+Your free trial of Selestial ends on ${data.trialEndDate}. To continue winning more jobs with automated follow-up, add a payment method before your trial expires.
+
+Add Payment Method: ${data.billingUrl}
+
+Questions? Just reply to this email — we're here to help!
+
+---
+Selestial
+  `.trim();
+}
