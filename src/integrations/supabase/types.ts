@@ -160,6 +160,186 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_prompt_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          example_responses: string[] | null
+          id: string
+          industry_slug: string | null
+          is_active: boolean | null
+          name: string
+          priority: number | null
+          response_guidance: string
+          trigger_keywords: string[] | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          example_responses?: string[] | null
+          id?: string
+          industry_slug?: string | null
+          is_active?: boolean | null
+          name: string
+          priority?: number | null
+          response_guidance: string
+          trigger_keywords?: string[] | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          example_responses?: string[] | null
+          id?: string
+          industry_slug?: string | null
+          is_active?: boolean | null
+          name?: string
+          priority?: number | null
+          response_guidance?: string
+          trigger_keywords?: string[] | null
+        }
+        Relationships: []
+      }
+      ai_settings: {
+        Row: {
+          business_id: string
+          created_at: string
+          custom_instructions: string | null
+          emoji_usage: string | null
+          id: string
+          include_pricing: boolean | null
+          limit_reset_at: string | null
+          monthly_suggestion_limit: number | null
+          response_length: string | null
+          smart_replies_enabled: boolean | null
+          suggest_upsells: boolean | null
+          suggestions_used_this_month: number | null
+          tone: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          custom_instructions?: string | null
+          emoji_usage?: string | null
+          id?: string
+          include_pricing?: boolean | null
+          limit_reset_at?: string | null
+          monthly_suggestion_limit?: number | null
+          response_length?: string | null
+          smart_replies_enabled?: boolean | null
+          suggest_upsells?: boolean | null
+          suggestions_used_this_month?: number | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          custom_instructions?: string | null
+          emoji_usage?: string | null
+          id?: string
+          include_pricing?: boolean | null
+          limit_reset_at?: string | null
+          monthly_suggestion_limit?: number | null
+          response_length?: string | null
+          smart_replies_enabled?: boolean | null
+          suggest_upsells?: boolean | null
+          suggestions_used_this_month?: number | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_settings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_suggestions: {
+        Row: {
+          business_id: string
+          context_data: Json | null
+          created_at: string
+          customer_id: string | null
+          customer_message: string
+          edited_message: string | null
+          feedback: string | null
+          generation_time_ms: number | null
+          id: string
+          model_used: string | null
+          quote_id: string | null
+          sent_at: string | null
+          suggestion_selected: number | null
+          suggestions: Json
+          was_edited: boolean | null
+          was_sent: boolean | null
+        }
+        Insert: {
+          business_id: string
+          context_data?: Json | null
+          created_at?: string
+          customer_id?: string | null
+          customer_message: string
+          edited_message?: string | null
+          feedback?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          model_used?: string | null
+          quote_id?: string | null
+          sent_at?: string | null
+          suggestion_selected?: number | null
+          suggestions: Json
+          was_edited?: boolean | null
+          was_sent?: boolean | null
+        }
+        Update: {
+          business_id?: string
+          context_data?: Json | null
+          created_at?: string
+          customer_id?: string | null
+          customer_message?: string
+          edited_message?: string | null
+          feedback?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          model_used?: string | null
+          quote_id?: string | null
+          sent_at?: string | null
+          suggestion_selected?: number | null
+          suggestions?: Json
+          was_edited?: boolean | null
+          was_sent?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -7647,6 +7827,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      increment_suggestion_count: {
+        Args: { p_business_id: string }
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }

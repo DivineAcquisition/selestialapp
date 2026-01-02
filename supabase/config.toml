@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.stripe-connect-webhook]
 verify_jwt = false
+
+[functions.generate-smart-replies]
+verify_jwt = true
