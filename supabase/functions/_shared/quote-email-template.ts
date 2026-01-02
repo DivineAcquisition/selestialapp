@@ -97,8 +97,26 @@ const baseStyles = `
     text-align: center;
     font-size: 12px;
     color: #9CA3AF;
+    background: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+  }
+  .selestial-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #6366F1;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .selestial-icon {
+    width: 16px;
+    height: 16px;
   }
 `;
+
+// Selestial logo icon as inline SVG for email compatibility
+const selestialIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle;"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>`;
 
 export interface QuoteEmailData {
   businessName: string;
@@ -196,8 +214,11 @@ export function getQuoteEmailHtml(data: QuoteEmailData): string {
 
       <!-- Footer -->
       <div class="footer">
-        <p>This quote was sent by ${data.businessName}</p>
-        <p style="margin-top: 8px;">Powered by Selestial</p>
+        <p style="margin: 0 0 12px 0; color: #6B7280;">This quote was sent by ${data.businessName}</p>
+        <a href="https://selestial.io" class="selestial-logo" style="display: inline-flex; align-items: center; gap: 6px; color: #6366F1; text-decoration: none; font-weight: 600; font-size: 13px;">
+          ${selestialIconSvg}
+          <span>Powered by Selestial™</span>
+        </a>
       </div>
     </div>
   </div>
@@ -235,6 +256,6 @@ ${data.ownerName}
 ${data.businessName}
 
 ---
-Powered by Selestial
+Powered by Selestial™ | https://selestial.io
   `.trim();
 }
