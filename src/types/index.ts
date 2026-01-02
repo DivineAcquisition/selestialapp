@@ -1,12 +1,49 @@
 export type IndustryType = 
+  // Phase 1
   | 'hvac' 
   | 'plumbing' 
   | 'electrical' 
+  | 'residential_cleaning'
+  | 'commercial_cleaning'
+  | 'lawn_care'
+  | 'pest_control'
+  | 'carpet_cleaning'
+  // Phase 2
+  | 'painting'
   | 'roofing' 
-  | 'cleaning' 
-  | 'landscaping'
+  | 'pool_service'
+  | 'moving'
+  | 'window_cleaning'
+  | 'junk_removal'
+  | 'garage_door'
+  | 'pressure_washing'
   | 'general_contractor'
   | 'other';
+
+export type TemplateType = 'quote_followup' | 'post_job' | 'reengagement';
+
+export interface SequenceTemplate {
+  id: string;
+  industry_slug: string | null;
+  name: string;
+  description: string | null;
+  template_type: TemplateType;
+  trigger_type: string | null;
+  trigger_delay_days: number;
+  steps: SequenceStep[];
+  is_default: boolean;
+  is_premium: boolean;
+  usage_count: number;
+}
+
+export interface Industry {
+  slug: string;
+  name: string;
+  urgency_level: 'emergency' | 'high' | 'standard' | 'patient';
+  first_contact_hours: number;
+  decision_days: number;
+  cycle_type: 'one_time' | 'recurring';
+}
 
 export type QuoteStatus = 
   | 'new'

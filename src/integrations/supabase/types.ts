@@ -2044,6 +2044,92 @@ export type Database = {
           },
         ]
       }
+      industries: {
+        Row: {
+          created_at: string | null
+          cycle_type: string | null
+          decision_days: number | null
+          deposit_common: boolean | null
+          first_contact_hours: number | null
+          name: string
+          review_delay_hours: number | null
+          slug: string
+          sort_order: number | null
+          typical_deposit_percent: number | null
+          urgency_level: string
+        }
+        Insert: {
+          created_at?: string | null
+          cycle_type?: string | null
+          decision_days?: number | null
+          deposit_common?: boolean | null
+          first_contact_hours?: number | null
+          name: string
+          review_delay_hours?: number | null
+          slug: string
+          sort_order?: number | null
+          typical_deposit_percent?: number | null
+          urgency_level?: string
+        }
+        Update: {
+          created_at?: string | null
+          cycle_type?: string | null
+          decision_days?: number | null
+          deposit_common?: boolean | null
+          first_contact_hours?: number | null
+          name?: string
+          review_delay_hours?: number | null
+          slug?: string
+          sort_order?: number | null
+          typical_deposit_percent?: number | null
+          urgency_level?: string
+        }
+        Relationships: []
+      }
+      industry_service_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          industry_slug: string | null
+          is_recurring: boolean | null
+          name: string
+          sort_order: number | null
+          typical_price_high: number | null
+          typical_price_low: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry_slug?: string | null
+          is_recurring?: boolean | null
+          name: string
+          sort_order?: number | null
+          typical_price_high?: number | null
+          typical_price_low?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry_slug?: string | null
+          is_recurring?: boolean | null
+          name?: string
+          sort_order?: number | null
+          typical_price_high?: number | null
+          typical_price_low?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_service_types_industry_slug_fkey"
+            columns: ["industry_slug"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       integration_settings: {
         Row: {
           calendar: Json | null
@@ -5160,6 +5246,62 @@ export type Database = {
           template_type?: string
         }
         Relationships: []
+      }
+      sequence_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          industry_slug: string | null
+          is_default: boolean | null
+          is_premium: boolean | null
+          name: string
+          steps: Json
+          tags: string[] | null
+          template_type: string
+          trigger_delay_days: number | null
+          trigger_type: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry_slug?: string | null
+          is_default?: boolean | null
+          is_premium?: boolean | null
+          name: string
+          steps?: Json
+          tags?: string[] | null
+          template_type: string
+          trigger_delay_days?: number | null
+          trigger_type?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry_slug?: string | null
+          is_default?: boolean | null
+          is_premium?: boolean | null
+          name?: string
+          steps?: Json
+          tags?: string[] | null
+          template_type?: string
+          trigger_delay_days?: number | null
+          trigger_type?: string | null
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_templates_industry_slug_fkey"
+            columns: ["industry_slug"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       sequences: {
         Row: {
