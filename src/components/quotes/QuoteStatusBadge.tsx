@@ -3,8 +3,9 @@ import { cn } from '@/lib/utils';
 import { QuoteStatus } from '@/types';
 
 interface QuoteStatusBadgeProps {
-  status: QuoteStatus;
+  status: QuoteStatus | string;
   size?: 'sm' | 'default';
+  className?: string;
 }
 
 const statusConfig: Record<QuoteStatus, { label: string; className: string }> = {
@@ -34,15 +35,16 @@ const statusConfig: Record<QuoteStatus, { label: string; className: string }> = 
   },
 };
 
-export default function QuoteStatusBadge({ status, size = 'default' }: QuoteStatusBadgeProps) {
-  const config = statusConfig[status];
+export default function QuoteStatusBadge({ status, size = 'default', className }: QuoteStatusBadgeProps) {
+  const config = statusConfig[status as QuoteStatus] || statusConfig.new;
   
   return (
     <Badge 
       variant="outline" 
       className={cn(
         config.className,
-        size === 'sm' && 'text-xs px-1.5 py-0'
+        size === 'sm' && 'text-xs px-1.5 py-0',
+        className
       )}
     >
       {config.label}
