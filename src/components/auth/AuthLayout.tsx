@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import selestialLogo from '@/assets/selestial-logo.png';
+import logoIcon from '@/assets/logo-icon-new.png';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -83,26 +84,29 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
           
           {/* Footer */}
           <footer className="py-4 px-6 border-t border-border">
-            <div className="max-w-md mx-auto flex items-center justify-center gap-4 text-sm text-muted-foreground">
-              <span>© {new Date().getFullYear()} Selestial</span>
-              <span>·</span>
-              <a 
-                href="https://selestial.io/privacy" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                Privacy
-              </a>
-              <span>·</span>
-              <a 
-                href="https://selestial.io/terms" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                Terms
-              </a>
+            <div className="flex flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+              <img src={logoIcon} alt="Selestial" className="h-8 w-8 rounded-lg" />
+              <div className="flex items-center gap-4">
+                <span>© {new Date().getFullYear()} Selestial</span>
+                <span>·</span>
+                <a 
+                  href="https://selestial.io/privacy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Privacy
+                </a>
+                <span>·</span>
+                <a 
+                  href="https://selestial.io/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Terms
+                </a>
+              </div>
             </div>
           </footer>
         </div>
