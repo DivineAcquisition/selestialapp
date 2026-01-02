@@ -6,27 +6,65 @@ import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickActions from '@/components/dashboard/QuickActions';
 import { FileText, TrendingUp, Target, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
-import { mockQuotes, mockActivities, mockBusiness, getDashboardStats } from '@/lib/mockData';
+import { useBusiness } from '@/contexts/BusinessContext';
+import { useQuotes } from '@/hooks/useQuotes';
+import { useActivities } from '@/hooks/useActivities';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import type { Quote, ActivityLog, QuoteStatus } from '@/types';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const stats = getDashboardStats();
+  const { business } = useBusiness();
+  const { quotes } = useQuotes();
+  const { activities } = useActivities(10);
+  const { stats } = useDashboardStats();
   
   const handleAddQuote = () => {
-    // TODO: Open add quote modal
     navigate('/quotes');
   };
   
   const handleQuoteClick = (quoteId: string) => {
     navigate(`/quotes?id=${quoteId}`);
   };
+
+  // Transform DB quotes to the expected Quote type format for components
+  const transformedQuotes: Quote[] = quotes.map(q => ({
+    id: q.id,
+    created_at: q.created_at,
+    updated_at: q.updated_at,
+    business_id: q.business_id,
+    sequence_id: q.sequence_id ?? undefined,
+    customer_name: q.customer_name,
+    customer_phone: q.customer_phone,
+    customer_email: q.customer_email ?? undefined,
+    service_type: q.service_type,
+    quote_amount: q.quote_amount,
+    description: q.description ?? undefined,
+    status: q.status as QuoteStatus,
+    status_changed_at: q.status_changed_at,
+    current_step_index: q.current_step_index,
+    next_message_at: q.next_message_at ?? undefined,
+    won_at: q.won_at ?? undefined,
+    lost_at: q.lost_at ?? undefined,
+    lost_reason: q.lost_reason ?? undefined,
+    final_job_amount: q.final_job_amount ?? undefined,
+  }));
+
+  // Transform DB activities to the expected ActivityLog type format
+  const transformedActivities: ActivityLog[] = activities.map(a => ({
+    id: a.id,
+    created_at: a.created_at,
+    action: a.action,
+    description: a.description,
+    quote_id: a.quote_id ?? undefined,
+  }));
   
   return (
     <Layout title="Dashboard">
       {/* Welcome message */}
       <div className="mb-6">
         <p className="text-muted-foreground">
-          Welcome back, {mockBusiness.owner_name}
+          Welcome back, {business?.owner_name || 'User'}
         </p>
       </div>
       
@@ -69,12 +107,12 @@ export default function DashboardPage() {
       {/* Pipeline */}
       <div className="mt-8">
         <h2 className="text-lg font-semibold text-foreground mb-4">Quote Pipeline</h2>
-        <QuotePipeline quotes={mockQuotes} onQuoteClick={handleQuoteClick} />
+        <QuotePipeline quotes={transformedQuotes} onQuoteClick={handleQuoteClick} />
       </div>
       
       {/* Recent activity */}
       <div className="mt-8">
-        <RecentActivity activities={mockActivities} />
+        <RecentActivity activities={transformedActivities} />
       </div>
     </Layout>
   );
