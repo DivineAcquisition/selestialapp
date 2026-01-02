@@ -10,6 +10,10 @@ import QuotesPage from "./pages/QuotesPage";
 import SequencesPage from "./pages/SequencesPage";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -57,6 +61,13 @@ function AppRoutes() {
         path="/login" 
         element={user ? <Navigate to="/" replace /> : <LoginPage />} 
       />
+      <Route 
+        path="/signup" 
+        element={user ? <Navigate to="/" replace /> : <SignupPage />} 
+      />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       
       {/* Onboarding (requires auth but no business) */}
       <Route path="/onboarding" element={<OnboardingPage />} />
