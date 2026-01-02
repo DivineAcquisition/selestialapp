@@ -1,12 +1,24 @@
 export const INDUSTRIES = [
-  { value: 'hvac', label: 'HVAC' },
-  { value: 'plumbing', label: 'Plumbing' },
-  { value: 'electrical', label: 'Electrical' },
-  { value: 'roofing', label: 'Roofing' },
-  { value: 'cleaning', label: 'Cleaning' },
-  { value: 'landscaping', label: 'Landscaping' },
-  { value: 'general_contractor', label: 'General Contractor' },
-  { value: 'other', label: 'Other' },
+  // Phase 1 Industries
+  { value: 'hvac', label: 'HVAC', urgency: 'high' },
+  { value: 'plumbing', label: 'Plumbing', urgency: 'emergency' },
+  { value: 'electrical', label: 'Electrical', urgency: 'high' },
+  { value: 'residential_cleaning', label: 'Residential Cleaning', urgency: 'standard' },
+  { value: 'commercial_cleaning', label: 'Commercial Cleaning', urgency: 'standard' },
+  { value: 'lawn_care', label: 'Lawn Care', urgency: 'standard' },
+  { value: 'pest_control', label: 'Pest Control', urgency: 'high' },
+  { value: 'carpet_cleaning', label: 'Carpet Cleaning', urgency: 'standard' },
+  // Phase 2 Industries
+  { value: 'painting', label: 'Painting', urgency: 'patient' },
+  { value: 'roofing', label: 'Roofing', urgency: 'patient' },
+  { value: 'pool_service', label: 'Pool Service', urgency: 'standard' },
+  { value: 'moving', label: 'Moving', urgency: 'high' },
+  { value: 'window_cleaning', label: 'Window Cleaning', urgency: 'patient' },
+  { value: 'junk_removal', label: 'Junk Removal', urgency: 'high' },
+  { value: 'garage_door', label: 'Garage Door', urgency: 'high' },
+  { value: 'pressure_washing', label: 'Pressure Washing', urgency: 'standard' },
+  { value: 'general_contractor', label: 'General Contractor', urgency: 'patient' },
+  { value: 'other', label: 'Other', urgency: 'standard' },
 ] as const;
 
 export const QUOTE_STATUSES = [
@@ -19,12 +31,24 @@ export const QUOTE_STATUSES = [
 ] as const;
 
 export const SERVICE_TYPES: Record<string, string[]> = {
+  // Phase 1
   hvac: ['AC Repair', 'AC Installation', 'Heating Repair', 'Furnace Install', 'Duct Cleaning', 'Maintenance', 'Other'],
   plumbing: ['Drain Cleaning', 'Water Heater', 'Pipe Repair', 'Fixture Install', 'Sewer Line', 'Repiping', 'Other'],
   electrical: ['Panel Upgrade', 'Outlet Install', 'Lighting', 'Wiring Repair', 'EV Charger', 'Generator', 'Other'],
-  roofing: ['Roof Repair', 'Full Replacement', 'Inspection', 'Gutter Install', 'Leak Repair', 'Other'],
-  cleaning: ['Deep Clean', 'Regular Clean', 'Move In/Out', 'Post-Construction', 'Commercial', 'Other'],
-  landscaping: ['Lawn Care', 'Hardscape', 'Tree Service', 'Irrigation', 'Design', 'Maintenance', 'Other'],
+  residential_cleaning: ['Deep Clean', 'Regular Clean', 'Move In/Out', 'Post-Construction', 'Other'],
+  commercial_cleaning: ['Office Cleaning', 'Retail Space', 'Medical Facility', 'Post-Construction', 'Other'],
+  lawn_care: ['Weekly Mowing', 'Landscaping', 'Tree Service', 'Irrigation', 'Seasonal Cleanup', 'Other'],
+  pest_control: ['General Pest', 'Termites', 'Rodents', 'Bed Bugs', 'Wildlife', 'Prevention Plan', 'Other'],
+  carpet_cleaning: ['Whole House', 'Room Cleaning', 'Stain Removal', 'Pet Treatment', 'Commercial', 'Other'],
+  // Phase 2
+  painting: ['Interior - Single Room', 'Interior - Whole House', 'Exterior', 'Cabinet Painting', 'Deck/Fence Staining', 'Commercial', 'Other'],
+  roofing: ['Roof Inspection', 'Roof Repair', 'Shingle Replacement', 'Full Replacement', 'Gutter Work', 'Emergency Tarp', 'Other'],
+  pool_service: ['Weekly Service', 'Bi-Weekly Service', 'Pool Opening', 'Pool Closing', 'Green Pool Cleanup', 'Equipment Repair', 'Other'],
+  moving: ['Local Move - Studio/1BR', 'Local Move - 2-3BR', 'Local Move - 4+BR', 'Long Distance', 'Packing Services', 'Commercial', 'Other'],
+  window_cleaning: ['Interior Windows', 'Exterior Windows', 'Interior + Exterior', 'Screen Cleaning', 'Commercial', 'Other'],
+  junk_removal: ['Single Item', 'Partial Load', 'Full Truck Load', 'Garage Cleanout', 'Estate Cleanout', 'Yard Waste', 'Other'],
+  garage_door: ['Spring Replacement', 'Opener Repair', 'Opener Installation', 'Full Door Replacement', 'Tune-Up', 'Emergency', 'Other'],
+  pressure_washing: ['Driveway', 'Patio/Deck', 'House Washing', 'Roof Soft Wash', 'Fence', 'Commercial', 'Other'],
   general_contractor: ['Remodel', 'Addition', 'Repair', 'New Construction', 'Other'],
   other: ['Consultation', 'Repair', 'Installation', 'Maintenance', 'Other'],
 };

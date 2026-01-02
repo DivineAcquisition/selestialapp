@@ -13,8 +13,9 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet';
 import StepEditor from './StepEditor';
+import TemplateLibrary from './TemplateLibrary';
 import { generateId } from '@/lib/formatters';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 
 interface SequenceEditorProps {
   open: boolean;
@@ -40,6 +41,7 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState<SequenceStep[]>([createEmptyStep(0)]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showTemplates, setShowTemplates] = useState(false);
   
   // Reset form when sequence changes or modal opens
   useEffect(() => {
@@ -50,6 +52,18 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
       setErrors({});
     }
   }, [open, sequence]);
+
+  const handleSelectTemplate = (templateSteps: SequenceStep[], templateName: string, templateDescription: string) => {
+    // Transform steps to ensure they have proper IDs
+    const transformedSteps = templateSteps.map((step, index) => ({
+      ...step,
+      id: generateId(),
+      order: index,
+    }));
+    setSteps(transformedSteps);
+    if (!name) setName(templateName);
+    if (!description) setDescription(templateDescription);
+  };
   
   const handleAddStep = () => {
     const newStep = createEmptyStep(steps.length);
@@ -144,6 +158,18 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
         </SheetHeader>
         
         <div className="py-6 space-y-6">
+          {/* Template button for new sequences */}
+          {!isEditing && (
+            <Button
+              variant="outline"
+              onClick={() => setShowTemplates(true)}
+              className="w-full gap-2 border-dashed"
+            >
+              <Sparkles className="w-4 h-4" />
+              Start from Template
+            </Button>
+          )}
+
           {/* Basic info */}
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -212,6 +238,14 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
           </Button>
         </SheetFooter>
       </SheetContent>
+
+      {/* Template Library Modal */}
+      <TemplateLibrary
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        onSelect={handleSelectTemplate}
+        defaultType="quote_followup"
+      />
     </Sheet>
   );
 }
