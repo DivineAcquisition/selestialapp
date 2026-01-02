@@ -1,3 +1,9 @@
+import Layout from '@/components/layout/Layout';
+
 export default function DashboardPage() {
-  return <div className="p-8"><h1 className="text-2xl font-bold">Dashboard</h1></div>;
+  return (
+    <Layout title="Dashboard">
+      <p className="text-muted-foreground">Dashboard content coming soon</p>
+    </Layout>
+  );
 }
