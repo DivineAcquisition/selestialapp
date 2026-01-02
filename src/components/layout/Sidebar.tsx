@@ -19,7 +19,6 @@ export default function Sidebar() {
   const { user, signOut } = useAuth();
   const { totalUnread } = useConversations();
   const navigate = useNavigate();
-  const navigate = useNavigate();
   
   const initials = business?.owner_name
     ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
