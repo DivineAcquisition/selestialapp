@@ -288,7 +288,9 @@ export type Database = {
       }
       businesses: {
         Row: {
+          accept_online_payments: boolean | null
           auto_request_reviews: boolean | null
+          auto_send_payment_link: boolean | null
           auto_start_sequence: boolean
           business_days: number[]
           business_hours_enabled: boolean
@@ -302,6 +304,7 @@ export type Database = {
           current_period_start: string | null
           default_review_platform: string | null
           default_sequence_id: string | null
+          deposit_percent: number | null
           email: string
           facebook_review_link: string | null
           google_review_link: string | null
@@ -313,6 +316,7 @@ export type Database = {
           notify_email_won: boolean
           notify_sms_response: boolean
           owner_name: string
+          payment_due_days: number | null
           phone: string
           quote_email_message: string | null
           quote_email_subject: string | null
@@ -323,6 +327,8 @@ export type Database = {
           send_quote_email: boolean | null
           send_quote_sms: boolean | null
           sequences_limit: number | null
+          stripe_connect_account_id: string | null
+          stripe_connect_enabled: boolean | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_plan: string | null
@@ -337,7 +343,9 @@ export type Database = {
           yelp_review_link: string | null
         }
         Insert: {
+          accept_online_payments?: boolean | null
           auto_request_reviews?: boolean | null
+          auto_send_payment_link?: boolean | null
           auto_start_sequence?: boolean
           business_days?: number[]
           business_hours_enabled?: boolean
@@ -351,6 +359,7 @@ export type Database = {
           current_period_start?: string | null
           default_review_platform?: string | null
           default_sequence_id?: string | null
+          deposit_percent?: number | null
           email: string
           facebook_review_link?: string | null
           google_review_link?: string | null
@@ -362,6 +371,7 @@ export type Database = {
           notify_email_won?: boolean
           notify_sms_response?: boolean
           owner_name: string
+          payment_due_days?: number | null
           phone: string
           quote_email_message?: string | null
           quote_email_subject?: string | null
@@ -372,6 +382,8 @@ export type Database = {
           send_quote_email?: boolean | null
           send_quote_sms?: boolean | null
           sequences_limit?: number | null
+          stripe_connect_account_id?: string | null
+          stripe_connect_enabled?: boolean | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_plan?: string | null
@@ -386,7 +398,9 @@ export type Database = {
           yelp_review_link?: string | null
         }
         Update: {
+          accept_online_payments?: boolean | null
           auto_request_reviews?: boolean | null
+          auto_send_payment_link?: boolean | null
           auto_start_sequence?: boolean
           business_days?: number[]
           business_hours_enabled?: boolean
@@ -400,6 +414,7 @@ export type Database = {
           current_period_start?: string | null
           default_review_platform?: string | null
           default_sequence_id?: string | null
+          deposit_percent?: number | null
           email?: string
           facebook_review_link?: string | null
           google_review_link?: string | null
@@ -411,6 +426,7 @@ export type Database = {
           notify_email_won?: boolean
           notify_sms_response?: boolean
           owner_name?: string
+          payment_due_days?: number | null
           phone?: string
           quote_email_message?: string | null
           quote_email_subject?: string | null
@@ -421,6 +437,8 @@ export type Database = {
           send_quote_email?: boolean | null
           send_quote_sms?: boolean | null
           sequences_limit?: number | null
+          stripe_connect_account_id?: string | null
+          stripe_connect_enabled?: boolean | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_plan?: string | null
@@ -3363,43 +3381,180 @@ export type Database = {
         }
         Relationships: []
       }
-      payments: {
+      payment_links: {
         Row: {
           amount: number
-          created_at: string | null
+          business_id: string
+          created_at: string
           currency: string | null
+          description: string | null
+          expires_at: string | null
           id: string
-          status: string
-          stripe_payment_intent_id: string | null
-          tenant_id: string | null
-          type: string
+          last_viewed_at: string | null
+          quote_id: string | null
+          status: string | null
+          stripe_checkout_url: string
+          stripe_payment_link_id: string | null
+          view_count: number | null
         }
         Insert: {
           amount: number
-          created_at?: string | null
+          business_id: string
+          created_at?: string
           currency?: string | null
+          description?: string | null
+          expires_at?: string | null
           id?: string
-          status: string
-          stripe_payment_intent_id?: string | null
-          tenant_id?: string | null
-          type: string
+          last_viewed_at?: string | null
+          quote_id?: string | null
+          status?: string | null
+          stripe_checkout_url: string
+          stripe_payment_link_id?: string | null
+          view_count?: number | null
         }
         Update: {
           amount?: number
-          created_at?: string | null
+          business_id?: string
+          created_at?: string
           currency?: string | null
+          description?: string | null
+          expires_at?: string | null
           id?: string
-          status?: string
-          stripe_payment_intent_id?: string | null
-          tenant_id?: string | null
-          type?: string
+          last_viewed_at?: string | null
+          quote_id?: string | null
+          status?: string | null
+          stripe_checkout_url?: string
+          stripe_payment_link_id?: string | null
+          view_count?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "payments_tenant_id_fkey"
-            columns: ["tenant_id"]
+            foreignKeyName: "payment_links_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "saas_tenants"
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_links_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          business_id: string
+          card_brand: string | null
+          card_last4: string | null
+          created_at: string
+          currency: string | null
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string | null
+          description: string | null
+          failed_at: string | null
+          failure_code: string | null
+          failure_message: string | null
+          id: string
+          metadata: Json | null
+          net_amount: number
+          paid_at: string | null
+          payment_method_type: string | null
+          platform_fee: number | null
+          quote_id: string | null
+          receipt_url: string | null
+          refunded_at: string | null
+          status: string | null
+          stripe_account_id: string
+          stripe_charge_id: string | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          business_id: string
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          description?: string | null
+          failed_at?: string | null
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount: number
+          paid_at?: string | null
+          payment_method_type?: string | null
+          platform_fee?: number | null
+          quote_id?: string | null
+          receipt_url?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          stripe_account_id: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          description?: string | null
+          failed_at?: string | null
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          metadata?: Json | null
+          net_amount?: number
+          paid_at?: string | null
+          payment_method_type?: string | null
+          platform_fee?: number | null
+          quote_id?: string | null
+          receipt_url?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          stripe_account_id?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -3980,6 +4135,9 @@ export type Database = {
           customer_id: string | null
           customer_name: string
           customer_phone: string
+          deposit_amount: number | null
+          deposit_paid: boolean | null
+          deposit_required: boolean | null
           description: string | null
           email_sent_at: string | null
           email_status: string | null
@@ -3996,6 +4154,11 @@ export type Database = {
           lost_reason: string | null
           next_message_at: string | null
           notification_error: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          payment_id: string | null
+          payment_link_url: string | null
+          payment_status: string | null
           quote_amount: number
           sequence_completed_at: string | null
           sequence_id: string | null
@@ -4018,6 +4181,9 @@ export type Database = {
           customer_id?: string | null
           customer_name: string
           customer_phone: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean | null
+          deposit_required?: boolean | null
           description?: string | null
           email_sent_at?: string | null
           email_status?: string | null
@@ -4034,6 +4200,11 @@ export type Database = {
           lost_reason?: string | null
           next_message_at?: string | null
           notification_error?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_link_url?: string | null
+          payment_status?: string | null
           quote_amount: number
           sequence_completed_at?: string | null
           sequence_id?: string | null
@@ -4056,6 +4227,9 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string
           customer_phone?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean | null
+          deposit_required?: boolean | null
           description?: string | null
           email_sent_at?: string | null
           email_status?: string | null
@@ -4072,6 +4246,11 @@ export type Database = {
           lost_reason?: string | null
           next_message_at?: string | null
           notification_error?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_link_url?: string | null
+          payment_status?: string | null
           quote_amount?: number
           sequence_completed_at?: string | null
           sequence_id?: string | null
@@ -5487,6 +5666,77 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stripe_connected_accounts: {
+        Row: {
+          business_id: string
+          business_type: string | null
+          card_payments_enabled: boolean | null
+          charges_enabled: boolean | null
+          country: string | null
+          created_at: string
+          default_currency: string | null
+          details_submitted: boolean | null
+          id: string
+          last_webhook_at: string | null
+          onboarded_at: string | null
+          payouts_enabled: boolean | null
+          requirements_due: Json | null
+          requirements_past_due: Json | null
+          status: string | null
+          stripe_account_id: string
+          transfers_enabled: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          business_type?: string | null
+          card_payments_enabled?: boolean | null
+          charges_enabled?: boolean | null
+          country?: string | null
+          created_at?: string
+          default_currency?: string | null
+          details_submitted?: boolean | null
+          id?: string
+          last_webhook_at?: string | null
+          onboarded_at?: string | null
+          payouts_enabled?: boolean | null
+          requirements_due?: Json | null
+          requirements_past_due?: Json | null
+          status?: string | null
+          stripe_account_id: string
+          transfers_enabled?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          business_type?: string | null
+          card_payments_enabled?: boolean | null
+          charges_enabled?: boolean | null
+          country?: string | null
+          created_at?: string
+          default_currency?: string | null
+          details_submitted?: boolean | null
+          id?: string
+          last_webhook_at?: string | null
+          onboarded_at?: string | null
+          payouts_enabled?: boolean | null
+          requirements_due?: Json | null
+          requirements_past_due?: Json | null
+          status?: string | null
+          stripe_account_id?: string
+          transfers_enabled?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_connected_accounts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sub_portal_tokens: {
         Row: {
