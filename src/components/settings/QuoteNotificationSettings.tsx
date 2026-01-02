@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Send, 
   Mail, 
@@ -14,11 +15,16 @@ import {
   Loader2, 
   Check,
   Palette,
-  Info
+  Info,
+  Upload,
+  Image,
+  X
 } from 'lucide-react';
 
 export default function QuoteNotificationSettings() {
   const { business, refetch } = useBusiness();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [sendEmail, setSendEmail] = useState(true);
   const [sendSms, setSendSms] = useState(true);
@@ -26,9 +32,11 @@ export default function QuoteNotificationSettings() {
   const [emailMessage, setEmailMessage] = useState('');
   const [smsMessage, setSmsMessage] = useState('');
   const [companyColor, setCompanyColor] = useState('#4F46E5');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (business) {
@@ -38,8 +46,105 @@ export default function QuoteNotificationSettings() {
       setEmailMessage(business.quote_email_message || '');
       setSmsMessage(business.quote_sms_message || 'Hi {{customer_first_name}}, thanks for requesting a quote from {{business_name}}! We\'ve sent the details to your email. Questions? Reply here or call {{business_phone}}. - {{owner_first_name}}');
       setCompanyColor(business.company_color || '#4F46E5');
+      setLogoUrl(business.company_logo_url || null);
     }
   }, [business]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !business) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload an image file (PNG, JPG, etc.)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please upload an image smaller than 2MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${business.id}/logo.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      // Update business record
+      const { error: updateError } = await supabase
+        .from('businesses')
+        .update({ company_logo_url: publicUrl })
+        .eq('id', business.id);
+
+      if (updateError) throw updateError;
+
+      setLogoUrl(publicUrl);
+      await refetch();
+
+      toast({
+        title: 'Logo uploaded',
+        description: 'Your company logo will now appear in quote emails',
+      });
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload logo. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!business) return;
+
+    try {
+      // Remove from storage
+      const fileName = `${business.id}/logo`;
+      await supabase.storage
+        .from('company-logos')
+        .remove([`${fileName}.png`, `${fileName}.jpg`, `${fileName}.jpeg`, `${fileName}.webp`]);
+
+      // Update business record
+      await supabase
+        .from('businesses')
+        .update({ company_logo_url: null })
+        .eq('id', business.id);
+
+      setLogoUrl(null);
+      await refetch();
+
+      toast({
+        title: 'Logo removed',
+        description: 'Your company logo has been removed',
+      });
+    } catch (err) {
+      console.error('Logo remove error:', err);
+    }
+  };
 
   const handleSave = async () => {
     if (!business) return;
@@ -120,6 +225,61 @@ export default function QuoteNotificationSettings() {
               </div>
             </div>
             <Switch checked={sendSms} onCheckedChange={setSendSms} />
+          </div>
+        </div>
+
+        {/* Company Logo */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Company Logo
+          </Label>
+          <div className="flex items-center gap-4">
+            {logoUrl ? (
+              <div className="relative">
+                <img
+                  src={logoUrl}
+                  alt="Company logo"
+                  className="w-16 h-16 rounded-lg object-cover border border-border"
+                />
+                <button
+                  onClick={handleRemoveLogo}
+                  className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
+                <Image className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="gap-2"
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                {logoUrl ? 'Change Logo' : 'Upload Logo'}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1">
+                PNG or JPG, max 2MB. Appears in quote emails.
+              </p>
+            </div>
           </div>
         </div>
 
