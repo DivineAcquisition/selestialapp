@@ -14,6 +14,8 @@ import SignupPage from "./pages/SignupPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
+import ResendVerificationPage from "./pages/ResendVerificationPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -68,6 +70,8 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/resend-verification" element={<ResendVerificationPage />} />
       
       {/* Onboarding (requires auth but no business) */}
       <Route path="/onboarding" element={<OnboardingPage />} />
