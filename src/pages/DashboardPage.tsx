@@ -1,15 +1,18 @@
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import StatsCard from '@/components/dashboard/StatsCard';
 import QuotePipeline from '@/components/dashboard/QuotePipeline';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickActions from '@/components/dashboard/QuickActions';
+import QuickAddQuote from '@/components/quotes/QuickAddQuote';
 import { FileText, TrendingUp, Target, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useActivities } from '@/hooks/useActivities';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import type { Quote, ActivityLog, QuoteStatus } from '@/types';
 
 export default function DashboardPage() {
@@ -19,8 +22,18 @@ export default function DashboardPage() {
   const { activities } = useActivities(10);
   const { stats } = useDashboardStats();
   
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  
+  // Keyboard shortcut: press 'n' or 'q' to add new quote
+  const shortcuts = useMemo(() => ({
+    'n': () => setShowQuickAdd(true),
+    'q': () => setShowQuickAdd(true),
+  }), []);
+  
+  useKeyboardShortcuts(shortcuts);
+  
   const handleAddQuote = () => {
-    navigate('/quotes');
+    setShowQuickAdd(true);
   };
   
   const handleQuoteClick = (quoteId: string) => {
@@ -114,6 +127,12 @@ export default function DashboardPage() {
       <div className="mt-8">
         <RecentActivity activities={transformedActivities} />
       </div>
+      
+      {/* Quick Add Quote Modal */}
+      <QuickAddQuote 
+        open={showQuickAdd} 
+        onClose={() => setShowQuickAdd(false)} 
+      />
     </Layout>
   );
 }
