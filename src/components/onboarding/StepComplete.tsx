@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toE164 } from '@/lib/formatters';
 import { CheckCircle, Loader2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import selestialLogo from '@/assets/selestial-logo.png';
 
 export default function StepComplete() {
   const navigate = useNavigate();
@@ -91,12 +92,7 @@ export default function StepComplete() {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">S</span>
-            </div>
-            <span className="font-semibold text-foreground">Selestial</span>
-          </div>
+          <img src={selestialLogo} alt="Selestial" className="h-8" />
         </div>
       </header>
       
@@ -200,6 +196,31 @@ export default function StepComplete() {
           )}
         </div>
       </main>
+      
+      {/* Footer */}
+      <footer className="py-4 px-6 border-t border-border">
+        <div className="max-w-md mx-auto flex items-center justify-center gap-4 text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} Selestial</span>
+          <span>·</span>
+          <a 
+            href="https://selestial.io/privacy" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            Privacy
+          </a>
+          <span>·</span>
+          <a 
+            href="https://selestial.io/terms" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            Terms
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
