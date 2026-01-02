@@ -126,7 +126,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `${business.name} <onboarding@resend.dev>`,
+            from: `${business.name} <noreply@selestial.io>`,
             reply_to: business.email,
             to: quote.customer_email,
             subject,
