@@ -2694,58 +2694,121 @@ export type Database = {
       message_queue: {
         Row: {
           attempts: number | null
+          business_id: string | null
           channel: string
           company_id: string
+          content: string | null
           created_at: string
           customer_id: string | null
+          error_message: string | null
+          external_id: string | null
+          from_phone: string | null
           id: string
+          last_attempt_at: string | null
           last_error: string | null
+          max_attempts: number | null
+          metadata: Json | null
+          next_retry_at: string | null
+          original_scheduled_for: string | null
           payload: Json | null
+          quote_id: string | null
           scheduled_for: string
+          sent_at: string | null
+          sequence_id: string | null
           status: string
+          step_index: number | null
           template_key: string
           to_address: string | null
-          to_number: string | null
+          to_phone: string | null
           updated_at: string
         }
         Insert: {
           attempts?: number | null
+          business_id?: string | null
           channel: string
           company_id: string
+          content?: string | null
           created_at?: string
           customer_id?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          from_phone?: string | null
           id?: string
+          last_attempt_at?: string | null
           last_error?: string | null
+          max_attempts?: number | null
+          metadata?: Json | null
+          next_retry_at?: string | null
+          original_scheduled_for?: string | null
           payload?: Json | null
+          quote_id?: string | null
           scheduled_for?: string
+          sent_at?: string | null
+          sequence_id?: string | null
           status?: string
+          step_index?: number | null
           template_key: string
           to_address?: string | null
-          to_number?: string | null
+          to_phone?: string | null
           updated_at?: string
         }
         Update: {
           attempts?: number | null
+          business_id?: string | null
           channel?: string
           company_id?: string
+          content?: string | null
           created_at?: string
           customer_id?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          from_phone?: string | null
           id?: string
+          last_attempt_at?: string | null
           last_error?: string | null
+          max_attempts?: number | null
+          metadata?: Json | null
+          next_retry_at?: string | null
+          original_scheduled_for?: string | null
           payload?: Json | null
+          quote_id?: string | null
           scheduled_for?: string
+          sent_at?: string | null
+          sequence_id?: string | null
           status?: string
+          step_index?: number | null
           template_key?: string
           to_address?: string | null
-          to_number?: string | null
+          to_phone?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "message_queue_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "message_queue_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_queue_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_queue_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
             referencedColumns: ["id"]
           },
         ]

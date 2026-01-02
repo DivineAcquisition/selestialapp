@@ -99,3 +99,73 @@ export function useMessages(quoteId: string | null) {
 
   return { messages, loading, refetch: fetchMessages };
 }
+
+// Queue stats hook
+interface QueueStats {
+  pending: number;
+  sent: number;
+  failed: number;
+  scheduledNext: string | null;
+}
+
+export function useMessageQueue(businessId: string | undefined) {
+  const [stats, setStats] = useState<QueueStats>({
+    pending: 0,
+    sent: 0,
+    failed: 0,
+    scheduledNext: null,
+  });
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    if (!businessId) return;
+
+    try {
+      const { count: pendingCount } = await supabase
+        .from('message_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .eq('status', 'pending');
+
+      const { count: sentCount } = await supabase
+        .from('message_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .eq('status', 'sent');
+
+      const { count: failedCount } = await supabase
+        .from('message_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .eq('status', 'failed');
+
+      const { data: next } = await supabase
+        .from('message_queue')
+        .select('scheduled_for')
+        .eq('business_id', businessId)
+        .eq('status', 'pending')
+        .order('scheduled_for', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      setStats({
+        pending: pendingCount || 0,
+        sent: sentCount || 0,
+        failed: failedCount || 0,
+        scheduledNext: next?.scheduled_for || null,
+      });
+    } catch (err) {
+      console.error('Failed to fetch queue stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [businessId]);
+
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  return { stats, loading, refetch: fetchStats };
+}

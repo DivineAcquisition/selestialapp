@@ -23,6 +23,7 @@ serve(async (req) => {
     
     console.log(`Processing message queue at ${now}`);
     
+    // Get pending messages that are due
     const { data: messages, error: fetchError } = await supabase
       .from('message_queue')
       .select('id, business_id, quote_id')
@@ -48,6 +49,7 @@ serve(async (req) => {
     
     console.log(`Processing ${messages.length} messages`);
     
+    // Process messages by invoking send-sms for each
     const results = await Promise.allSettled(
       messages.map(async (message) => {
         const response = await supabase.functions.invoke('send-sms', {
@@ -65,6 +67,7 @@ serve(async (req) => {
     const successful = results.filter(r => r.status === 'fulfilled' && (r.value as any)?.success).length;
     const failed = results.length - successful;
     
+    // Process retries
     const { data: retryMessages } = await supabase
       .from('message_queue')
       .select('id')
