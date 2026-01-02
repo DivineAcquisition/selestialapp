@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { useConversations } from '@/hooks/useConversations';
 import { cn } from '@/lib/utils';
 import { 
   Menu, 
@@ -16,11 +17,13 @@ import {
   Zap, 
   Settings, 
   LogOut,
+  MessageSquare,
 } from 'lucide-react';
 import logo from '@/assets/logo-icon-new.png';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Inbox', href: '/inbox', icon: MessageSquare, showBadge: true },
   { name: 'Quotes', href: '/quotes', icon: FileText },
   { name: 'Sequences', href: '/sequences', icon: Zap },
   { name: 'Settings', href: '/settings', icon: Settings },
@@ -31,6 +34,7 @@ export default function MobileSidebar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { business } = useBusiness();
+  const { totalUnread } = useConversations();
 
   const handleSignOut = async () => {
     await signOut();
@@ -68,15 +72,22 @@ export default function MobileSidebar() {
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                       : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
                   )
                 }
               >
-                <item.icon className="h-5 w-5" />
-                {item.name}
+                <div className="flex items-center gap-3">
+                  <item.icon className="h-5 w-5" />
+                  {item.name}
+                </div>
+                {item.showBadge && totalUnread > 0 && (
+                  <span className="px-2 py-0.5 text-xs font-bold bg-destructive text-destructive-foreground rounded-full">
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

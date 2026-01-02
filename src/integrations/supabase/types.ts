@@ -3822,6 +3822,9 @@ export type Database = {
           description: string | null
           final_job_amount: number | null
           id: string
+          last_message_at: string | null
+          last_message_direction: string | null
+          last_message_preview: string | null
           lost_at: string | null
           lost_reason: string | null
           next_message_at: string | null
@@ -3833,6 +3836,7 @@ export type Database = {
           service_type: string
           status: string
           status_changed_at: string
+          unread_count: number | null
           updated_at: string
           won_at: string | null
         }
@@ -3846,6 +3850,9 @@ export type Database = {
           description?: string | null
           final_job_amount?: number | null
           id?: string
+          last_message_at?: string | null
+          last_message_direction?: string | null
+          last_message_preview?: string | null
           lost_at?: string | null
           lost_reason?: string | null
           next_message_at?: string | null
@@ -3857,6 +3864,7 @@ export type Database = {
           service_type: string
           status?: string
           status_changed_at?: string
+          unread_count?: number | null
           updated_at?: string
           won_at?: string | null
         }
@@ -3870,6 +3878,9 @@ export type Database = {
           description?: string | null
           final_job_amount?: number | null
           id?: string
+          last_message_at?: string | null
+          last_message_direction?: string | null
+          last_message_preview?: string | null
           lost_at?: string | null
           lost_reason?: string | null
           next_message_at?: string | null
@@ -3881,6 +3892,7 @@ export type Database = {
           service_type?: string
           status?: string
           status_changed_at?: string
+          unread_count?: number | null
           updated_at?: string
           won_at?: string | null
         }
@@ -5845,6 +5857,10 @@ export type Database = {
           p_quote_id?: string
         }
         Returns: string
+      }
+      mark_conversation_read: {
+        Args: { p_quote_id: string }
+        Returns: undefined
       }
       publish_booking_config: { Args: { p_company_id: string }; Returns: Json }
       replace_merge_fields: {
