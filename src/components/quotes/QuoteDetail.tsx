@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import QuoteStatusBadge from './QuoteStatusBadge';
+import { useMessages } from '@/hooks/useMessages';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
 import { 
@@ -32,7 +34,11 @@ import {
   Pause, 
   Play,
   X,
-  Loader2
+  Loader2,
+  CheckCircle,
+  Send,
+  AlertCircle,
+  User
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -49,6 +55,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const [showLostDialog, setShowLostDialog] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [updating, setUpdating] = useState(false);
+  const { messages, loading: messagesLoading } = useMessages(quote.id);
   
   const daysSince = getDaysSince(quote.created_at);
   
@@ -171,14 +178,52 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
           
           <Separator />
           
-          {/* Message timeline placeholder */}
+          {/* Message history */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">
               Message History
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Messages will appear here once SMS is connected.
-            </p>
+            </h3>
+            
+            {messagesLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : messages.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No messages yet.
+              </p>
+            ) : (
+              <ScrollArea className="h-48">
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div key={message.id} className="flex items-start gap-2">
+                      <div className="shrink-0 mt-0.5">
+                        {message.direction === 'inbound' ? (
+                          <User className="h-4 w-4 text-primary" />
+                        ) : message.status === 'delivered' ? (
+                          <CheckCircle className="h-4 w-4 text-emerald-600" />
+                        ) : message.status === 'sent' ? (
+                          <Send className="h-4 w-4 text-blue-600" />
+                        ) : message.status === 'failed' ? (
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground break-words">
+                          {message.content}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {formatDateTime(message.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </div>
         </div>
         

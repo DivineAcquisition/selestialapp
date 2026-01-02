@@ -6,11 +6,12 @@ import NotificationSettings from '@/components/settings/NotificationSettings';
 import BusinessHoursSettings from '@/components/settings/BusinessHoursSettings';
 import SubscriptionCard from '@/components/settings/SubscriptionCard';
 import DangerZone from '@/components/settings/DangerZone';
+import PhoneSetup from '@/components/settings/PhoneSetup';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Bell, Clock, CreditCard, Loader2 } from 'lucide-react';
+import { User, Bell, Clock, CreditCard, Phone, Loader2 } from 'lucide-react';
 import type { Business } from '@/types';
 
 export default function SettingsPage() {
@@ -150,10 +151,14 @@ export default function SettingsPage() {
     <Layout title="Settings">
       <div className="max-w-3xl">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4 hidden sm:block" />
               Profile
+            </TabsTrigger>
+            <TabsTrigger value="phone" className="gap-2">
+              <Phone className="h-4 w-4 hidden sm:block" />
+              Phone
             </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2">
               <Bell className="h-4 w-4 hidden sm:block" />
@@ -172,6 +177,10 @@ export default function SettingsPage() {
           <TabsContent value="profile" className="space-y-6">
             <BusinessProfileForm business={transformedBusiness} onSave={handleSaveBusiness} />
             <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
+          </TabsContent>
+          
+          <TabsContent value="phone">
+            <PhoneSetup />
           </TabsContent>
           
           <TabsContent value="notifications">
