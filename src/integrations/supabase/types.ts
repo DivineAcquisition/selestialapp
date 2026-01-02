@@ -7861,9 +7861,11 @@ export type Database = {
       schedule_next_message: { Args: { p_quote_id: string }; Returns: string }
       schedule_trial_reminders: { Args: never; Returns: undefined }
       seed_onboarding_tasks: { Args: { org_id: string }; Returns: undefined }
+      seed_test_data: { Args: { p_business_id: string }; Returns: Json }
       set_active_org: { Args: { p_org: string }; Returns: undefined }
       simulate_plan: { Args: { plan_name: string }; Returns: Json }
       simulate_user_plan: { Args: { plan_name: string }; Returns: Json }
+      system_health_check: { Args: { p_business_id: string }; Returns: Json }
       test_email_configuration: {
         Args: { p_company_id: string; p_test_email: string }
         Returns: Json
@@ -7877,6 +7879,7 @@ export type Database = {
         Args: { subscription_user_id: string }
         Returns: boolean
       }
+      verify_database_schema: { Args: never; Returns: Json }
     }
     Enums: {
       admin_role: "superadmin" | "admin" | "moderator" | "support"
