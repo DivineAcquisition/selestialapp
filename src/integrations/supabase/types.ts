@@ -493,6 +493,85 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_recipients: {
+        Row: {
+          booked_at: string | null
+          campaign_id: string
+          created_at: string
+          customer_id: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          promo_code_used: boolean | null
+          promo_used_at: string | null
+          quote_id: string | null
+          responded_at: string | null
+          response_text: string | null
+          revenue: number | null
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          booked_at?: string | null
+          campaign_id: string
+          created_at?: string
+          customer_id: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          promo_code_used?: boolean | null
+          promo_used_at?: string | null
+          quote_id?: string | null
+          responded_at?: string | null
+          response_text?: string | null
+          revenue?: number | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          booked_at?: string | null
+          campaign_id?: string
+          created_at?: string
+          customer_id?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          promo_code_used?: boolean | null
+          promo_used_at?: string | null
+          quote_id?: string | null
+          responded_at?: string | null
+          response_text?: string | null
+          revenue?: number | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_subscribers: {
         Row: {
           campaign_id: string
@@ -539,6 +618,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      campaign_templates: {
+        Row: {
+          campaign_type: string
+          created_at: string
+          default_audience: string | null
+          default_max_days: number | null
+          default_min_days: number | null
+          description: string | null
+          effectiveness_score: number | null
+          email_body_template: string | null
+          email_subject_template: string | null
+          holiday: string | null
+          id: string
+          industry_slug: string | null
+          month: number | null
+          name: string
+          season: string | null
+          sms_template: string
+          suggested_promotion_type: string | null
+          suggested_promotion_value: number | null
+          tags: string[] | null
+          times_used: number | null
+        }
+        Insert: {
+          campaign_type: string
+          created_at?: string
+          default_audience?: string | null
+          default_max_days?: number | null
+          default_min_days?: number | null
+          description?: string | null
+          effectiveness_score?: number | null
+          email_body_template?: string | null
+          email_subject_template?: string | null
+          holiday?: string | null
+          id?: string
+          industry_slug?: string | null
+          month?: number | null
+          name: string
+          season?: string | null
+          sms_template: string
+          suggested_promotion_type?: string | null
+          suggested_promotion_value?: number | null
+          tags?: string[] | null
+          times_used?: number | null
+        }
+        Update: {
+          campaign_type?: string
+          created_at?: string
+          default_audience?: string | null
+          default_max_days?: number | null
+          default_min_days?: number | null
+          description?: string | null
+          effectiveness_score?: number | null
+          email_body_template?: string | null
+          email_subject_template?: string | null
+          holiday?: string | null
+          id?: string
+          industry_slug?: string | null
+          month?: number | null
+          name?: string
+          season?: string | null
+          sms_template?: string
+          suggested_promotion_type?: string | null
+          suggested_promotion_value?: number | null
+          tags?: string[] | null
+          times_used?: number | null
+        }
+        Relationships: []
       }
       capture_forms: {
         Row: {
@@ -1554,9 +1702,12 @@ export type Database = {
           health_score: number | null
           id: string
           is_recurring: boolean | null
+          last_campaign_at: string | null
           last_contact_at: string | null
           last_response_at: string | null
           last_service_at: string | null
+          marketing_opt_out_at: string | null
+          marketing_opted_out: boolean | null
           name: string
           next_service_at: string | null
           notes: string | null
@@ -1584,9 +1735,12 @@ export type Database = {
           health_score?: number | null
           id?: string
           is_recurring?: boolean | null
+          last_campaign_at?: string | null
           last_contact_at?: string | null
           last_response_at?: string | null
           last_service_at?: string | null
+          marketing_opt_out_at?: string | null
+          marketing_opted_out?: boolean | null
           name: string
           next_service_at?: string | null
           notes?: string | null
@@ -1614,9 +1768,12 @@ export type Database = {
           health_score?: number | null
           id?: string
           is_recurring?: boolean | null
+          last_campaign_at?: string | null
           last_contact_at?: string | null
           last_response_at?: string | null
           last_service_at?: string | null
+          marketing_opt_out_at?: string | null
+          marketing_opted_out?: boolean | null
           name?: string
           next_service_at?: string | null
           notes?: string | null
@@ -4171,6 +4328,72 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_codes: {
+        Row: {
+          business_id: string
+          campaign_id: string | null
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          min_order_amount: number | null
+          starts_at: string | null
+          uses: number | null
+        }
+        Insert: {
+          business_id: string
+          campaign_id?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          starts_at?: string | null
+          uses?: number | null
+        }
+        Update: {
+          business_id?: string
+          campaign_id?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          starts_at?: string | null
+          uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_codes_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_codes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provisioning_jobs: {
         Row: {
           created_at: string | null
@@ -5246,6 +5469,137 @@ export type Database = {
           template_type?: string
         }
         Relationships: []
+      }
+      seasonal_campaigns: {
+        Row: {
+          business_id: string
+          campaign_type: string
+          channel: string | null
+          created_at: string
+          description: string | null
+          email_body: string | null
+          email_subject: string | null
+          end_date: string | null
+          exclude_recent_days: number | null
+          has_promotion: boolean | null
+          id: string
+          is_recurring: boolean | null
+          max_days_since_service: number | null
+          metadata: Json | null
+          min_days_since_service: number | null
+          name: string
+          promotion_code: string | null
+          promotion_expires_days: number | null
+          promotion_max_uses: number | null
+          promotion_type: string | null
+          promotion_uses: number | null
+          promotion_value: number | null
+          recurrence_pattern: string | null
+          send_time: string | null
+          sms_message: string | null
+          start_date: string | null
+          status: string | null
+          target_audience: string | null
+          target_customer_types: string[] | null
+          template_id: string | null
+          timezone: string | null
+          total_bookings: number | null
+          total_delivered: number | null
+          total_responses: number | null
+          total_revenue: number | null
+          total_sent: number | null
+          total_targeted: number | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          campaign_type: string
+          channel?: string | null
+          created_at?: string
+          description?: string | null
+          email_body?: string | null
+          email_subject?: string | null
+          end_date?: string | null
+          exclude_recent_days?: number | null
+          has_promotion?: boolean | null
+          id?: string
+          is_recurring?: boolean | null
+          max_days_since_service?: number | null
+          metadata?: Json | null
+          min_days_since_service?: number | null
+          name: string
+          promotion_code?: string | null
+          promotion_expires_days?: number | null
+          promotion_max_uses?: number | null
+          promotion_type?: string | null
+          promotion_uses?: number | null
+          promotion_value?: number | null
+          recurrence_pattern?: string | null
+          send_time?: string | null
+          sms_message?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: string | null
+          target_customer_types?: string[] | null
+          template_id?: string | null
+          timezone?: string | null
+          total_bookings?: number | null
+          total_delivered?: number | null
+          total_responses?: number | null
+          total_revenue?: number | null
+          total_sent?: number | null
+          total_targeted?: number | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          campaign_type?: string
+          channel?: string | null
+          created_at?: string
+          description?: string | null
+          email_body?: string | null
+          email_subject?: string | null
+          end_date?: string | null
+          exclude_recent_days?: number | null
+          has_promotion?: boolean | null
+          id?: string
+          is_recurring?: boolean | null
+          max_days_since_service?: number | null
+          metadata?: Json | null
+          min_days_since_service?: number | null
+          name?: string
+          promotion_code?: string | null
+          promotion_expires_days?: number | null
+          promotion_max_uses?: number | null
+          promotion_type?: string | null
+          promotion_uses?: number | null
+          promotion_value?: number | null
+          recurrence_pattern?: string | null
+          send_time?: string | null
+          sms_message?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_audience?: string | null
+          target_customer_types?: string[] | null
+          template_id?: string | null
+          timezone?: string | null
+          total_bookings?: number | null
+          total_delivered?: number | null
+          total_responses?: number | null
+          total_revenue?: number | null
+          total_sent?: number | null
+          total_targeted?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sequence_templates: {
         Row: {
