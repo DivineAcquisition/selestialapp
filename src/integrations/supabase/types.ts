@@ -288,6 +288,7 @@ export type Database = {
       }
       businesses: {
         Row: {
+          auto_request_reviews: boolean | null
           auto_start_sequence: boolean
           business_days: number[]
           business_hours_enabled: boolean
@@ -299,8 +300,11 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
+          default_review_platform: string | null
           default_sequence_id: string | null
           email: string
+          facebook_review_link: string | null
+          google_review_link: string | null
           id: string
           industry: string
           name: string
@@ -314,6 +318,8 @@ export type Database = {
           quote_email_subject: string | null
           quote_sms_message: string | null
           quotes_limit: number | null
+          review_request_delay_days: number | null
+          review_request_message: string | null
           send_quote_email: boolean | null
           send_quote_sms: boolean | null
           sequences_limit: number | null
@@ -328,8 +334,10 @@ export type Database = {
           updated_at: string
           user_id: string
           website: string | null
+          yelp_review_link: string | null
         }
         Insert: {
+          auto_request_reviews?: boolean | null
           auto_start_sequence?: boolean
           business_days?: number[]
           business_hours_enabled?: boolean
@@ -341,8 +349,11 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          default_review_platform?: string | null
           default_sequence_id?: string | null
           email: string
+          facebook_review_link?: string | null
+          google_review_link?: string | null
           id?: string
           industry?: string
           name: string
@@ -356,6 +367,8 @@ export type Database = {
           quote_email_subject?: string | null
           quote_sms_message?: string | null
           quotes_limit?: number | null
+          review_request_delay_days?: number | null
+          review_request_message?: string | null
           send_quote_email?: boolean | null
           send_quote_sms?: boolean | null
           sequences_limit?: number | null
@@ -370,8 +383,10 @@ export type Database = {
           updated_at?: string
           user_id: string
           website?: string | null
+          yelp_review_link?: string | null
         }
         Update: {
+          auto_request_reviews?: boolean | null
           auto_start_sequence?: boolean
           business_days?: number[]
           business_hours_enabled?: boolean
@@ -383,8 +398,11 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
+          default_review_platform?: string | null
           default_sequence_id?: string | null
           email?: string
+          facebook_review_link?: string | null
+          google_review_link?: string | null
           id?: string
           industry?: string
           name?: string
@@ -398,6 +416,8 @@ export type Database = {
           quote_email_subject?: string | null
           quote_sms_message?: string | null
           quotes_limit?: number | null
+          review_request_delay_days?: number | null
+          review_request_message?: string | null
           send_quote_email?: boolean | null
           send_quote_sms?: boolean | null
           sequences_limit?: number | null
@@ -412,6 +432,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+          yelp_review_link?: string | null
         }
         Relationships: []
       }
@@ -4122,6 +4143,95 @@ export type Database = {
         }
         Relationships: []
       }
+      reengagement_campaigns: {
+        Row: {
+          business_id: string
+          channel: string | null
+          completed_at: string | null
+          created_at: string
+          customer_types: string[] | null
+          days_inactive: number
+          description: string | null
+          id: string
+          max_health_score: number | null
+          message: string
+          min_lifetime_value: number | null
+          name: string
+          offer_code: string | null
+          offer_expires_days: number | null
+          offer_type: string | null
+          offer_value: number | null
+          scheduled_for: string | null
+          started_at: string | null
+          status: string | null
+          subject: string | null
+          total_rebooked: number | null
+          total_responses: number | null
+          total_sent: number | null
+          total_targeted: number | null
+        }
+        Insert: {
+          business_id: string
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_types?: string[] | null
+          days_inactive?: number
+          description?: string | null
+          id?: string
+          max_health_score?: number | null
+          message: string
+          min_lifetime_value?: number | null
+          name: string
+          offer_code?: string | null
+          offer_expires_days?: number | null
+          offer_type?: string | null
+          offer_value?: number | null
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string | null
+          subject?: string | null
+          total_rebooked?: number | null
+          total_responses?: number | null
+          total_sent?: number | null
+          total_targeted?: number | null
+        }
+        Update: {
+          business_id?: string
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_types?: string[] | null
+          days_inactive?: number
+          description?: string | null
+          id?: string
+          max_health_score?: number | null
+          message?: string
+          min_lifetime_value?: number | null
+          name?: string
+          offer_code?: string | null
+          offer_expires_days?: number | null
+          offer_type?: string | null
+          offer_value?: number | null
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string | null
+          subject?: string | null
+          total_rebooked?: number | null
+          total_responses?: number | null
+          total_sent?: number | null
+          total_targeted?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reengagement_campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retention_messages: {
         Row: {
           booked_new_job: boolean | null
@@ -4214,6 +4324,113 @@ export type Database = {
           },
         ]
       }
+      retention_queue: {
+        Row: {
+          attempts: number | null
+          business_id: string
+          channel: string
+          content: string
+          created_at: string
+          customer_id: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          from_phone: string | null
+          id: string
+          metadata: Json | null
+          quote_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          sequence_id: string | null
+          status: string | null
+          step_index: number
+          subject: string | null
+          to_email: string | null
+          to_phone: string | null
+          trigger_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number | null
+          business_id: string
+          channel?: string
+          content: string
+          created_at?: string
+          customer_id: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          from_phone?: string | null
+          id?: string
+          metadata?: Json | null
+          quote_id?: string | null
+          scheduled_for: string
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_index?: number
+          subject?: string | null
+          to_email?: string | null
+          to_phone?: string | null
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number | null
+          business_id?: string
+          channel?: string
+          content?: string
+          created_at?: string
+          customer_id?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          from_phone?: string | null
+          id?: string
+          metadata?: Json | null
+          quote_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_index?: number
+          subject?: string | null
+          to_email?: string | null
+          to_phone?: string | null
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_queue_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_queue_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_queue_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_queue_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "retention_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retention_sequences: {
         Row: {
           business_id: string
@@ -4223,9 +4440,15 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          is_system: boolean | null
           name: string
           steps: Json
+          times_triggered: number | null
+          total_responses: number | null
+          total_sent: number | null
           trigger_days: number | null
+          trigger_delay_days: number | null
+          trigger_delay_hours: number | null
           trigger_type: string
           updated_at: string
         }
@@ -4237,9 +4460,15 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_system?: boolean | null
           name: string
           steps?: Json
+          times_triggered?: number | null
+          total_responses?: number | null
+          total_sent?: number | null
           trigger_days?: number | null
+          trigger_delay_days?: number | null
+          trigger_delay_hours?: number | null
           trigger_type: string
           updated_at?: string
         }
@@ -4251,9 +4480,15 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_system?: boolean | null
           name?: string
           steps?: Json
+          times_triggered?: number | null
+          total_responses?: number | null
+          total_sent?: number | null
           trigger_days?: number | null
+          trigger_delay_days?: number | null
+          trigger_delay_hours?: number | null
           trigger_type?: string
           updated_at?: string
         }
@@ -4263,6 +4498,82 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_requests: {
+        Row: {
+          business_id: string
+          click_count: number | null
+          clicked_at: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          platform: string
+          quote_id: string | null
+          review_link: string
+          review_rating: number | null
+          review_received: boolean | null
+          review_received_at: string | null
+          sent_at: string | null
+          sent_via: string | null
+          status: string | null
+        }
+        Insert: {
+          business_id: string
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          platform: string
+          quote_id?: string | null
+          review_link: string
+          review_rating?: number | null
+          review_received?: boolean | null
+          review_received_at?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          status?: string | null
+        }
+        Update: {
+          business_id?: string
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          platform?: string
+          quote_id?: string | null
+          review_link?: string
+          review_rating?: number | null
+          review_received?: boolean | null
+          review_received_at?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_requests_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
