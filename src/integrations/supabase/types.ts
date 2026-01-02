@@ -1504,35 +1504,110 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          average_job_value: number | null
+          business_id: string
           created_at: string
-          email: string
+          customer_type: string | null
+          email: string | null
+          external_id: string | null
+          external_source: string | null
+          first_service_at: string | null
+          health_score: number | null
           id: string
+          is_recurring: boolean | null
+          last_contact_at: string | null
+          last_response_at: string | null
+          last_service_at: string | null
           name: string
-          phone: string | null
+          next_service_at: string | null
+          notes: string | null
+          phone: string
+          recurring_amount: number | null
+          recurring_frequency: string | null
+          recurring_service_type: string | null
+          referral_count: number | null
+          referred_by_customer_id: string | null
+          tags: string[] | null
+          total_jobs: number | null
+          total_spent: number | null
           updated_at: string
-          user_id: string | null
         }
         Insert: {
           address?: string | null
+          average_job_value?: number | null
+          business_id: string
           created_at?: string
-          email: string
+          customer_type?: string | null
+          email?: string | null
+          external_id?: string | null
+          external_source?: string | null
+          first_service_at?: string | null
+          health_score?: number | null
           id?: string
+          is_recurring?: boolean | null
+          last_contact_at?: string | null
+          last_response_at?: string | null
+          last_service_at?: string | null
           name: string
-          phone?: string | null
+          next_service_at?: string | null
+          notes?: string | null
+          phone: string
+          recurring_amount?: number | null
+          recurring_frequency?: string | null
+          recurring_service_type?: string | null
+          referral_count?: number | null
+          referred_by_customer_id?: string | null
+          tags?: string[] | null
+          total_jobs?: number | null
+          total_spent?: number | null
           updated_at?: string
-          user_id?: string | null
         }
         Update: {
           address?: string | null
+          average_job_value?: number | null
+          business_id?: string
           created_at?: string
-          email?: string
+          customer_type?: string | null
+          email?: string | null
+          external_id?: string | null
+          external_source?: string | null
+          first_service_at?: string | null
+          health_score?: number | null
           id?: string
+          is_recurring?: boolean | null
+          last_contact_at?: string | null
+          last_response_at?: string | null
+          last_service_at?: string | null
           name?: string
-          phone?: string | null
+          next_service_at?: string | null
+          notes?: string | null
+          phone?: string
+          recurring_amount?: number | null
+          recurring_frequency?: string | null
+          recurring_service_type?: string | null
+          referral_count?: number | null
+          referred_by_customer_id?: string | null
+          tags?: string[] | null
+          total_jobs?: number | null
+          total_spent?: number | null
           updated_at?: string
-          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_referred_by_customer_id_fkey"
+            columns: ["referred_by_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       demo_limits: {
         Row: {
@@ -1959,6 +2034,65 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      integrations: {
+        Row: {
+          access_token: string | null
+          account_id: string | null
+          account_name: string | null
+          business_id: string
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          platform: string
+          refresh_token: string | null
+          settings: Json | null
+          status: string | null
+          sync_error: string | null
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          platform: string
+          refresh_token?: string | null
+          settings?: Json | null
+          status?: string | null
+          sync_error?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          platform?: string
+          refresh_token?: string | null
+          settings?: Json | null
+          status?: string | null
+          sync_error?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integrations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invites: {
         Row: {
@@ -3822,13 +3956,18 @@ export type Database = {
           created_at: string
           current_step_index: number
           customer_email: string | null
+          customer_id: string | null
           customer_name: string
           customer_phone: string
           description: string | null
           email_sent_at: string | null
           email_status: string | null
+          external_job_id: string | null
           final_job_amount: number | null
           id: string
+          job_completed_at: string | null
+          job_scheduled_at: string | null
+          job_status: string | null
           last_message_at: string | null
           last_message_direction: string | null
           last_message_preview: string | null
@@ -3855,13 +3994,18 @@ export type Database = {
           created_at?: string
           current_step_index?: number
           customer_email?: string | null
+          customer_id?: string | null
           customer_name: string
           customer_phone: string
           description?: string | null
           email_sent_at?: string | null
           email_status?: string | null
+          external_job_id?: string | null
           final_job_amount?: number | null
           id?: string
+          job_completed_at?: string | null
+          job_scheduled_at?: string | null
+          job_status?: string | null
           last_message_at?: string | null
           last_message_direction?: string | null
           last_message_preview?: string | null
@@ -3888,13 +4032,18 @@ export type Database = {
           created_at?: string
           current_step_index?: number
           customer_email?: string | null
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string
           description?: string | null
           email_sent_at?: string | null
           email_status?: string | null
+          external_job_id?: string | null
           final_job_amount?: number | null
           id?: string
+          job_completed_at?: string | null
+          job_scheduled_at?: string | null
+          job_status?: string | null
           last_message_at?: string | null
           last_message_direction?: string | null
           last_message_preview?: string | null
@@ -3922,6 +4071,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
           {
@@ -3965,6 +4121,151 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      retention_messages: {
+        Row: {
+          booked_new_job: boolean | null
+          business_id: string
+          channel: string | null
+          content: string
+          created_at: string
+          customer_id: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          quote_id: string | null
+          response_at: string | null
+          response_received: boolean | null
+          sent_at: string | null
+          sequence_id: string | null
+          status: string | null
+          step_index: number | null
+          trigger_type: string
+        }
+        Insert: {
+          booked_new_job?: boolean | null
+          business_id: string
+          channel?: string | null
+          content: string
+          created_at?: string
+          customer_id: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          quote_id?: string | null
+          response_at?: string | null
+          response_received?: boolean | null
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_index?: number | null
+          trigger_type: string
+        }
+        Update: {
+          booked_new_job?: boolean | null
+          business_id?: string
+          channel?: string | null
+          content?: string
+          created_at?: string
+          customer_id?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          quote_id?: string | null
+          response_at?: string | null
+          response_received?: boolean | null
+          sent_at?: string | null
+          sequence_id?: string | null
+          status?: string | null
+          step_index?: number | null
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_messages_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retention_messages_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "retention_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_sequences: {
+        Row: {
+          business_id: string
+          conditions: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          steps: Json
+          trigger_days: number | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          conditions?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          steps?: Json
+          trigger_days?: number | null
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          conditions?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          steps?: Json
+          trigger_days?: number | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_sequences_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saas_addons: {
         Row: {
@@ -5697,6 +5998,124 @@ export type Database = {
           },
         ]
       }
+      webhook_configs: {
+        Row: {
+          business_id: string
+          created_at: string
+          daily_limit: number | null
+          id: string
+          is_active: boolean | null
+          last_event_at: string | null
+          requests_reset_at: string | null
+          requests_today: number | null
+          require_signature: boolean | null
+          total_events_failed: number | null
+          total_events_processed: number | null
+          total_events_received: number | null
+          updated_at: string
+          webhook_key: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          daily_limit?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_event_at?: string | null
+          requests_reset_at?: string | null
+          requests_today?: number | null
+          require_signature?: boolean | null
+          total_events_failed?: number | null
+          total_events_processed?: number | null
+          total_events_received?: number | null
+          updated_at?: string
+          webhook_key?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          daily_limit?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_event_at?: string | null
+          requests_reset_at?: string | null
+          requests_today?: number | null
+          require_signature?: boolean | null
+          total_events_failed?: number | null
+          total_events_processed?: number | null
+          total_events_received?: number | null
+          updated_at?: string
+          webhook_key?: string
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_configs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_events: {
+        Row: {
+          business_id: string
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          idempotency_key: string | null
+          payload: Json
+          processed_at: string | null
+          result_id: string | null
+          result_type: string | null
+          source_ip: string | null
+          status: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          idempotency_key?: string | null
+          payload: Json
+          processed_at?: string | null
+          result_id?: string | null
+          result_type?: string | null
+          source_ip?: string | null
+          status?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string | null
+          payload?: Json
+          processed_at?: string | null
+          result_id?: string | null
+          result_type?: string | null
+          source_ip?: string | null
+          status?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -5708,6 +6127,10 @@ export type Database = {
         Returns: string
       }
       advance_to_next_step: { Args: { p_quote_id: string }; Returns: undefined }
+      calculate_health_score: {
+        Args: { p_customer_id: string }
+        Returns: number
+      }
       calculate_scheduled_time: {
         Args: { base_time: string; channel?: string; company_id: string }
         Returns: string
@@ -5783,6 +6206,18 @@ export type Database = {
           p_template_key: string
           p_to_address?: string
           p_to_number?: string
+        }
+        Returns: string
+      }
+      find_or_create_customer: {
+        Args: {
+          p_address?: string
+          p_business_id: string
+          p_email?: string
+          p_external_id?: string
+          p_external_source?: string
+          p_name?: string
+          p_phone: string
         }
         Returns: string
       }
@@ -5882,6 +6317,7 @@ export type Database = {
         Args: { p_quote_id: string }
         Returns: undefined
       }
+      normalize_phone: { Args: { p_phone: string }; Returns: string }
       publish_booking_config: { Args: { p_company_id: string }; Returns: Json }
       replace_merge_fields: {
         Args: { p_content: string; p_quote_id: string }
@@ -5896,6 +6332,10 @@ export type Database = {
       test_email_configuration: {
         Args: { p_company_id: string; p_test_email: string }
         Returns: Json
+      }
+      update_customer_stats: {
+        Args: { p_customer_id: string }
+        Returns: undefined
       }
       user_in_company: { Args: { _company_id: string }; Returns: boolean }
       validate_subscription_access: {
