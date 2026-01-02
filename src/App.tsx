@@ -20,6 +20,7 @@ const CustomerDetailPage = lazy(() => import("./pages/CustomerDetailPage"));
 const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
 const BillingPage = lazy(() => import("./pages/BillingPage"));
 const RetentionSequencesPage = lazy(() => import("./pages/RetentionSequencesPage"));
+const LaunchChecklistPage = lazy(() => import("./pages/LaunchChecklistPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
@@ -153,6 +154,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <BillingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/launch-checklist"
+          element={
+            <ProtectedRoute>
+              <LaunchChecklistPage />
             </ProtectedRoute>
           }
         />
