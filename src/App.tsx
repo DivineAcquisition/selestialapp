@@ -21,6 +21,7 @@ const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
 const BillingPage = lazy(() => import("./pages/BillingPage"));
 const RetentionSequencesPage = lazy(() => import("./pages/RetentionSequencesPage"));
 const CampaignsPage = lazy(() => import("./pages/CampaignsPage"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const LaunchChecklistPage = lazy(() => import("./pages/LaunchChecklistPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
@@ -153,6 +154,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <CampaignsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />
