@@ -294,6 +294,8 @@ export type Database = {
           business_hours_end: string
           business_hours_start: string
           cancel_at_period_end: boolean | null
+          company_color: string | null
+          company_logo_url: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
@@ -308,7 +310,12 @@ export type Database = {
           notify_sms_response: boolean
           owner_name: string
           phone: string
+          quote_email_message: string | null
+          quote_email_subject: string | null
+          quote_sms_message: string | null
           quotes_limit: number | null
+          send_quote_email: boolean | null
+          send_quote_sms: boolean | null
           sequences_limit: number | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -329,6 +336,8 @@ export type Database = {
           business_hours_end?: string
           business_hours_start?: string
           cancel_at_period_end?: boolean | null
+          company_color?: string | null
+          company_logo_url?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -343,7 +352,12 @@ export type Database = {
           notify_sms_response?: boolean
           owner_name: string
           phone: string
+          quote_email_message?: string | null
+          quote_email_subject?: string | null
+          quote_sms_message?: string | null
           quotes_limit?: number | null
+          send_quote_email?: boolean | null
+          send_quote_sms?: boolean | null
           sequences_limit?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -364,6 +378,8 @@ export type Database = {
           business_hours_end?: string
           business_hours_start?: string
           cancel_at_period_end?: boolean | null
+          company_color?: string | null
+          company_logo_url?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -378,7 +394,12 @@ export type Database = {
           notify_sms_response?: boolean
           owner_name?: string
           phone?: string
+          quote_email_message?: string | null
+          quote_email_subject?: string | null
+          quote_sms_message?: string | null
           quotes_limit?: number | null
+          send_quote_email?: boolean | null
+          send_quote_sms?: boolean | null
           sequences_limit?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -3804,6 +3825,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           description: string | null
+          email_sent_at: string | null
+          email_status: string | null
           final_job_amount: number | null
           id: string
           last_message_at: string | null
@@ -3812,12 +3835,15 @@ export type Database = {
           lost_at: string | null
           lost_reason: string | null
           next_message_at: string | null
+          notification_error: string | null
           quote_amount: number
           sequence_completed_at: string | null
           sequence_id: string | null
           sequence_paused_at: string | null
           sequence_started_at: string | null
           service_type: string
+          sms_sent_at: string | null
+          sms_status: string | null
           status: string
           status_changed_at: string
           unread_count: number | null
@@ -3832,6 +3858,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           description?: string | null
+          email_sent_at?: string | null
+          email_status?: string | null
           final_job_amount?: number | null
           id?: string
           last_message_at?: string | null
@@ -3840,12 +3868,15 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           next_message_at?: string | null
+          notification_error?: string | null
           quote_amount: number
           sequence_completed_at?: string | null
           sequence_id?: string | null
           sequence_paused_at?: string | null
           sequence_started_at?: string | null
           service_type: string
+          sms_sent_at?: string | null
+          sms_status?: string | null
           status?: string
           status_changed_at?: string
           unread_count?: number | null
@@ -3860,6 +3891,8 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           description?: string | null
+          email_sent_at?: string | null
+          email_status?: string | null
           final_job_amount?: number | null
           id?: string
           last_message_at?: string | null
@@ -3868,12 +3901,15 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: string | null
           next_message_at?: string | null
+          notification_error?: string | null
           quote_amount?: number
           sequence_completed_at?: string | null
           sequence_id?: string | null
           sequence_paused_at?: string | null
           sequence_started_at?: string | null
           service_type?: string
+          sms_sent_at?: string | null
+          sms_status?: string | null
           status?: string
           status_changed_at?: string
           unread_count?: number | null
