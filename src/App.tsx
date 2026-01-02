@@ -15,6 +15,9 @@ const QuotesPage = lazy(() => import("./pages/QuotesPage"));
 const SequencesPage = lazy(() => import("./pages/SequencesPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const InboxPage = lazy(() => import("./pages/InboxPage"));
+const CustomersPage = lazy(() => import("./pages/CustomersPage"));
+const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
+const BillingPage = lazy(() => import("./pages/BillingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
@@ -108,6 +111,30 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <SequencesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute>
+              <CustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/connections"
+          element={
+            <ProtectedRoute>
+              <ConnectionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing"
+          element={
+            <ProtectedRoute>
+              <BillingPage />
             </ProtectedRoute>
           }
         />

@@ -5,15 +5,13 @@ import BusinessProfileForm from '@/components/settings/BusinessProfileForm';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import QuoteNotificationSettings from '@/components/settings/QuoteNotificationSettings';
 import BusinessHoursSettings from '@/components/settings/BusinessHoursSettings';
-import SubscriptionCard from '@/components/settings/SubscriptionCard';
 import DangerZone from '@/components/settings/DangerZone';
 import PhoneSetup from '@/components/settings/PhoneSetup';
-import ConnectionsSettings from '@/components/settings/ConnectionsSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Bell, Clock, CreditCard, Phone, Send, Loader2, Link2 } from 'lucide-react';
+import { User, Bell, Clock, Phone, Send, Loader2 } from 'lucide-react';
 import type { Business } from '@/types';
 
 export default function SettingsPage() {
@@ -138,7 +136,7 @@ export default function SettingsPage() {
     <Layout title="Settings">
       <div className="max-w-3xl">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4 hidden sm:block" />
               Profile
@@ -146,10 +144,6 @@ export default function SettingsPage() {
             <TabsTrigger value="phone" className="gap-2">
               <Phone className="h-4 w-4 hidden sm:block" />
               Phone
-            </TabsTrigger>
-            <TabsTrigger value="connections" className="gap-2">
-              <Link2 className="h-4 w-4 hidden sm:block" />
-              Connections
             </TabsTrigger>
             <TabsTrigger value="quote-alerts" className="gap-2">
               <Send className="h-4 w-4 hidden sm:block" />
@@ -163,10 +157,6 @@ export default function SettingsPage() {
               <Clock className="h-4 w-4 hidden sm:block" />
               Hours
             </TabsTrigger>
-            <TabsTrigger value="billing" className="gap-2">
-              <CreditCard className="h-4 w-4 hidden sm:block" />
-              Billing
-            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile" className="space-y-6">
@@ -176,10 +166,6 @@ export default function SettingsPage() {
           
           <TabsContent value="phone">
             <PhoneSetup />
-          </TabsContent>
-          
-          <TabsContent value="connections">
-            <ConnectionsSettings />
           </TabsContent>
           
           <TabsContent value="quote-alerts">
@@ -192,10 +178,6 @@ export default function SettingsPage() {
           
           <TabsContent value="hours">
             <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />
-          </TabsContent>
-          
-          <TabsContent value="billing">
-            <SubscriptionCard />
           </TabsContent>
         </Tabs>
       </div>

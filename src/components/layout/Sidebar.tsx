@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, Zap, Settings, LogOut, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, FileText, Zap, Settings, LogOut, MessageSquare, Users, Link2, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +10,10 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inbox', href: '/inbox', icon: MessageSquare, showBadge: true },
   { name: 'Quotes', href: '/quotes', icon: FileText },
+  { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Sequences', href: '/sequences', icon: Zap },
+  { name: 'Connections', href: '/connections', icon: Link2 },
+  { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
