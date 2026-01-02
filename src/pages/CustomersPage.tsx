@@ -206,7 +206,11 @@ export default function CustomersPage() {
                 </TableHeader>
                 <TableBody>
                   {customers.map((customer) => (
-                    <TableRow key={customer.id}>
+                    <TableRow 
+                      key={customer.id} 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => window.location.href = `/customers/${customer.id}`}
+                    >
                       <TableCell>
                         <div>
                           <p className="font-medium">{customer.name}</p>
