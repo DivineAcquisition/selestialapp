@@ -7,6 +7,8 @@ import {
   getWelcomeEmailHtml,
   getQuoteWonEmailHtml,
   getDailyDigestEmailHtml,
+  getCustomerReplyEmailHtml,
+  getCustomerReplyEmailText,
 } from '../_shared/email-templates.ts';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -104,6 +106,24 @@ serve(async (req) => {
         });
         break;
       }
+        
+      case 'customer_reply':
+        subject = `📱 ${data.customerName} replied to your follow-up`;
+        html = getCustomerReplyEmailHtml({
+          userName: data.userName as string,
+          customerName: data.customerName as string,
+          customerPhone: data.customerPhone as string,
+          message: data.message as string,
+          dashboardUrl: data.dashboardUrl as string,
+        });
+        text = getCustomerReplyEmailText({
+          userName: data.userName as string,
+          customerName: data.customerName as string,
+          customerPhone: data.customerPhone as string,
+          message: data.message as string,
+          dashboardUrl: data.dashboardUrl as string,
+        });
+        break;
         
       default:
         throw new Error(`Unknown email type: ${type}`);

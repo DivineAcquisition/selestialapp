@@ -324,3 +324,78 @@ If you didn't request a password reset, you can safely ignore this email.
 Selestial
   `.trim();
 }
+
+export function getCustomerReplyEmailHtml(data: { 
+  userName: string; 
+  customerName: string; 
+  customerPhone: string;
+  message: string;
+  dashboardUrl: string;
+}): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Replied - Selestial</title>
+  <style>${baseStyles}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">S</div>
+      <div class="brand">Selestial</div>
+    </div>
+    
+    <div class="content">
+      <h1>📱 Customer Replied!</h1>
+      
+      <p>Hi ${data.userName},</p>
+      
+      <p><strong>${data.customerName}</strong> (${data.customerPhone}) just replied to your follow-up message:</p>
+      
+      <div style="background: #F3F4F6; border-radius: 8px; padding: 16px; margin: 24px 0; border-left: 4px solid #4F46E5;">
+        <p style="margin: 0; font-style: italic;">"${data.message}"</p>
+      </div>
+      
+      <p>The automated sequence has been paused. You can resume it or mark the quote as won/lost from your dashboard.</p>
+      
+      <div style="text-align: center;">
+        <a href="${data.dashboardUrl}" class="button">View in Dashboard</a>
+      </div>
+      
+      <p class="muted">Tip: Respond quickly to increase your chances of winning the job!</p>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; ${new Date().getFullYear()} Selestial. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+export function getCustomerReplyEmailText(data: { 
+  userName: string; 
+  customerName: string; 
+  customerPhone: string;
+  message: string;
+  dashboardUrl: string;
+}): string {
+  return `
+Hi ${data.userName},
+
+${data.customerName} (${data.customerPhone}) just replied to your follow-up message:
+
+"${data.message}"
+
+The automated sequence has been paused. You can resume it or mark the quote as won/lost from your dashboard.
+
+View in Dashboard: ${data.dashboardUrl}
+
+Tip: Respond quickly to increase your chances of winning the job!
+
+---
+Selestial
+  `.trim();
+}

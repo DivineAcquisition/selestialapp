@@ -1796,6 +1796,60 @@ export type Database = {
         }
         Relationships: []
       }
+      inbound_messages: {
+        Row: {
+          business_id: string
+          content: string
+          created_at: string
+          external_id: string | null
+          from_phone: string
+          id: string
+          is_read: boolean
+          quote_id: string | null
+          read_at: string | null
+          to_phone: string
+        }
+        Insert: {
+          business_id: string
+          content: string
+          created_at?: string
+          external_id?: string | null
+          from_phone: string
+          id?: string
+          is_read?: boolean
+          quote_id?: string | null
+          read_at?: string | null
+          to_phone: string
+        }
+        Update: {
+          business_id?: string
+          content?: string
+          created_at?: string
+          external_id?: string | null
+          from_phone?: string
+          id?: string
+          is_read?: boolean
+          quote_id?: string | null
+          read_at?: string | null
+          to_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_messages_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_settings: {
         Row: {
           calendar: Json | null
@@ -3236,6 +3290,53 @@ export type Database = {
             columns: ["timesheet_id"]
             isOneToOne: false
             referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          business_id: string
+          created_at: string
+          friendly_name: string | null
+          id: string
+          mms_enabled: boolean
+          phone_number: string
+          phone_sid: string
+          sms_enabled: boolean
+          status: string
+          voice_enabled: boolean
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          friendly_name?: string | null
+          id?: string
+          mms_enabled?: boolean
+          phone_number: string
+          phone_sid: string
+          sms_enabled?: boolean
+          status?: string
+          voice_enabled?: boolean
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          friendly_name?: string | null
+          id?: string
+          mms_enabled?: boolean
+          phone_number?: string
+          phone_sid?: string
+          sms_enabled?: boolean
+          status?: string
+          voice_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -5448,6 +5549,11 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
+      adjust_to_business_hours: {
+        Args: { p_business_id: string; p_scheduled_time: string }
+        Returns: string
+      }
+      advance_to_next_step: { Args: { p_quote_id: string }; Returns: undefined }
       calculate_scheduled_time: {
         Args: { base_time: string; channel?: string; company_id: string }
         Returns: string
@@ -5619,6 +5725,11 @@ export type Database = {
         Returns: string
       }
       publish_booking_config: { Args: { p_company_id: string }; Returns: Json }
+      replace_merge_fields: {
+        Args: { p_content: string; p_quote_id: string }
+        Returns: string
+      }
+      schedule_next_message: { Args: { p_quote_id: string }; Returns: string }
       schedule_trial_reminders: { Args: never; Returns: undefined }
       seed_onboarding_tasks: { Args: { org_id: string }; Returns: undefined }
       set_active_org: { Args: { p_org: string }; Returns: undefined }
