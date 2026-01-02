@@ -9,11 +9,12 @@ import DangerZone from '@/components/settings/DangerZone';
 import PhoneSetup from '@/components/settings/PhoneSetup';
 import ReviewSettings from '@/components/settings/ReviewSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
+import AISettings from '@/components/settings/AISettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Bell, Clock, Phone, Send, Loader2, Star, CreditCard } from 'lucide-react';
+import { User, Bell, Clock, Phone, Send, Loader2, Star, CreditCard, Sparkles } from 'lucide-react';
 import type { Business } from '@/types';
 
 export default function SettingsPage() {
@@ -142,7 +143,7 @@ export default function SettingsPage() {
     <Layout title="Settings">
       <div className="max-w-3xl">
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4 hidden sm:block" />
               Profile
@@ -154,6 +155,10 @@ export default function SettingsPage() {
             <TabsTrigger value="payments" className="gap-2">
               <CreditCard className="h-4 w-4 hidden sm:block" />
               Payments
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-2">
+              <Sparkles className="h-4 w-4 hidden sm:block" />
+              AI
             </TabsTrigger>
             <TabsTrigger value="quote-alerts" className="gap-2">
               <Send className="h-4 w-4 hidden sm:block" />
@@ -184,6 +189,10 @@ export default function SettingsPage() {
           
           <TabsContent value="payments">
             <PaymentSettings />
+          </TabsContent>
+          
+          <TabsContent value="ai">
+            <AISettings />
           </TabsContent>
           
           <TabsContent value="quote-alerts">

@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import ConversationList from '@/components/inbox/ConversationList';
 import ConversationHeader from '@/components/inbox/ConversationHeader';
 import MessageThread from '@/components/inbox/MessageThread';
 import ReplyInput from '@/components/inbox/ReplyInput';
+import SmartReplySuggestions from '@/components/inbox/SmartReplySuggestions';
 import { Card } from '@/components/ui/card';
 import { useConversations, type Conversation } from '@/hooks/useConversations';
 import { useMessageThread } from '@/hooks/useMessageThread';
 import { useQuotes } from '@/hooks/useQuotes';
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
+import { useSmartReplies } from '@/hooks/useSmartReplies';
 import { Loader2, MessageSquare, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -29,12 +31,39 @@ export default function InboxPage() {
     sendReply 
   } = useMessageThread(selectedConversation?.id || null);
 
+  const {
+    loading: aiLoading,
+    suggestions,
+    generateReplies,
+    recordSelection,
+    provideFeedback,
+    clearSuggestions,
+  } = useSmartReplies();
+
+  // Generate AI suggestions when a new inbound message is selected
+  useEffect(() => {
+    if (messages.length > 0 && selectedConversation) {
+      const lastMessage = messages[messages.length - 1];
+      // Only generate for inbound messages
+      if (lastMessage.direction === 'inbound') {
+        generateReplies(
+          lastMessage.content,
+          undefined, // customer_id not directly available
+          selectedConversation.id,
+          messages.slice(-5)
+        );
+      }
+    }
+  }, [messages.length, selectedConversation?.id]);
+
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
+    clearSuggestions();
   };
 
   const handleBack = () => {
     setSelectedConversation(null);
+    clearSuggestions();
   };
 
   const handleViewQuote = () => {
@@ -49,7 +78,6 @@ export default function InboxPage() {
     const newStatus = selectedConversation.status === 'paused' ? 'active' : 'paused';
     await updateQuoteStatus(selectedConversation.id, newStatus);
     
-    // Update local state
     setSelectedConversation({
       ...selectedConversation,
       status: newStatus,
@@ -65,6 +93,28 @@ export default function InboxPage() {
       ...selectedConversation,
       status: 'won',
     });
+  };
+
+  const handleSelectSuggestion = async (text: string, index: number, wasEdited: boolean) => {
+    const result = await sendReply(text);
+    if (!result.error) {
+      await recordSelection(index + 1, wasEdited, wasEdited ? text : undefined);
+      clearSuggestions();
+    }
+  };
+
+  const handleRegenerate = () => {
+    if (messages.length > 0 && selectedConversation) {
+      const lastInbound = [...messages].reverse().find(m => m.direction === 'inbound');
+      if (lastInbound) {
+        generateReplies(
+          lastInbound.content,
+          undefined,
+          selectedConversation.id,
+          messages.slice(-5)
+        );
+      }
+    }
   };
 
   const isLoading = loadingConversations || loadingPhone;
@@ -153,10 +203,22 @@ export default function InboxPage() {
                   </p>
                 </div>
               ) : (
-                <ReplyInput
-                  onSend={sendReply}
-                  sending={sending}
-                />
+                <>
+                  {/* AI Smart Reply Suggestions */}
+                  <SmartReplySuggestions
+                    suggestions={suggestions}
+                    loading={aiLoading}
+                    onSelectSuggestion={handleSelectSuggestion}
+                    onRegenerate={handleRegenerate}
+                    onFeedback={provideFeedback}
+                    onDismiss={clearSuggestions}
+                  />
+
+                  <ReplyInput
+                    onSend={sendReply}
+                    sending={sending}
+                  />
+                </>
               )}
             </>
           ) : (
