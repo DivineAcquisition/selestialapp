@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import BusinessProfileForm from '@/components/settings/BusinessProfileForm';
 import NotificationSettings from '@/components/settings/NotificationSettings';
+import QuoteNotificationSettings from '@/components/settings/QuoteNotificationSettings';
 import BusinessHoursSettings from '@/components/settings/BusinessHoursSettings';
 import SubscriptionCard from '@/components/settings/SubscriptionCard';
 import DangerZone from '@/components/settings/DangerZone';
@@ -11,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Bell, Clock, CreditCard, Phone, Loader2 } from 'lucide-react';
+import { User, Bell, Clock, CreditCard, Phone, Send, Loader2 } from 'lucide-react';
 import type { Business } from '@/types';
 
 export default function SettingsPage() {
@@ -136,7 +137,7 @@ export default function SettingsPage() {
     <Layout title="Settings">
       <div className="max-w-3xl">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4 hidden sm:block" />
               Profile
@@ -145,9 +146,13 @@ export default function SettingsPage() {
               <Phone className="h-4 w-4 hidden sm:block" />
               Phone
             </TabsTrigger>
+            <TabsTrigger value="quote-alerts" className="gap-2">
+              <Send className="h-4 w-4 hidden sm:block" />
+              Quotes
+            </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2">
               <Bell className="h-4 w-4 hidden sm:block" />
-              Notifications
+              Alerts
             </TabsTrigger>
             <TabsTrigger value="hours" className="gap-2">
               <Clock className="h-4 w-4 hidden sm:block" />
@@ -166,6 +171,10 @@ export default function SettingsPage() {
           
           <TabsContent value="phone">
             <PhoneSetup />
+          </TabsContent>
+          
+          <TabsContent value="quote-alerts">
+            <QuoteNotificationSettings />
           </TabsContent>
           
           <TabsContent value="notifications">

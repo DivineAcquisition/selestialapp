@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -19,8 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import QuoteStatusBadge from './QuoteStatusBadge';
 import { useMessages } from '@/hooks/useMessages';
+import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
 import { 
@@ -38,7 +41,8 @@ import {
   CheckCircle,
   Send,
   AlertCircle,
-  User
+  User,
+  RefreshCw
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -55,7 +59,9 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const [showLostDialog, setShowLostDialog] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [resending, setResending] = useState(false);
   const { messages, loading: messagesLoading } = useMessages(quote.id);
+  const { toast } = useToast();
   
   const daysSince = getDaysSince(quote.created_at);
   
@@ -88,6 +94,30 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   
   const handleTogglePause = () => {
     handleStatusChange(quote.status === 'paused' ? 'active' : 'paused');
+  };
+
+  const handleResendNotifications = async () => {
+    setResending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-quote-notification', {
+        body: { quoteId: quote.id },
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Notifications sent',
+        description: `Email: ${data.email?.sent ? '✓' : '✗'}, SMS: ${data.sms?.sent ? '✓' : '✗'}`,
+      });
+    } catch (err) {
+      toast({
+        title: 'Failed to send',
+        description: err instanceof Error ? err.message : 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setResending(false);
+    }
   };
   
   return (
@@ -175,6 +205,57 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               <p className="text-sm text-foreground">{quote.description}</p>
             </div>
           )}
+
+          {/* Notification Status */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-muted-foreground">Notifications</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResendNotifications}
+                disabled={resending}
+                className="h-7 text-xs"
+              >
+                {resending ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                )}
+                Resend
+              </Button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-foreground">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                Email:
+                {quote.email_sent_at ? (
+                  <span className="flex items-center gap-1 text-emerald-600">
+                    <CheckCircle className="h-3 w-3" />
+                    Sent {formatDistanceToNow(new Date(quote.email_sent_at), { addSuffix: true })}
+                  </span>
+                ) : quote.email_status === 'failed' ? (
+                  <span className="text-destructive">Failed</span>
+                ) : (
+                  <span className="text-muted-foreground">Not sent</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-foreground">
+                <Send className="h-4 w-4 text-muted-foreground" />
+                SMS:
+                {quote.sms_sent_at ? (
+                  <span className="flex items-center gap-1 text-emerald-600">
+                    <CheckCircle className="h-3 w-3" />
+                    Sent {formatDistanceToNow(new Date(quote.sms_sent_at), { addSuffix: true })}
+                  </span>
+                ) : quote.sms_status === 'failed' ? (
+                  <span className="text-destructive">Failed</span>
+                ) : (
+                  <span className="text-muted-foreground">Not sent</span>
+                )}
+              </div>
+            </div>
+          </div>
           
           <Separator />
           

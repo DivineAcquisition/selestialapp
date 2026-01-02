@@ -57,6 +57,16 @@ export function useQuotes() {
         p_quote_id: data.id,
       });
 
+      // Send quote notifications automatically (email + SMS)
+      try {
+        await supabase.functions.invoke('send-quote-notification', {
+          body: { quoteId: data.id },
+        });
+      } catch (notifyError) {
+        // Don't fail the whole operation if notification fails
+        console.error('Failed to send quote notifications:', notifyError);
+      }
+
       setQuotes(prev => [data, ...prev]);
       return { data, error: null };
     } catch (err) {
