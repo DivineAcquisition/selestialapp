@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { StatsCard } from "@/components/dashboard/StatsCard";
+import StatsCard from "@/components/dashboard/StatsCard";
 import { QuotesTable } from "@/components/dashboard/QuotesTable";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { AddQuoteDialog } from "@/components/dashboard/AddQuoteDialog";
@@ -45,34 +45,30 @@ const Index = () => {
             <StatsCard
               title="Total Quotes"
               value="24"
-              change="+3 this week"
-              changeType="positive"
+              subtitle="+3 this week"
               icon={FileText}
-              delay={0}
             />
             <StatsCard
               title="Pipeline Value"
               value="$47,850"
-              change="+12% vs last month"
-              changeType="positive"
+              subtitle="+12% vs last month"
               icon={DollarSign}
-              delay={50}
+              accentColor="success"
             />
             <StatsCard
               title="Conversion Rate"
               value="34%"
-              change="+5% improvement"
-              changeType="positive"
+              subtitle="+5% improvement"
               icon={TrendingUp}
-              delay={100}
+              trend={{ value: 5, isPositive: true }}
+              accentColor="success"
             />
             <StatsCard
               title="Messages Sent"
               value="156"
-              change="89% delivery rate"
-              changeType="neutral"
+              subtitle="89% delivery rate"
               icon={MessageSquare}
-              delay={150}
+              accentColor="warning"
             />
           </div>
 

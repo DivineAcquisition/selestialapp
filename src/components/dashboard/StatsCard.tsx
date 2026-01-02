@@ -1,52 +1,78 @@
-import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
-  value: string | number;
-  change?: string;
-  changeType?: "positive" | "negative" | "neutral";
+  value: string;
+  subtitle?: string;
   icon: LucideIcon;
-  iconColor?: string;
-  delay?: number;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+  };
+  accentColor?: 'default' | 'success' | 'warning' | 'danger';
 }
 
-export function StatsCard({ 
-  title, 
-  value, 
-  change, 
-  changeType = "neutral",
+const accentStyles = {
+  default: {
+    bg: 'bg-indigo-100',
+    text: 'text-indigo-600',
+  },
+  success: {
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-600',
+  },
+  warning: {
+    bg: 'bg-amber-100',
+    text: 'text-amber-600',
+  },
+  danger: {
+    bg: 'bg-red-100',
+    text: 'text-red-600',
+  },
+};
+
+export default function StatsCard({
+  title,
+  value,
+  subtitle,
   icon: Icon,
-  iconColor = "text-primary",
-  delay = 0
+  trend,
+  accentColor = 'default',
 }: StatsCardProps) {
+  const accent = accentStyles[accentColor];
+  
   return (
-    <div 
-      className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 animate-slide-up"
-      style={{ animationDelay: `${delay}ms` }}
-    >
+    <Card className="p-5">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold text-card-foreground tracking-tight">{value}</p>
-          {change && (
-            <p className={cn(
-              "text-sm font-medium",
-              changeType === "positive" && "text-success",
-              changeType === "negative" && "text-destructive",
-              changeType === "neutral" && "text-muted-foreground"
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+          
+          {subtitle && (
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          )}
+          
+          {trend && (
+            <div className={cn(
+              "flex items-center gap-1 text-xs font-medium",
+              trend.isPositive ? "text-emerald-600" : "text-red-600"
             )}>
-              {change}
-            </p>
+              {trend.isPositive ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {trend.value}%
+            </div>
           )}
         </div>
-        <div className={cn(
-          "p-3 rounded-xl bg-accent",
-          iconColor
-        )}>
-          <Icon size={24} />
+        
+        <div className={cn("p-2.5 rounded-lg", accent.bg)}>
+          <Icon className={cn("h-5 w-5", accent.text)} />
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
