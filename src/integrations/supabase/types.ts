@@ -242,6 +242,50 @@ export type Database = {
           },
         ]
       }
+      billing_events: {
+        Row: {
+          business_id: string | null
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          stripe_customer_id: string | null
+          stripe_event_id: string | null
+          stripe_event_type: string | null
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          stripe_event_type?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_event_id?: string | null
+          stripe_event_type?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           auto_start_sequence: boolean
@@ -249,8 +293,10 @@ export type Database = {
           business_hours_enabled: boolean
           business_hours_end: string
           business_hours_start: string
+          cancel_at_period_end: boolean | null
           created_at: string
           current_period_end: string | null
+          current_period_start: string | null
           default_sequence_id: string | null
           email: string
           id: string
@@ -262,7 +308,10 @@ export type Database = {
           notify_sms_response: boolean
           owner_name: string
           phone: string
+          quotes_limit: number | null
+          sequences_limit: number | null
           stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_plan: string | null
           subscription_status: string
           timezone: string
@@ -279,8 +328,10 @@ export type Database = {
           business_hours_enabled?: boolean
           business_hours_end?: string
           business_hours_start?: string
+          cancel_at_period_end?: boolean | null
           created_at?: string
           current_period_end?: string | null
+          current_period_start?: string | null
           default_sequence_id?: string | null
           email: string
           id?: string
@@ -292,7 +343,10 @@ export type Database = {
           notify_sms_response?: boolean
           owner_name: string
           phone: string
+          quotes_limit?: number | null
+          sequences_limit?: number | null
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_plan?: string | null
           subscription_status?: string
           timezone?: string
@@ -309,8 +363,10 @@ export type Database = {
           business_hours_enabled?: boolean
           business_hours_end?: string
           business_hours_start?: string
+          cancel_at_period_end?: boolean | null
           created_at?: string
           current_period_end?: string | null
+          current_period_start?: string | null
           default_sequence_id?: string | null
           email?: string
           id?: string
@@ -322,7 +378,10 @@ export type Database = {
           notify_sms_response?: boolean
           owner_name?: string
           phone?: string
+          quotes_limit?: number | null
+          sequences_limit?: number | null
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_plan?: string | null
           subscription_status?: string
           timezone?: string
