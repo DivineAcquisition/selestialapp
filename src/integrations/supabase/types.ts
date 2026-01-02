@@ -286,6 +286,175 @@ export type Database = {
           },
         ]
       }
+      business_goals: {
+        Row: {
+          achieved_at: string | null
+          business_id: string
+          created_at: string
+          current_value: number | null
+          ends_at: string
+          goal_name: string
+          id: string
+          metric_key: string
+          period_type: string | null
+          progress_pct: number | null
+          starts_at: string
+          status: string | null
+          target_value: number
+          updated_at: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          business_id: string
+          created_at?: string
+          current_value?: number | null
+          ends_at: string
+          goal_name: string
+          id?: string
+          metric_key: string
+          period_type?: string | null
+          progress_pct?: number | null
+          starts_at: string
+          status?: string | null
+          target_value: number
+          updated_at?: string
+        }
+        Update: {
+          achieved_at?: string | null
+          business_id?: string
+          created_at?: string
+          current_value?: number | null
+          ends_at?: string
+          goal_name?: string
+          id?: string
+          metric_key?: string
+          period_type?: string | null
+          progress_pct?: number | null
+          starts_at?: string
+          status?: string | null
+          target_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_goals_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_metrics: {
+        Row: {
+          avg_job_value: number | null
+          avg_response_time_minutes: number | null
+          avg_review_rating: number | null
+          business_id: string
+          campaign_bookings: number | null
+          campaign_messages_sent: number | null
+          campaign_responses: number | null
+          churn_rate: number | null
+          churned_customers: number | null
+          created_at: string
+          customer_retention_rate: number | null
+          first_response_total: number | null
+          first_response_under_1hr: number | null
+          id: string
+          messages_received: number | null
+          messages_sent: number | null
+          new_customers: number | null
+          one_time_revenue: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          quote_win_rate: number | null
+          quotes_created: number | null
+          quotes_lost: number | null
+          quotes_won: number | null
+          recurring_revenue: number | null
+          repeat_customers: number | null
+          response_rate: number | null
+          reviews_received: number | null
+          total_active_customers: number | null
+          total_revenue: number | null
+        }
+        Insert: {
+          avg_job_value?: number | null
+          avg_response_time_minutes?: number | null
+          avg_review_rating?: number | null
+          business_id: string
+          campaign_bookings?: number | null
+          campaign_messages_sent?: number | null
+          campaign_responses?: number | null
+          churn_rate?: number | null
+          churned_customers?: number | null
+          created_at?: string
+          customer_retention_rate?: number | null
+          first_response_total?: number | null
+          first_response_under_1hr?: number | null
+          id?: string
+          messages_received?: number | null
+          messages_sent?: number | null
+          new_customers?: number | null
+          one_time_revenue?: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          quote_win_rate?: number | null
+          quotes_created?: number | null
+          quotes_lost?: number | null
+          quotes_won?: number | null
+          recurring_revenue?: number | null
+          repeat_customers?: number | null
+          response_rate?: number | null
+          reviews_received?: number | null
+          total_active_customers?: number | null
+          total_revenue?: number | null
+        }
+        Update: {
+          avg_job_value?: number | null
+          avg_response_time_minutes?: number | null
+          avg_review_rating?: number | null
+          business_id?: string
+          campaign_bookings?: number | null
+          campaign_messages_sent?: number | null
+          campaign_responses?: number | null
+          churn_rate?: number | null
+          churned_customers?: number | null
+          created_at?: string
+          customer_retention_rate?: number | null
+          first_response_total?: number | null
+          first_response_under_1hr?: number | null
+          id?: string
+          messages_received?: number | null
+          messages_sent?: number | null
+          new_customers?: number | null
+          one_time_revenue?: number | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          quote_win_rate?: number | null
+          quotes_created?: number | null
+          quotes_lost?: number | null
+          quotes_won?: number | null
+          recurring_revenue?: number | null
+          repeat_customers?: number | null
+          response_rate?: number | null
+          reviews_received?: number | null
+          total_active_customers?: number | null
+          total_revenue?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_metrics_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           accept_online_payments: boolean | null
@@ -2243,6 +2412,66 @@ export type Database = {
         }
         Relationships: []
       }
+      industry_benchmarks: {
+        Row: {
+          average_value: number | null
+          category: string | null
+          created_at: string
+          decimal_places: number | null
+          display_format: string | null
+          excellent_threshold: number | null
+          good_threshold: number | null
+          higher_is_better: boolean | null
+          id: string
+          industry_slug: string
+          metric_description: string | null
+          metric_key: string
+          metric_name: string
+          metric_unit: string | null
+          poor_threshold: number | null
+          priority: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_value?: number | null
+          category?: string | null
+          created_at?: string
+          decimal_places?: number | null
+          display_format?: string | null
+          excellent_threshold?: number | null
+          good_threshold?: number | null
+          higher_is_better?: boolean | null
+          id?: string
+          industry_slug: string
+          metric_description?: string | null
+          metric_key: string
+          metric_name: string
+          metric_unit?: string | null
+          poor_threshold?: number | null
+          priority?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_value?: number | null
+          category?: string | null
+          created_at?: string
+          decimal_places?: number | null
+          display_format?: string | null
+          excellent_threshold?: number | null
+          good_threshold?: number | null
+          higher_is_better?: boolean | null
+          id?: string
+          industry_slug?: string
+          metric_description?: string | null
+          metric_key?: string
+          metric_name?: string
+          metric_unit?: string | null
+          poor_threshold?: number | null
+          priority?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       industry_service_types: {
         Row: {
           created_at: string | null
@@ -3970,6 +4199,71 @@ export type Database = {
             columns: ["timesheet_id"]
             isOneToOne: false
             referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_alerts: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          alert_type: string
+          business_id: string
+          created_at: string
+          current_value: number | null
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          message: string
+          metric_key: string | null
+          previous_value: number | null
+          read_at: string | null
+          severity: string | null
+          threshold_value: number | null
+          title: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          alert_type: string
+          business_id: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message: string
+          metric_key?: string | null
+          previous_value?: number | null
+          read_at?: string | null
+          severity?: string | null
+          threshold_value?: number | null
+          title: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          alert_type?: string
+          business_id?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          metric_key?: string | null
+          previous_value?: number | null
+          read_at?: string | null
+          severity?: string | null
+          threshold_value?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]

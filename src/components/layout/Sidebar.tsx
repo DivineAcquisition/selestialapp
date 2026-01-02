@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, Zap, Settings, LogOut, MessageSquare, Users, Link2, CreditCard, RefreshCw, Megaphone } from 'lucide-react';
+import { LayoutDashboard, FileText, Zap, Settings, LogOut, MessageSquare, Users, Link2, CreditCard, RefreshCw, Megaphone, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Sequences', href: '/sequences', icon: Zap },
   { name: 'Retention', href: '/retention', icon: RefreshCw },
   { name: 'Campaigns', href: '/campaigns', icon: Megaphone },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Connections', href: '/connections', icon: Link2 },
   { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
