@@ -23,6 +23,7 @@ const RetentionSequencesPage = lazy(() => import("./pages/RetentionSequencesPage
 const CampaignsPage = lazy(() => import("./pages/CampaignsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const LaunchChecklistPage = lazy(() => import("./pages/LaunchChecklistPage"));
+const AdminTestPage = lazy(() => import("./pages/AdminTestPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
@@ -186,6 +187,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <LaunchChecklistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/test"
+          element={
+            <ProtectedRoute>
+              <AdminTestPage />
             </ProtectedRoute>
           }
         />
