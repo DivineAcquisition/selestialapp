@@ -1,3 +1,9 @@
+import Layout from '@/components/layout/Layout';
+
 export default function QuotesPage() {
-  return <div className="p-8"><h1 className="text-2xl font-bold">Quotes</h1></div>;
+  return (
+    <Layout title="Quotes">
+      <p className="text-muted-foreground">Quotes content coming soon</p>
+    </Layout>
+  );
 }

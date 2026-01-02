@@ -1,3 +1,9 @@
+import Layout from '@/components/layout/Layout';
+
 export default function SettingsPage() {
-  return <div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>;
+  return (
+    <Layout title="Settings">
+      <p className="text-muted-foreground">Settings content coming soon</p>
+    </Layout>
+  );
 }
