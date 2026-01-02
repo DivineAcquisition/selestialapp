@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import ConversationList from '@/components/inbox/ConversationList';
 import ConversationHeader from '@/components/inbox/ConversationHeader';
 import MessageThread from '@/components/inbox/MessageThread';
 import ReplyInput from '@/components/inbox/ReplyInput';
+import SmartReplySuggestions from '@/components/inbox/SmartReplySuggestions';
 import { Card } from '@/components/ui/card';
 import { useConversations, type Conversation } from '@/hooks/useConversations';
 import { useMessageThread } from '@/hooks/useMessageThread';
 import { useQuotes } from '@/hooks/useQuotes';
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
+import { useSmartReplies } from '@/hooks/useSmartReplies';
 import { Loader2, MessageSquare, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,6 +23,7 @@ export default function InboxPage() {
   const { phoneNumber, loading: loadingPhone } = usePhoneNumber();
   
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const lastProcessedMessageRef = useRef<string | null>(null);
   
   const { 
     messages, 
@@ -28,6 +31,79 @@ export default function InboxPage() {
     sending, 
     sendReply 
   } = useMessageThread(selectedConversation?.id || null);
+
+  const {
+    loading: aiLoading,
+    suggestions,
+    generateReplies,
+    recordSelection,
+    provideFeedback,
+    clearSuggestions,
+  } = useSmartReplies();
+
+  // Generate AI suggestions when a new inbound message arrives
+  useEffect(() => {
+    if (messages.length === 0 || !selectedConversation) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    
+    // Only generate for inbound messages that we haven't processed yet
+    if (
+      lastMessage.direction === 'inbound' &&
+      lastMessage.id !== lastProcessedMessageRef.current
+    ) {
+      lastProcessedMessageRef.current = lastMessage.id;
+      
+      // Convert messages to the format expected by generateReplies
+      const conversationHistory = messages.map(m => ({
+        direction: m.direction,
+        content: m.content,
+      }));
+      
+      generateReplies(
+        lastMessage.content,
+        undefined, // customer_id not available from conversation
+        selectedConversation.id,
+        conversationHistory
+      );
+    }
+  }, [messages, selectedConversation, generateReplies]);
+
+  // Clear suggestions when switching conversations
+  useEffect(() => {
+    clearSuggestions();
+    lastProcessedMessageRef.current = null;
+  }, [selectedConversation?.id, clearSuggestions]);
+
+  // Handle selecting an AI suggestion
+  const handleSelectSuggestion = async (text: string, index: number, wasEdited: boolean) => {
+    const result = await sendReply(text);
+    if (!result.error) {
+      await recordSelection(index + 1, wasEdited, wasEdited ? text : undefined);
+      clearSuggestions();
+    }
+  };
+
+  // Handle regenerating suggestions
+  const handleRegenerate = () => {
+    const lastInbound = messages
+      .filter(m => m.direction === 'inbound')
+      .pop();
+    
+    if (lastInbound && selectedConversation) {
+      const conversationHistory = messages.map(m => ({
+        direction: m.direction,
+        content: m.content,
+      }));
+      
+      generateReplies(
+        lastInbound.content,
+        undefined,
+        selectedConversation.id,
+        conversationHistory
+      );
+    }
+  };
 
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
@@ -153,10 +229,25 @@ export default function InboxPage() {
                   </p>
                 </div>
               ) : (
-                <ReplyInput
-                  onSend={sendReply}
-                  sending={sending}
-                />
+                <>
+                  {/* AI Smart Reply Suggestions */}
+                  {(suggestions.length > 0 || aiLoading) && (
+                    <div className="px-4 py-2 border-t border-border">
+                      <SmartReplySuggestions
+                        suggestions={suggestions}
+                        loading={aiLoading}
+                        onSelectSuggestion={handleSelectSuggestion}
+                        onRegenerate={handleRegenerate}
+                        onFeedback={provideFeedback}
+                        onDismiss={clearSuggestions}
+                      />
+                    </div>
+                  )}
+                  <ReplyInput
+                    onSend={sendReply}
+                    sending={sending}
+                  />
+                </>
               )}
             </>
           ) : (
