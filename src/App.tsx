@@ -29,6 +29,8 @@ const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
 const ResendVerificationPage = lazy(() => import("./pages/ResendVerificationPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const PaymentSuccessPage = lazy(() => import("./pages/PaymentSuccessPage"));
+const PaymentCancelledPage = lazy(() => import("./pages/PaymentCancelledPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -80,6 +82,10 @@ function AppRoutes() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/resend-verification" element={<ResendVerificationPage />} />
+        
+        {/* Payment pages (public) */}
+        <Route path="/pay/success" element={<PaymentSuccessPage />} />
+        <Route path="/pay/cancelled" element={<PaymentCancelledPage />} />
         
         {/* Onboarding (requires auth but no business) */}
         <Route path="/onboarding" element={<OnboardingPage />} />

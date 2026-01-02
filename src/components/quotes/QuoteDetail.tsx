@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import QuoteStatusBadge from './QuoteStatusBadge';
 import { useMessages } from '@/hooks/useMessages';
+import { useStripeConnect } from '@/hooks/useStripeConnect';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
@@ -42,7 +43,10 @@ import {
   Send,
   AlertCircle,
   User,
-  RefreshCw
+  RefreshCw,
+  CreditCard,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -60,7 +64,9 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const [lostReason, setLostReason] = useState('');
   const [updating, setUpdating] = useState(false);
   const [resending, setResending] = useState(false);
+  const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false);
   const { messages, loading: messagesLoading } = useMessages(quote.id);
+  const { status: stripeStatus, createPaymentLink } = useStripeConnect();
   const { toast } = useToast();
   
   const daysSince = getDaysSince(quote.created_at);
@@ -117,6 +123,47 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
       });
     } finally {
       setResending(false);
+    }
+  };
+
+  const handleGeneratePaymentLink = async () => {
+    setGeneratingPaymentLink(true);
+    try {
+      const { data, error } = await createPaymentLink(quote.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Payment link created',
+        description: 'The payment link has been generated and is ready to share.',
+      });
+      
+      // Copy to clipboard
+      if (data?.url) {
+        await navigator.clipboard.writeText(data.url);
+        toast({
+          title: 'Copied to clipboard',
+          description: 'Payment link copied to your clipboard.',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Failed to create payment link',
+        description: err instanceof Error ? err.message : 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingPaymentLink(false);
+    }
+  };
+
+  const handleCopyPaymentLink = async () => {
+    if (quote.payment_link_url) {
+      await navigator.clipboard.writeText(quote.payment_link_url);
+      toast({
+        title: 'Copied',
+        description: 'Payment link copied to clipboard.',
+      });
     }
   };
   
@@ -256,6 +303,70 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               </div>
             </div>
           </div>
+          
+          {/* Payment Status Section */}
+          {stripeStatus.connected && stripeStatus.chargesEnabled && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Payment</h3>
+              <div className="space-y-3">
+                {/* Payment Status */}
+                <div className="flex items-center gap-2 text-sm">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  {quote.payment_status === 'paid' ? (
+                    <span className="flex items-center gap-1 text-emerald-600">
+                      <CheckCircle className="h-3 w-3" />
+                      Paid {quote.paid_at && formatDistanceToNow(new Date(quote.paid_at), { addSuffix: true })}
+                      {quote.paid_amount && ` - ${formatCurrency(quote.paid_amount / 100)}`}
+                    </span>
+                  ) : quote.payment_status === 'pending' ? (
+                    <span className="text-amber-600">Payment pending</span>
+                  ) : quote.payment_status === 'refunded' ? (
+                    <span className="text-muted-foreground">Refunded</span>
+                  ) : (
+                    <span className="text-muted-foreground">Not paid</span>
+                  )}
+                </div>
+                
+                {/* Payment Link */}
+                {quote.payment_link_url ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={handleCopyPaymentLink}
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy Payment Link
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => window.open(quote.payment_link_url!, '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : quote.status !== 'won' && quote.status !== 'lost' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-8 text-xs"
+                    onClick={handleGeneratePaymentLink}
+                    disabled={generatingPaymentLink}
+                  >
+                    {generatingPaymentLink ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <CreditCard className="h-3 w-3 mr-1" />
+                    )}
+                    Generate Payment Link
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           
           <Separator />
           
