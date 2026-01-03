@@ -23,6 +23,8 @@ import {
   Play,
   Settings,
   Activity,
+  Copy,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -443,6 +445,68 @@ export default function AdminTestPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Auth Config Debug Panel */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">Auth Configuration</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { 
+                  label: 'Supabase URL', 
+                  value: import.meta.env.VITE_SUPABASE_URL || 'Not set'
+                },
+                { 
+                  label: 'Frontend Origin', 
+                  value: window.location.origin 
+                },
+                { 
+                  label: 'Expected Google Callback', 
+                  value: `${import.meta.env.VITE_SUPABASE_URL || '[VITE_SUPABASE_URL]'}/auth/v1/callback`
+                },
+                { 
+                  label: 'App Redirect URL', 
+                  value: `${window.location.origin}/auth/callback`
+                },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground font-mono break-all">{item.value}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(item.value);
+                      toast({ title: 'Copied!', description: item.label });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                className="w-full mt-2"
+                onClick={async () => {
+                  const { data } = await supabase.auth.getSession();
+                  toast({ 
+                    title: data?.session ? 'Session Active' : 'No Session',
+                    description: data?.session ? `User: ${data.session.user.email}` : 'User not logged in'
+                  });
+                }}
+              >
+                Check Current Session
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Launch Checklist */}
         <Card>
