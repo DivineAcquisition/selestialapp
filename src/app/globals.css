@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(240 15% 8%);
+  --color-foreground: hsl(240 10% 95%);
+  --color-card: hsl(240 15% 10%);
+  --color-card-foreground: hsl(240 10% 95%);
+  --color-popover: hsl(240 15% 10%);
+  --color-popover-foreground: hsl(240 10% 95%);
+  --color-primary: hsl(259 80% 65%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(240 12% 16%);
+  --color-secondary-foreground: hsl(240 10% 90%);
+  --color-muted: hsl(240 12% 16%);
+  --color-muted-foreground: hsl(240 5% 55%);
+  --color-accent: hsl(259 40% 18%);
+  --color-accent-foreground: hsl(259 80% 75%);
+  --color-destructive: hsl(0 70% 50%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(240 12% 18%);
+  --color-input: hsl(240 12% 18%);
+  --color-ring: hsl(259 80% 65%);
+  --color-success: hsl(142 70% 45%);
+  --color-success-foreground: hsl(0 0% 100%);
+  --color-warning: hsl(38 90% 55%);
+  --color-warning-foreground: hsl(0 0% 100%);
+  --color-sidebar-background: hsl(240 15% 6%);
+  --color-sidebar-foreground: hsl(240 10% 80%);
+  --color-sidebar-primary: hsl(259 80% 65%);
+  --color-sidebar-primary-foreground: hsl(0 0% 100%);
+  --color-sidebar-accent: hsl(259 40% 18%);
+  --color-sidebar-accent-foreground: hsl(259 80% 75%);
+  --color-sidebar-border: hsl(240 12% 15%);
+  --color-sidebar-ring: hsl(259 80% 65%);
+  
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+}
+
+:root {
+  --background: 240 15% 8%;
+  --foreground: 240 10% 95%;
+  --card: 240 15% 10%;
+  --card-foreground: 240 10% 95%;
+  --popover: 240 15% 10%;
+  --popover-foreground: 240 10% 95%;
+  --primary: 259 80% 65%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 259 80% 75%;
+  --secondary: 240 12% 16%;
+  --secondary-foreground: 240 10% 90%;
+  --muted: 240 12% 16%;
+  --muted-foreground: 240 5% 55%;
+  --accent: 259 40% 18%;
+  --accent-foreground: 259 80% 75%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 90% 55%;
+  --warning-foreground: 0 0% 100%;
+  --border: 240 12% 18%;
+  --input: 240 12% 18%;
+  --ring: 259 80% 65%;
+  --radius: 0.75rem;
+  --gradient-primary: linear-gradient(135deg, hsl(259 80% 60%) 0%, hsl(240 70% 50%) 100%);
+  --gradient-subtle: linear-gradient(180deg, hsl(240 15% 8%) 0%, hsl(240 15% 6%) 100%);
+  --gradient-card: linear-gradient(145deg, hsl(240 15% 12%) 0%, hsl(240 15% 10%) 100%);
+  --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.15);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+  --shadow-glow: 0 0 40px hsl(259 80% 60% / 0.25);
+  --sidebar-background: 240 15% 6%;
+  --sidebar-foreground: 240 10% 80%;
+  --sidebar-primary: 259 80% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 259 40% 18%;
+  --sidebar-accent-foreground: 259 80% 75%;
+  --sidebar-border: 240 12% 15%;
+  --sidebar-ring: 259 80% 65%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-subtle {
+  background: var(--gradient-subtle);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
