@@ -44,7 +44,7 @@ export default function Layout({
       <div className="flex-1 flex flex-col min-w-0">
         <Header title={title} subtitle={subtitle} actions={actions} />
         
-        <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-5 lg:p-6 overflow-auto">
           <div className={`mx-auto ${maxWidthClasses[maxWidth]} animate-fade-in`}>
             {children}
           </div>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth, useBusiness } from '@/providers';
 import PageLoading from '@/components/PageLoading';
+import GlobalShortcuts from '@/components/shared/GlobalShortcuts';
+import AIFloatingButton from '@/components/shared/AIFloatingButton';
 
 export default function DashboardLayoutClient({
   children,
@@ -51,10 +53,22 @@ export default function DashboardLayoutClient({
   if (!isReady) {
     // Don't show loading if we have user and business
     if (user && business) {
-      return <>{children}</>;
+      return (
+        <>
+          {children}
+          <GlobalShortcuts />
+          <AIFloatingButton />
+        </>
+      );
     }
     return <PageLoading message="Loading..." />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <GlobalShortcuts />
+      <AIFloatingButton />
+    </>
+  );
 }

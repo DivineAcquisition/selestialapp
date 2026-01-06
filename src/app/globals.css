@@ -125,12 +125,12 @@
   }
 
   html {
-    font-size: 14px; /* Smaller base font size */
+    font-size: 15px; /* Balanced base font size */
   }
 
   @media (min-width: 1280px) {
     html {
-      font-size: 14px;
+      font-size: 15px;
     }
   }
 
