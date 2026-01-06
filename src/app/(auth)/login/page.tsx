@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 function LoginForm() {
@@ -63,18 +63,22 @@ function LoginForm() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center lg:text-left">
-        <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-        <p className="text-muted-foreground mt-2">Sign in to your account to continue</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+        <p className="text-muted-foreground">
+          Sign in to your account to continue
+        </p>
       </div>
 
+      {/* Google Sign In */}
       <Button
         type="button"
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={googleLoading}
-        className="w-full h-12 text-base"
+        className="w-full h-12 text-base font-medium border-2 hover:bg-secondary/80 transition-all"
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -91,62 +95,87 @@ function LoginForm() {
         )}
       </Button>
 
+      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-background text-muted-foreground">or continue with email</span>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="px-4 bg-background text-muted-foreground font-medium tracking-wider">
+            Or continue with email
+          </span>
         </div>
       </div>
 
-      <form onSubmit={handleEmailLogin} className="space-y-4">
-        <div>
-          <Label htmlFor="email">Email address</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            required
-            className="mt-1.5 h-12"
-          />
+      {/* Email Form */}
+      <form onSubmit={handleEmailLogin} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">
+            Email address
+          </Label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              required
+              className="h-12 pl-11 text-base"
+            />
+          </div>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">
+              Password
+            </Label>
             <Link 
               href="/forgot-password" 
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Forgot password?
             </Link>
           </div>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            className="mt-1.5 h-12"
-          />
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="h-12 pl-11 text-base"
+            />
+          </div>
         </div>
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-12 text-base glow-sm"
+          className="w-full h-12 text-base font-semibold glow-sm group"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign in'}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              Sign in
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </Button>
       </form>
 
+      {/* Sign up link */}
       <p className="text-center text-muted-foreground">
         Don't have an account?{' '}
-        <Link href="/signup" className="text-primary hover:underline font-medium">
+        <Link 
+          href="/signup" 
+          className="text-primary hover:text-primary/80 font-semibold transition-colors"
+        >
           Sign up free
         </Link>
       </p>

@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Check } from 'lucide-react'
+import { Loader2, Check, User, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 export default function SignupPage() {
@@ -85,36 +85,49 @@ export default function SignupPage() {
   }
 
   const benefits = [
-    '14-day free trial, no credit card required',
-    'AI-powered smart replies',
-    'Unlimited quote follow-ups',
+    { text: '14-day free trial', highlight: true },
+    { text: 'No credit card required', highlight: false },
+    { text: 'Cancel anytime', highlight: false },
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="text-center lg:text-left">
-        <h1 className="text-2xl font-bold text-foreground">Start your free trial</h1>
-        <p className="text-muted-foreground mt-2">No credit card required</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
+          <Sparkles className="w-4 h-4" />
+          Start free today
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Create your account</h1>
+        <p className="text-muted-foreground">
+          Join 500+ home service businesses winning more jobs
+        </p>
       </div>
 
-      {/* Benefits */}
-      <div className="space-y-2">
+      {/* Benefits pills */}
+      <div className="flex flex-wrap gap-2">
         {benefits.map((benefit, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-              <Check className="w-3 h-3 text-primary" />
-            </div>
-            {benefit}
+          <div 
+            key={i} 
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${
+              benefit.highlight 
+                ? 'bg-primary/10 text-primary font-medium' 
+                : 'bg-secondary text-muted-foreground'
+            }`}
+          >
+            <Check className="w-3.5 h-3.5" />
+            {benefit.text}
           </div>
         ))}
       </div>
 
+      {/* Google Sign Up */}
       <Button
         type="button"
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={googleLoading}
-        className="w-full h-12 text-base"
+        className="w-full h-12 text-base font-medium border-2 hover:bg-secondary/80 transition-all"
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -131,76 +144,109 @@ export default function SignupPage() {
         )}
       </Button>
 
+      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-background text-muted-foreground">or continue with email</span>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="px-4 bg-background text-muted-foreground font-medium tracking-wider">
+            Or continue with email
+          </span>
         </div>
       </div>
 
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Full name</Label>
-          <Input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="John Smith"
-            required
-            className="mt-1.5 h-12"
-          />
+      {/* Email Form */}
+      <form onSubmit={handleSignup} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-sm font-medium">
+            Full name
+          </Label>
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Smith"
+              required
+              className="h-12 pl-11 text-base"
+            />
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="email">Work email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            required
-            className="mt-1.5 h-12"
-          />
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">
+            Work email
+          </Label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              required
+              className="h-12 pl-11 text-base"
+            />
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            minLength={8}
-            className="mt-1.5 h-12"
-          />
-          <p className="text-xs text-muted-foreground mt-1.5">Minimum 8 characters</p>
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium">
+            Password
+          </Label>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              minLength={8}
+              className="h-12 pl-11 text-base"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Must be at least 8 characters
+          </p>
         </div>
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-12 text-base glow-sm"
+          className="w-full h-12 text-base font-semibold glow-sm group"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create account'}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              Create account
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </Button>
       </form>
 
-      <p className="text-center text-sm text-muted-foreground">
+      {/* Terms */}
+      <p className="text-center text-xs text-muted-foreground">
         By signing up, you agree to our{' '}
-        <Link href="/terms" className="text-primary hover:underline">Terms</Link>
+        <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
         {' '}and{' '}
         <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
       </p>
 
+      {/* Sign in link */}
       <p className="text-center text-muted-foreground">
         Already have an account?{' '}
-        <Link href="/login" className="text-primary hover:underline font-medium">
+        <Link 
+          href="/login" 
+          className="text-primary hover:text-primary/80 font-semibold transition-colors"
+        >
           Sign in
         </Link>
       </p>

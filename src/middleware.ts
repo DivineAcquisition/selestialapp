@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Marketing/public routes - always accessible
-const publicRoutes = ['/home', '/pricing', '/features', '/about', '/terms', '/privacy']
+// Marketing/public routes - always accessible (archived for now)
+const publicRoutes: string[] = []
 
 // Auth routes - redirect to dashboard if already logged in  
 const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification']
@@ -73,14 +73,14 @@ export async function middleware(request: NextRequest) {
 
   // Root path (/) handling:
   // - If logged in: show dashboard (protected)
-  // - If not logged in: redirect to marketing landing page
+  // - If not logged in: redirect to login
   if (pathname === '/') {
     if (session) {
       // User is logged in - the dashboard page will handle this
       return response
     } else {
-      // User is not logged in - redirect to marketing landing page
-      return NextResponse.redirect(new URL('/home', request.url))
+      // User is not logged in - redirect to login
+      return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
