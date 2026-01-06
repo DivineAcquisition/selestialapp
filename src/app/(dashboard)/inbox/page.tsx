@@ -37,8 +37,6 @@ export default function InboxPage() {
     loading: aiLoading,
     suggestions,
     generateReplies,
-    recordSelection,
-    provideFeedback,
     clearSuggestions,
   } = useSmartReplies();
 
@@ -51,12 +49,11 @@ export default function InboxPage() {
         generateReplies(
           lastMessage.content,
           undefined, // customer_id not directly available
-          selectedConversation.id,
-          messages.slice(-5)
+          selectedConversation.id
         );
       }
     }
-  }, [messages.length, selectedConversation?.id]);
+  }, [messages.length, selectedConversation?.id, generateReplies]);
 
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
@@ -100,7 +97,6 @@ export default function InboxPage() {
   const handleSelectSuggestion = async (text: string, index: number, wasEdited: boolean) => {
     const result = await sendReply(text);
     if (!result.error) {
-      await recordSelection(index + 1, wasEdited, wasEdited ? text : undefined);
       clearSuggestions();
     }
   };
@@ -112,11 +108,14 @@ export default function InboxPage() {
         generateReplies(
           lastInbound.content,
           undefined,
-          selectedConversation.id,
-          messages.slice(-5)
+          selectedConversation.id
         );
       }
     }
+  };
+  
+  const handleFeedback = () => {
+    // Feedback is no longer tracked in the simplified hook
   };
 
   const isLoading = loadingConversations || loadingPhone;
@@ -212,7 +211,7 @@ export default function InboxPage() {
                     loading={aiLoading}
                     onSelectSuggestion={handleSelectSuggestion}
                     onRegenerate={handleRegenerate}
-                    onFeedback={provideFeedback}
+                    onFeedback={handleFeedback}
                     onDismiss={clearSuggestions}
                   />
 

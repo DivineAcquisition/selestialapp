@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import QuoteStatusBadge from './QuoteStatusBadge';
 import { useMessages } from '@/hooks/useMessages';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
+import { usePayments } from '@/hooks/usePayments';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
@@ -66,7 +67,8 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const [resending, setResending] = useState(false);
   const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false);
   const { messages, loading: messagesLoading } = useMessages(quote.id);
-  const { status: stripeStatus, createPaymentLink } = useStripeConnect();
+  const { status: stripeStatus } = useStripeConnect();
+  const { createPaymentLink } = usePayments();
   const { toast } = useToast();
   
   const daysSince = getDaysSince(quote.created_at);
@@ -129,9 +131,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const handleGeneratePaymentLink = async () => {
     setGeneratingPaymentLink(true);
     try {
-      const { data, error } = await createPaymentLink(quote.id);
-      
-      if (error) throw error;
+      const paymentUrl = await createPaymentLink(quote.id);
       
       toast({
         title: 'Payment link created',
@@ -139,8 +139,8 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
       });
       
       // Copy to clipboard
-      if (data?.url) {
-        await navigator.clipboard.writeText(data.url);
+      if (paymentUrl) {
+        await navigator.clipboard.writeText(paymentUrl);
         toast({
           title: 'Copied to clipboard',
           description: 'Payment link copied to your clipboard.',

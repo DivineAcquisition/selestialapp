@@ -18,8 +18,6 @@ import {
   ArrowRight,
   Building2,
   RefreshCw,
-  Wallet,
-  TrendingUp,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -38,8 +36,6 @@ export default function PaymentSettings() {
   const { business, updateBusiness } = useBusiness();
   const {
     status,
-    balance,
-    payouts,
     loading,
     refetch,
     startOnboarding,
@@ -100,13 +96,6 @@ export default function PaymentSettings() {
   const handleToggleAutoPaymentLink = async (enabled: boolean) => {
     await updateBusiness({ auto_send_payment_link: enabled });
     toast({ title: enabled ? 'Auto payment links enabled' : 'Auto payment links disabled' });
-  };
-
-  const formatCurrency = (amount: number, currency: string = 'usd') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    }).format(amount / 100);
   };
 
   if (loading) {
@@ -178,24 +167,6 @@ export default function PaymentSettings() {
               <p className="text-sm text-muted-foreground mb-6">
                 Your Stripe account needs additional information before you can accept payments.
               </p>
-              {status.requirementsDue.length > 0 && (
-                <div className="mb-6 p-4 bg-muted/50 rounded-xl text-left max-w-md mx-auto">
-                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Required information</p>
-                  <ul className="text-sm text-foreground space-y-2">
-                    {status.requirementsDue.slice(0, 3).map((req) => (
-                      <li key={req} className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        {req.replace(/_/g, ' ').replace(/\./g, ' → ')}
-                      </li>
-                    ))}
-                    {status.requirementsDue.length > 3 && (
-                      <li className="text-muted-foreground">
-                        +{status.requirementsDue.length - 3} more items
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              )}
               <div className="flex gap-3 justify-center">
                 <Button onClick={handleResume} disabled={connecting} className="gap-2">
                   {connecting ? (
@@ -214,67 +185,16 @@ export default function PaymentSettings() {
           ) : (
             /* Fully Connected */
             <div className="space-y-6">
-              {/* Balance Overview */}
-              {balance && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 glow-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Wallet className="w-4 h-4 text-primary" />
-                      <p className="text-sm font-medium text-muted-foreground">Available</p>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">
-                      {balance.available[0]
-                        ? formatCurrency(balance.available[0].amount, balance.available[0].currency)
-                        : '$0.00'}
-                    </p>
-                  </div>
-                  <div className="p-5 rounded-xl bg-muted/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                      <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                    </div>
-                    <p className="text-3xl font-bold">
-                      {balance.pending[0]
-                        ? formatCurrency(balance.pending[0].amount, balance.pending[0].currency)
-                        : '$0.00'}
-                    </p>
-                  </div>
+              {/* Connected Successfully Message */}
+              <div className="text-center py-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <Check className="h-8 w-8 text-emerald-600" />
                 </div>
-              )}
-
-              {/* Recent Payouts */}
-              {payouts.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-3">Recent Payouts</h4>
-                  <div className="space-y-2">
-                    {payouts.slice(0, 3).map((payout) => (
-                      <div
-                        key={payout.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-muted/30 card-glow"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                            <DollarSign className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold">
-                              {formatCurrency(payout.amount, payout.currency)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(payout.arrival_date * 1000).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={payout.status === 'paid' ? 'default' : 'secondary'}
-                        >
-                          {payout.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                <h4 className="text-lg font-semibold mb-2">Payments Enabled</h4>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Your Stripe account is connected. You can now accept payments directly from your quotes.
+                </p>
+              </div>
 
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t border-border">
