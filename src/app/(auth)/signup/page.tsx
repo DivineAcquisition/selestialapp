@@ -24,44 +24,55 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
-      },
-    })
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { 
+            full_name: name,
+            name: name, // Also store as name
+          },
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
+        },
+      })
 
-    if (error) {
+      if (error) {
+        toast({
+          title: 'Error creating account',
+          description: error.message,
+          variant: 'destructive',
+        })
+        setLoading(false)
+        return
+      }
+
+      // Check if we got a session (email confirmation disabled) or need verification
+      if (data.session) {
+        // User is signed in immediately - go to onboarding
+        toast({
+          title: 'Account created!',
+          description: 'Welcome to Selestial.',
+        })
+        router.push('/onboarding')
+      } else if (data.user && !data.session) {
+        // Email confirmation required
+        toast({
+          title: 'Check your email',
+          description: 'We sent you a confirmation link to verify your account.',
+        })
+        router.push('/verify-email')
+      }
+    } catch (err) {
+      console.error('Signup error:', err)
       toast({
-        title: 'Error creating account',
-        description: error.message,
+        title: 'Something went wrong',
+        description: 'Please try again.',
         variant: 'destructive',
       })
+    } finally {
       setLoading(false)
-      return
     }
-
-    // Send welcome email
-    if (data.user) {
-      try {
-        await fetch('/api/email/welcome', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name }),
-        })
-      } catch (err) {
-        console.error('Failed to send welcome email:', err)
-      }
-    }
-
-    toast({
-      title: 'Check your email',
-      description: 'We sent you a confirmation link to verify your account.',
-    })
-    
-    router.push('/verify-email')
   }
 
   const handleGoogleSignup = async () => {
