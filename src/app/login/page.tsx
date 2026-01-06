@@ -4,13 +4,14 @@ import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers';
+import { isServiceRoleKeyError } from '@/integrations/supabase/client';
 import AuthLayout from '@/components/auth/AuthLayout';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle, Mail, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -40,7 +41,9 @@ function LoginForm() {
       const { error: signInError } = await signIn(email, password);
       
       if (signInError) {
-        if (signInError.message.includes('Invalid login')) {
+        if (signInError.message.includes('secret API key') || signInError.message.includes('Forbidden')) {
+          setError('Configuration error: The app is using the wrong API key. Please contact the administrator.');
+        } else if (signInError.message.includes('Invalid login')) {
           setError('Invalid email or password. Please try again.');
         } else if (signInError.message.includes('Email not confirmed')) {
           setError('Please verify your email address before signing in.');
@@ -74,6 +77,35 @@ function LoginForm() {
     return null;
   }
   
+  // Show configuration error if service role key is detected
+  if (isServiceRoleKeyError) {
+    return (
+      <AuthLayout title="Configuration Error" subtitle="There's an issue with the app configuration">
+        <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-6 h-6 text-destructive shrink-0 mt-0.5" />
+            <div className="space-y-2">
+              <p className="font-semibold text-destructive">Invalid API Key Configuration</p>
+              <p className="text-sm text-muted-foreground">
+                The app is configured with a service role key instead of the anon (public) key.
+                This is a security issue that needs to be fixed by the administrator.
+              </p>
+              <div className="mt-4 p-3 bg-muted rounded-md text-xs text-muted-foreground">
+                <p className="font-medium mb-2">To fix this:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Go to Vercel → Project Settings → Environment Variables</li>
+                  <li>Update <code className="bg-background px-1 rounded">NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
+                  <li>Use the &quot;anon public&quot; key from Supabase (Settings → API)</li>
+                  <li>Redeploy the application</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to continue to your dashboard">
       <form onSubmit={handleSubmit} className="space-y-5">
