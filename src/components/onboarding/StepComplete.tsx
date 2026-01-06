@@ -9,7 +9,6 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toE164 } from '@/lib/formatters';
-import { sendWelcomeEmail } from '@/lib/emails';
 import { CheckCircle, Loader2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function StepComplete() {
@@ -38,7 +37,19 @@ export default function StepComplete() {
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
-      // 1. Create the business with trial setup
+      // Format phone number
+      let formattedPhone = data.phone;
+      try {
+        formattedPhone = toE164(data.phone);
+      } catch (e) {
+        // Use as-is if formatting fails
+        formattedPhone = data.phone.replace(/\D/g, '');
+        if (formattedPhone.length === 10) {
+          formattedPhone = '+1' + formattedPhone;
+        }
+      }
+
+      // 1. Create the business
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
@@ -46,51 +57,65 @@ export default function StepComplete() {
           name: data.businessName,
           owner_name: data.ownerName,
           email: data.email,
-          phone: toE164(data.phone),
+          phone: formattedPhone,
           industry: data.industry,
-          // Trial setup
           subscription_status: 'trialing',
           subscription_plan: 'starter',
           trial_ends_at: trialEndsAt.toISOString(),
-          quotes_limit: 50,
-          sequences_limit: 3,
+          quotes_limit: 100,
+          sequences_limit: 5,
         })
         .select()
         .single();
       
-      if (businessError) throw businessError;
+      if (businessError) {
+        console.error('Business creation error:', businessError);
+        throw new Error(businessError.message || 'Failed to create business');
+      }
       
-      // 2. Create the default sequence if selected
+      if (!business) {
+        throw new Error('No business returned after creation');
+      }
+
+      // 2. Create default sequence (optional - don't fail if it doesn't work)
       if (data.useDefaultSequence) {
-        const { error: sequenceError } = await supabase.rpc('create_default_sequence', {
-          p_business_id: business.id,
-        });
-        
-        if (sequenceError) {
-          console.error('Failed to create default sequence:', sequenceError);
+        try {
+          // Check if the function exists first by trying to create a basic sequence
+          const { error: sequenceError } = await supabase
+            .from('sequences')
+            .insert({
+              business_id: business.id,
+              name: 'Default Follow-Up',
+              description: 'Automated follow-up sequence for new quotes',
+              is_default: true,
+              is_active: true,
+            });
+          
+          if (sequenceError) {
+            console.warn('Could not create default sequence:', sequenceError);
+          }
+        } catch (seqErr) {
+          console.warn('Sequence creation failed:', seqErr);
           // Non-fatal, continue
         }
       }
       
-      // 3. Log the activity
-      await supabase.rpc('log_activity', {
-        p_business_id: business.id,
-        p_action: 'business_created',
-        p_description: 'Account setup completed',
-      });
-      
-      // 4. Send welcome email
+      // 3. Try to send welcome email via API (optional)
       try {
-        await sendWelcomeEmail(data.email, {
-          userName: data.ownerName,
-          businessName: data.businessName,
+        await fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: data.email,
+            name: data.ownerName,
+          }),
         });
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError);
+      } catch (emailErr) {
+        console.warn('Welcome email failed:', emailErr);
         // Non-fatal, continue
       }
       
-      // 5. Refresh business context
+      // 4. Refresh business context
       await refetchBusiness();
       
       setStatus('success');
@@ -116,7 +141,7 @@ export default function StepComplete() {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <Image src="/selestial-logo.png" alt="Selestial" width={120} height={32} className="h-8 w-auto" />
+          <Image src="/logo-icon-new.png" alt="Selestial" width={40} height={40} className="h-10 w-auto" />
         </div>
       </header>
       
@@ -186,12 +211,6 @@ export default function StepComplete() {
                 Go to Dashboard
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
-              
-              {!data.skipPhoneSetup && (
-                <p className="text-xs text-muted-foreground">
-                  Don&apos;t forget to finish setting up your Twilio phone number in Settings!
-                </p>
-              )}
             </div>
           )}
           
@@ -225,24 +244,6 @@ export default function StepComplete() {
       <footer className="py-4 px-6 border-t border-border">
         <div className="max-w-md mx-auto flex items-center justify-center gap-4 text-sm text-muted-foreground">
           <span>© {new Date().getFullYear()} Selestial</span>
-          <span>·</span>
-          <a 
-            href="https://selestial.io/privacy" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            Privacy
-          </a>
-          <span>·</span>
-          <a 
-            href="https://selestial.io/terms" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            Terms
-          </a>
         </div>
       </footer>
     </div>

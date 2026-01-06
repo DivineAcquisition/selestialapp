@@ -45,7 +45,7 @@ export default function OnboardingLayout({
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <Image src="/selestial-logo.png" alt="Selestial" width={120} height={32} className="h-8 w-auto" />
+          <Image src="/logo-icon-new.png" alt="Selestial" width={40} height={40} className="h-10 w-auto" />
         </div>
       </header>
       
