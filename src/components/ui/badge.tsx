@@ -23,9 +23,9 @@ const badgeVariants = cva(
         info: 
           "border-info/30 bg-info/10 text-info",
         neon: 
-          "border-[hsl(var(--neon-cyan))] bg-[hsl(var(--neon-cyan))]/10 text-[hsl(var(--neon-cyan))] shadow-[0_0_10px_hsl(var(--neon-cyan)/0.3)]",
+          "border-[#5500FF] bg-[#5500FF]/10 text-[#5500FF] shadow-[0_0_10px_hsl(260_100%_50%/0.3)]",
         "neon-purple": 
-          "border-[hsl(var(--neon-purple))] bg-[hsl(var(--neon-purple))]/10 text-[hsl(var(--neon-purple))] shadow-[0_0_10px_hsl(var(--neon-purple)/0.3)]",
+          "border-[#9D96FF] bg-[#9D96FF]/10 text-[#9D96FF] shadow-[0_0_10px_hsl(244_100%_80%/0.3)]",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",

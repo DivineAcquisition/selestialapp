@@ -2,29 +2,29 @@
 @import "tailwindcss";
 
 @theme {
-  /* Light Theme Color Palette */
+  /* Selestial Brand Colors - White Theme */
   --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222 47% 11%);
+  --color-foreground: hsl(240 10% 10%);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222 47% 11%);
+  --color-card-foreground: hsl(240 10% 10%);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222 47% 11%);
+  --color-popover-foreground: hsl(240 10% 10%);
   
-  /* Primary - Neon Cyan/Teal */
-  --color-primary: hsl(174 100% 42%);
+  /* Primary - Selestial Purple #5500FF */
+  --color-primary: hsl(260 100% 50%);
   --color-primary-foreground: hsl(0 0% 100%);
   
-  /* Secondary */
-  --color-secondary: hsl(220 14% 96%);
-  --color-secondary-foreground: hsl(222 47% 11%);
+  /* Secondary - Light Purple #9D96FF */
+  --color-secondary: hsl(244 100% 80%);
+  --color-secondary-foreground: hsl(260 100% 30%);
   
   /* Muted */
-  --color-muted: hsl(220 14% 96%);
-  --color-muted-foreground: hsl(220 9% 46%);
+  --color-muted: hsl(240 5% 96%);
+  --color-muted-foreground: hsl(240 5% 46%);
   
-  /* Accent - Neon Purple */
-  --color-accent: hsl(270 95% 60%);
-  --color-accent-foreground: hsl(0 0% 100%);
+  /* Accent - Light Purple */
+  --color-accent: hsl(244 100% 80%);
+  --color-accent-foreground: hsl(260 100% 30%);
   
   /* Semantic colors */
   --color-destructive: hsl(0 84% 60%);
@@ -37,26 +37,19 @@
   --color-info-foreground: hsl(0 0% 100%);
   
   /* Border & Input */
-  --color-border: hsl(220 13% 91%);
-  --color-input: hsl(220 13% 91%);
-  --color-ring: hsl(174 100% 42%);
+  --color-border: hsl(240 6% 90%);
+  --color-input: hsl(240 6% 90%);
+  --color-ring: hsl(260 100% 50%);
   
-  /* Neon colors */
-  --color-neon-cyan: hsl(174 100% 50%);
-  --color-neon-purple: hsl(270 100% 65%);
-  --color-neon-pink: hsl(330 100% 60%);
-  --color-neon-blue: hsl(210 100% 60%);
-  --color-neon-green: hsl(150 100% 45%);
-  
-  /* Sidebar - Light */
-  --color-sidebar-background: hsl(220 14% 98%);
-  --color-sidebar-foreground: hsl(220 9% 46%);
-  --color-sidebar-primary: hsl(174 100% 42%);
+  /* Sidebar */
+  --color-sidebar-background: hsl(0 0% 99%);
+  --color-sidebar-foreground: hsl(240 5% 46%);
+  --color-sidebar-primary: hsl(260 100% 50%);
   --color-sidebar-primary-foreground: hsl(0 0% 100%);
-  --color-sidebar-accent: hsl(220 14% 96%);
-  --color-sidebar-accent-foreground: hsl(222 47% 11%);
-  --color-sidebar-border: hsl(220 13% 91%);
-  --color-sidebar-ring: hsl(174 100% 42%);
+  --color-sidebar-accent: hsl(240 5% 96%);
+  --color-sidebar-accent-foreground: hsl(240 10% 10%);
+  --color-sidebar-border: hsl(240 6% 90%);
+  --color-sidebar-ring: hsl(260 100% 50%);
   
   /* Border radius */
   --radius-lg: 0.75rem;
@@ -69,19 +62,24 @@
 
 :root {
   --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
+  --foreground: 240 10% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 240 10% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 174 100% 42%;
+  --popover-foreground: 240 10% 10%;
+  
+  /* Primary - #5500FF */
+  --primary: 260 100% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
-  --accent: 270 95% 60%;
-  --accent-foreground: 0 0% 100%;
+  
+  /* Secondary - #9D96FF */
+  --secondary: 244 100% 80%;
+  --secondary-foreground: 260 100% 30%;
+  
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 5% 46%;
+  --accent: 244 100% 80%;
+  --accent-foreground: 260 100% 30%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --success: 142 76% 36%;
@@ -90,27 +88,24 @@
   --warning-foreground: 0 0% 100%;
   --info: 199 89% 48%;
   --info-foreground: 0 0% 100%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 174 100% 42%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 260 100% 50%;
   --radius: 0.75rem;
   
-  /* Neon colors */
-  --neon-cyan: 174 100% 50%;
-  --neon-purple: 270 100% 65%;
-  --neon-pink: 330 100% 60%;
-  --neon-blue: 210 100% 60%;
-  --neon-green: 150 100% 45%;
+  /* Selestial brand purple shades */
+  --selestial-purple: 260 100% 50%;
+  --selestial-purple-light: 244 100% 80%;
   
   /* Sidebar */
-  --sidebar-background: 220 14% 98%;
-  --sidebar-foreground: 220 9% 46%;
-  --sidebar-primary: 174 100% 42%;
+  --sidebar-background: 0 0% 99%;
+  --sidebar-foreground: 240 5% 46%;
+  --sidebar-primary: 260 100% 50%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 14% 96%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 174 100% 42%;
+  --sidebar-accent: 240 5% 96%;
+  --sidebar-accent-foreground: 240 10% 10%;
+  --sidebar-border: 240 6% 90%;
+  --sidebar-ring: 260 100% 50%;
   
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -118,11 +113,9 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   
-  /* Neon Shadows */
-  --neon-glow-cyan: 0 0 20px hsl(174 100% 50% / 0.5), 0 0 40px hsl(174 100% 50% / 0.3);
-  --neon-glow-purple: 0 0 20px hsl(270 100% 65% / 0.5), 0 0 40px hsl(270 100% 65% / 0.3);
-  --neon-glow-pink: 0 0 20px hsl(330 100% 60% / 0.5), 0 0 40px hsl(330 100% 60% / 0.3);
-  --neon-glow-blue: 0 0 20px hsl(210 100% 60% / 0.5), 0 0 40px hsl(210 100% 60% / 0.3);
+  /* Purple Glow */
+  --purple-glow: 0 0 20px hsl(260 100% 50% / 0.4), 0 0 40px hsl(260 100% 50% / 0.2);
+  --purple-glow-light: 0 0 20px hsl(244 100% 80% / 0.5), 0 0 40px hsl(244 100% 80% / 0.3);
 }
 
 * {
@@ -156,7 +149,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--secondary));
+  background: hsl(var(--muted));
 }
 
 ::-webkit-scrollbar-thumb {
@@ -174,78 +167,57 @@ body {
   outline-offset: 2px;
 }
 
-/* Neon Border Utilities */
-.neon-border-cyan {
-  border: 1px solid hsl(var(--neon-cyan));
-  box-shadow: var(--neon-glow-cyan);
+/* Purple Glow Utilities */
+.glow-purple {
+  box-shadow: var(--purple-glow);
 }
 
-.neon-border-purple {
-  border: 1px solid hsl(var(--neon-purple));
-  box-shadow: var(--neon-glow-purple);
+.glow-purple-light {
+  box-shadow: var(--purple-glow-light);
 }
 
-.neon-border-pink {
-  border: 1px solid hsl(var(--neon-pink));
-  box-shadow: var(--neon-glow-pink);
+.hover-glow-purple:hover {
+  box-shadow: var(--purple-glow);
 }
 
-.neon-border-blue {
-  border: 1px solid hsl(var(--neon-blue));
-  box-shadow: var(--neon-glow-blue);
+/* Purple Border Glow */
+.border-glow {
+  border: 1px solid hsl(var(--primary));
+  box-shadow: var(--purple-glow);
 }
 
-/* Neon Text */
-.neon-text-cyan {
-  color: hsl(var(--neon-cyan));
-  text-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.7), 0 0 20px hsl(var(--neon-cyan) / 0.5);
+.border-glow-light {
+  border: 1px solid hsl(var(--secondary));
+  box-shadow: var(--purple-glow-light);
 }
 
-.neon-text-purple {
-  color: hsl(var(--neon-purple));
-  text-shadow: 0 0 10px hsl(var(--neon-purple) / 0.7), 0 0 20px hsl(var(--neon-purple) / 0.5);
+/* Gradient Backgrounds */
+.gradient-purple {
+  background: linear-gradient(135deg, hsl(260 100% 50%), hsl(244 100% 80%));
 }
 
-.neon-text-pink {
-  color: hsl(var(--neon-pink));
-  text-shadow: 0 0 10px hsl(var(--neon-pink) / 0.7), 0 0 20px hsl(var(--neon-pink) / 0.5);
+.gradient-purple-subtle {
+  background: linear-gradient(135deg, hsl(260 100% 50% / 0.1), hsl(244 100% 80% / 0.1));
 }
 
-/* Neon Hover Effects */
-.hover-neon-cyan:hover {
-  border-color: hsl(var(--neon-cyan));
-  box-shadow: var(--neon-glow-cyan);
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(260 100% 50%), hsl(244 100% 80%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.hover-neon-purple:hover {
-  border-color: hsl(var(--neon-purple));
-  box-shadow: var(--neon-glow-purple);
-}
-
-/* Neon Button */
-.neon-button {
-  background: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-purple)));
-  color: white;
-  border: none;
-  box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.4), 0 0 40px hsl(var(--neon-purple) / 0.2);
-  transition: all 0.3s ease;
-}
-
-.neon-button:hover {
-  box-shadow: 0 0 30px hsl(var(--neon-cyan) / 0.6), 0 0 60px hsl(var(--neon-purple) / 0.4);
-  transform: translateY(-2px);
-}
-
-/* Card with subtle neon accent */
-.card-neon {
+/* Card with purple accent */
+.card-purple {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   transition: all 0.3s ease;
 }
 
-.card-neon:hover {
-  border-color: hsl(var(--neon-cyan) / 0.5);
-  box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.1), var(--shadow-lg);
+.card-purple:hover {
+  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.1), var(--shadow-lg);
 }
 
 /* Animations */
@@ -286,12 +258,12 @@ body {
   100% { background-position: 200% 0; }
 }
 
-@keyframes neonPulse {
+@keyframes purplePulse {
   0%, 100% {
-    box-shadow: 0 0 5px hsl(var(--neon-cyan) / 0.5), 0 0 10px hsl(var(--neon-cyan) / 0.3);
+    box-shadow: 0 0 5px hsl(260 100% 50% / 0.4), 0 0 10px hsl(260 100% 50% / 0.2);
   }
   50% {
-    box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.8), 0 0 40px hsl(var(--neon-cyan) / 0.5);
+    box-shadow: 0 0 20px hsl(260 100% 50% / 0.6), 0 0 40px hsl(260 100% 50% / 0.3);
   }
 }
 
@@ -317,8 +289,8 @@ body {
   animation: shimmer 2s infinite;
 }
 
-.animate-neon-pulse {
-  animation: neonPulse 2s ease-in-out infinite;
+.animate-purple-pulse {
+  animation: purplePulse 2s ease-in-out infinite;
 }
 
 /* Hover effects */
@@ -348,7 +320,7 @@ body {
   background: hsl(var(--muted-foreground));
 }
 
-/* Glass effect for light theme */
+/* Glass effect */
 .glass {
   background: hsl(var(--card) / 0.8);
   backdrop-filter: blur(12px);
@@ -373,18 +345,17 @@ kbd {
   box-shadow: 0 1px 0 1px hsl(0 0% 0% / 0.05);
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-purple)));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 /* Skeleton loading */
 .skeleton {
   background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-md);
+}
+
+/* Purple accent line */
+.accent-line {
+  height: 3px;
+  background: linear-gradient(90deg, hsl(260 100% 50%), hsl(244 100% 80%));
+  border-radius: 9999px;
 }

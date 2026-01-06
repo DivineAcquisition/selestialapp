@@ -33,8 +33,8 @@ const accentStyles = {
     iconText: 'text-destructive',
   },
   neon: {
-    iconBg: 'bg-[hsl(var(--neon-cyan))]/10',
-    iconText: 'text-[hsl(var(--neon-cyan))]',
+    iconBg: 'bg-[#5500FF]/10',
+    iconText: 'text-[#5500FF]',
   },
 };
 

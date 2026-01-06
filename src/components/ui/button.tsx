@@ -24,9 +24,9 @@ const buttonVariants = cva(
         success:
           "bg-success text-success-foreground shadow-md hover:bg-success/90",
         neon:
-          "neon-button font-bold",
+          "bg-gradient-to-r from-[#5500FF] to-[#9D96FF] text-white font-bold shadow-md hover:shadow-[0_0_20px_hsl(260_100%_50%/0.4),0_0_40px_hsl(260_100%_50%/0.2)] hover:scale-[1.02]",
         "neon-outline":
-          "bg-transparent border-2 border-[hsl(var(--neon-cyan))] text-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] hover:text-white hover:shadow-[var(--neon-glow-cyan)]",
+          "bg-transparent border-2 border-[#5500FF] text-[#5500FF] hover:bg-[#5500FF] hover:text-white hover:shadow-[0_0_20px_hsl(260_100%_50%/0.4)]",
       },
       size: {
         default: "h-10 px-5 py-2",

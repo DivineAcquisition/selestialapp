@@ -17,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       "hover:border-primary/50",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:cursor-not-allowed disabled:opacity-50",
-      neon && "focus-visible:border-[hsl(var(--neon-cyan))] focus-visible:ring-[hsl(var(--neon-cyan))] focus-visible:shadow-[0_0_10px_hsl(var(--neon-cyan)/0.3)]",
+      neon && "focus-visible:border-[#5500FF] focus-visible:ring-[#5500FF] focus-visible:shadow-[0_0_10px_hsl(260_100%_50%/0.3)]",
     );
 
     if (icon) {
