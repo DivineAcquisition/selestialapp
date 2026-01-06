@@ -146,10 +146,10 @@ export default function Sidebar() {
           </div>
           <Button 
             variant="ghost" 
-            size="icon-sm" 
+            size="icon" 
             onClick={handleSignOut} 
             title="Sign out"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
           >
             <LogOut className="h-4 w-4" />
           </Button>

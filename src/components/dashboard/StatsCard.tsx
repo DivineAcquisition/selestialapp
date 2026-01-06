@@ -11,7 +11,7 @@ interface StatsCardProps {
     value: number;
     isPositive: boolean;
   };
-  accentColor?: 'default' | 'success' | 'warning' | 'danger' | 'neon';
+  accentColor?: 'default' | 'success' | 'warning' | 'danger';
   onClick?: () => void;
 }
 
@@ -21,20 +21,16 @@ const accentStyles = {
     iconText: 'text-primary',
   },
   success: {
-    iconBg: 'bg-success/10',
-    iconText: 'text-success',
+    iconBg: 'bg-green-100',
+    iconText: 'text-green-600',
   },
   warning: {
-    iconBg: 'bg-warning/10',
-    iconText: 'text-warning',
+    iconBg: 'bg-yellow-100',
+    iconText: 'text-yellow-600',
   },
   danger: {
-    iconBg: 'bg-destructive/10',
-    iconText: 'text-destructive',
-  },
-  neon: {
-    iconBg: 'bg-[#5500FF]/10',
-    iconText: 'text-[#5500FF]',
+    iconBg: 'bg-red-100',
+    iconText: 'text-red-600',
   },
 };
 
@@ -51,24 +47,23 @@ export default function StatsCard({
   
   return (
     <Card 
-      neon={accentColor === 'neon'}
       className={cn(
-        "p-5 transition-all duration-300 hover:shadow-md",
-        onClick && "cursor-pointer hover:-translate-y-0.5"
+        "p-5",
+        onClick && "cursor-pointer hover:shadow-md transition-shadow"
       )}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
+            <p className="text-2xl font-semibold">{value}</p>
             {trend && (
               <div className={cn(
-                "flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-md",
+                "flex items-center gap-0.5 text-xs font-medium",
                 trend.isPositive 
-                  ? "text-success bg-success/10" 
-                  : "text-destructive bg-destructive/10"
+                  ? "text-green-600" 
+                  : "text-red-600"
               )}>
                 {trend.isPositive ? (
                   <TrendingUp className="h-3 w-3" />
@@ -86,10 +81,10 @@ export default function StatsCard({
         </div>
         
         <div className={cn(
-          "flex items-center justify-center w-12 h-12 rounded-lg transition-all duration-300",
+          "flex items-center justify-center w-10 h-10 rounded-lg",
           accent.iconBg
         )}>
-          <Icon className={cn("h-6 w-6", accent.iconText)} />
+          <Icon className={cn("h-5 w-5", accent.iconText)} />
         </div>
       </div>
     </Card>

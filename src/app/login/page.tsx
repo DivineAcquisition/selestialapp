@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle, Mail, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle, ArrowRight, ShieldAlert } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -108,19 +108,19 @@ function LoginForm() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to continue to your dashboard">
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {successMessage && (
-          <div className="p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-            <p className="text-sm text-success">{decodeURIComponent(successMessage)}</p>
+          <div className="p-3 rounded-md bg-green-50 border border-green-200 flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-green-700">{decodeURIComponent(successMessage)}</p>
           </div>
         )}
         
         {error && (
-          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+          <div className="p-3 rounded-md bg-red-50 border border-red-200 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-red-700">{error}</p>
               {error.includes('verify your email') && (
                 <Link 
                   href={`/resend-verification?email=${encodeURIComponent(email)}`}
@@ -146,8 +146,6 @@ function LoginForm() {
             autoComplete="email"
             autoFocus
             disabled={loading}
-            icon={<Mail className="w-4 h-4" />}
-            neon
           />
         </div>
         
@@ -156,7 +154,7 @@ function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Link 
               href="/forgot-password" 
-              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+              className="text-xs text-primary hover:underline font-medium"
             >
               Forgot password?
             </Link>
@@ -171,9 +169,7 @@ function LoginForm() {
               required
               autoComplete="current-password"
               disabled={loading}
-              icon={<Lock className="w-4 h-4" />}
               className="pr-10"
-              neon
             />
             <button
               type="button"
@@ -188,8 +184,7 @@ function LoginForm() {
         
         <Button 
           type="submit" 
-          className="w-full h-11" 
-          variant="neon"
+          className="w-full" 
           disabled={loading}
         >
           {loading ? (
@@ -211,7 +206,7 @@ function LoginForm() {
         
         <p className="text-center text-sm text-muted-foreground pt-2">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+          <Link href="/signup" className="text-primary font-medium hover:underline">
             Start free trial
           </Link>
         </p>

@@ -223,7 +223,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   onChange={(e) => setName(e.target.value)}
                   disabled={saving}
                   autoComplete="off"
-                  icon={<User className="w-4 h-4" />}
                 />
               </div>
               
@@ -240,7 +239,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   disabled={saving}
                   type="tel"
                   autoComplete="off"
-                  icon={<Phone className="w-4 h-4" />}
                 />
               </div>
               
@@ -258,7 +256,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   type="text"
                   inputMode="decimal"
                   autoComplete="off"
-                  icon={<DollarSign className="w-4 h-4" />}
                 />
               </div>
               
@@ -295,7 +292,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={saving}
-                      icon={<Mail className="w-4 h-4" />}
                     />
                   </div>
                   
@@ -310,7 +306,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={serviceType}
                       onChange={(e) => setServiceType(e.target.value)}
                       disabled={saving}
-                      icon={<Sparkles className="w-4 h-4" />}
                     />
                   </div>
                   
@@ -325,7 +320,6 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       disabled={saving}
-                      icon={<FileText className="w-4 h-4" />}
                     />
                   </div>
                 </div>
@@ -359,8 +353,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             {!success && (
               <Button
                 type="submit"
-                variant="neon"
-                className="flex-1 h-11"
+                className="flex-1"
                 disabled={saving || !isValid()}
               >
                 {saving ? (

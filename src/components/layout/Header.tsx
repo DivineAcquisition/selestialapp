@@ -23,7 +23,7 @@ export default function Header({ title, subtitle, actions }: HeaderProps) {
             <div className="flex items-center gap-2">
               <h1 className="text-lg md:text-xl font-bold text-foreground">{title}</h1>
               {subtitle && (
-                <Badge variant="secondary" size="sm" className="hidden sm:inline-flex">
+                <Badge variant="secondary" className="hidden sm:inline-flex">
                   {subtitle}
                 </Badge>
               )}

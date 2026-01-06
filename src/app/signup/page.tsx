@@ -215,7 +215,6 @@ export default function SignupPage() {
             autoComplete="email"
             autoFocus
             disabled={loading}
-            icon={<Mail className="w-4 h-4" />}
           />
         </div>
         
@@ -232,7 +231,6 @@ export default function SignupPage() {
               autoComplete="new-password"
               className="pr-10"
               disabled={loading}
-              icon={<Lock className="w-4 h-4" />}
             />
             <button
               type="button"
@@ -264,8 +262,7 @@ export default function SignupPage() {
         
         <Button 
           type="submit" 
-          className="w-full h-12" 
-          variant="neon"
+          className="w-full" 
           disabled={loading || !isPasswordValid(password) || !agreedToTerms}
         >
           {loading ? (

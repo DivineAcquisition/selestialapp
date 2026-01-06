@@ -14,12 +14,12 @@ interface ConversationListProps {
 }
 
 const statusConfig = {
-  active: { variant: 'info' as const, label: 'Active' },
-  won: { variant: 'success' as const, label: 'Won' },
+  active: { variant: 'default' as const, label: 'Active' },
+  won: { variant: 'secondary' as const, label: 'Won' },
   lost: { variant: 'destructive' as const, label: 'Lost' },
-  paused: { variant: 'secondary' as const, label: 'Paused' },
-  new: { variant: 'warning' as const, label: 'New' },
-  no_response: { variant: 'secondary' as const, label: 'No Response' },
+  paused: { variant: 'outline' as const, label: 'Paused' },
+  new: { variant: 'default' as const, label: 'New' },
+  no_response: { variant: 'outline' as const, label: 'No Response' },
 };
 
 export default function ConversationList({ 
@@ -117,7 +117,7 @@ export default function ConversationList({
                   <span className="text-xs font-semibold text-muted-foreground">
                     {formatCurrency(conversation.quoteAmount)}
                   </span>
-                  <Badge variant={status.variant} size="sm">
+                  <Badge variant={status.variant}>
                     {status.label}
                   </Badge>
                 </div>

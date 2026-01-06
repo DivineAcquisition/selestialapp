@@ -13,11 +13,10 @@ export default function QuickAddFAB() {
       {/* FAB - visible on mobile, bottom right */}
       <Button
         onClick={() => setOpen(true)}
-        variant="neon"
-        className="fixed bottom-6 right-6 w-16 h-16 rounded-2xl shadow-xl shadow-primary/30 lg:hidden z-40 hover:scale-105 transition-transform active:scale-95"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg lg:hidden z-40"
         size="icon"
       >
-        <Plus className="w-7 h-7" />
+        <Plus className="w-6 h-6" />
       </Button>
       
       <QuickAddQuote open={open} onClose={() => setOpen(false)} />
