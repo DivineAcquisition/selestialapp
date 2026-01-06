@@ -296,4 +296,73 @@
   .focus-ring:focus-visible {
     @apply ring-2 ring-ring ring-offset-2;
   }
+  
+  /* Glow effects */
+  .glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1);
+  }
+  
+  .glow-sm {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.2), 0 0 20px hsl(var(--primary) / 0.1);
+  }
+  
+  .glow-lg {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.4), 0 0 60px hsl(var(--primary) / 0.2);
+  }
+  
+  .glow-border {
+    @apply border border-primary/30;
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.2), inset 0 0 15px hsl(var(--primary) / 0.05);
+  }
+  
+  .glow-border-hover:hover {
+    @apply border-primary/50;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), inset 0 0 20px hsl(var(--primary) / 0.08);
+  }
+  
+  /* Card with glow on hover */
+  .card-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .card-glow:hover {
+    @apply border-primary/30;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15), 0 4px 20px hsl(0 0% 0% / 0.1);
+  }
+  
+  /* Gradient glow background */
+  .glow-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.1) 0%, 
+      hsl(var(--primary) / 0.05) 50%,
+      transparent 100%
+    );
+  }
+  
+  /* AI/Feature highlight card */
+  .feature-card {
+    @apply relative overflow-hidden rounded-xl border bg-card;
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(var(--primary) / 0.02) 100%
+    );
+  }
+  
+  .feature-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, 
+      hsl(var(--primary) / 0.08) 0%, 
+      transparent 60%
+    );
+  }
+  
+  .feature-card:hover::before {
+    @apply opacity-100;
+  }
+  
+  .feature-card:hover {
+    @apply border-primary/20;
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.1);
+  }
 }

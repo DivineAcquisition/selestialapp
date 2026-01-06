@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
 import { useBusiness } from '@/contexts/BusinessContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   CreditCard,
@@ -17,6 +18,8 @@ import {
   ArrowRight,
   Building2,
   RefreshCw,
+  Wallet,
+  TrendingUp,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -119,23 +122,23 @@ export default function PaymentSettings() {
   return (
     <div className="space-y-6">
       {/* Connection Status Card */}
-      <Card className="overflow-hidden">
-        <div className="p-6 border-b border-border bg-muted/30">
+      <Card className="overflow-hidden feature-card">
+        <div className="p-6 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <CreditCard className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-sm">
+                <CreditCard className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold">Payment Processing</h3>
+                <h3 className="font-semibold text-lg">Payment Processing</h3>
                 <p className="text-sm text-muted-foreground">
                   Accept payments directly from your quotes
                 </p>
               </div>
             </div>
             {status.connected && status.chargesEnabled && (
-              <Badge variant="default" className="gap-1">
-                <Check className="h-3 w-3" />
+              <Badge variant="default" className="gap-1.5 px-3 py-1">
+                <Check className="h-3.5 w-3.5" />
                 Connected
               </Badge>
             )}
@@ -145,15 +148,15 @@ export default function PaymentSettings() {
         <div className="p-6">
           {!status.connected ? (
             /* Not Connected State */
-            <div className="text-center py-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                <Building2 className="h-8 w-8 text-muted-foreground" />
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
+                <Building2 className="h-10 w-10 text-muted-foreground" />
               </div>
-              <h4 className="font-medium mb-2">Connect Your Stripe Account</h4>
-              <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+              <h4 className="text-lg font-semibold mb-2">Connect Your Stripe Account</h4>
+              <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
                 Accept online payments from your customers. Funds go directly to your bank account with industry-leading security.
               </p>
-              <Button onClick={handleConnect} disabled={connecting} className="gap-2">
+              <Button onClick={handleConnect} disabled={connecting} className="gap-2 glow-sm">
                 {connecting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -161,27 +164,27 @@ export default function PaymentSettings() {
                 )}
                 Connect with Stripe
               </Button>
-              <p className="text-xs text-muted-foreground mt-4">
+              <p className="text-xs text-muted-foreground mt-6">
                 Powered by Stripe. No monthly fees, only pay when you get paid.
               </p>
             </div>
           ) : !status.chargesEnabled ? (
             /* Onboarding Incomplete */
-            <div className="text-center py-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-warning/10 flex items-center justify-center">
-                <AlertCircle className="h-8 w-8 text-warning" />
+            <div className="text-center py-8">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <AlertCircle className="h-10 w-10 text-amber-600" />
               </div>
-              <h4 className="font-medium mb-2">Complete Your Setup</h4>
-              <p className="text-sm text-muted-foreground mb-4">
+              <h4 className="text-lg font-semibold mb-2">Complete Your Setup</h4>
+              <p className="text-sm text-muted-foreground mb-6">
                 Your Stripe account needs additional information before you can accept payments.
               </p>
               {status.requirementsDue.length > 0 && (
-                <div className="mb-4 p-3 bg-muted rounded-lg text-left max-w-md mx-auto">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Required information:</p>
-                  <ul className="text-xs text-muted-foreground space-y-1">
+                <div className="mb-6 p-4 bg-muted/50 rounded-xl text-left max-w-md mx-auto">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Required information</p>
+                  <ul className="text-sm text-foreground space-y-2">
                     {status.requirementsDue.slice(0, 3).map((req) => (
                       <li key={req} className="flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-warning" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                         {req.replace(/_/g, ' ').replace(/\./g, ' → ')}
                       </li>
                     ))}
@@ -204,7 +207,7 @@ export default function PaymentSettings() {
                 </Button>
                 <Button variant="outline" onClick={() => refetch()} className="gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  Refresh Status
+                  Refresh
                 </Button>
               </div>
             </div>
@@ -214,17 +217,23 @@ export default function PaymentSettings() {
               {/* Balance Overview */}
               {balance && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-muted/50">
-                    <p className="text-sm text-muted-foreground mb-1">Available</p>
-                    <p className="text-2xl font-semibold text-primary">
+                  <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 glow-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Wallet className="w-4 h-4 text-primary" />
+                      <p className="text-sm font-medium text-muted-foreground">Available</p>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">
                       {balance.available[0]
                         ? formatCurrency(balance.available[0].amount, balance.available[0].currency)
                         : '$0.00'}
                     </p>
                   </div>
-                  <div className="p-4 rounded-lg bg-muted/50">
-                    <p className="text-sm text-muted-foreground mb-1">Pending</p>
-                    <p className="text-2xl font-semibold">
+                  <div className="p-5 rounded-xl bg-muted/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                    </div>
+                    <p className="text-3xl font-bold">
                       {balance.pending[0]
                         ? formatCurrency(balance.pending[0].amount, balance.pending[0].currency)
                         : '$0.00'}
@@ -236,17 +245,19 @@ export default function PaymentSettings() {
               {/* Recent Payouts */}
               {payouts.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-3">Recent Payouts</h4>
+                  <h4 className="text-sm font-semibold mb-3">Recent Payouts</h4>
                   <div className="space-y-2">
                     {payouts.slice(0, 3).map((payout) => (
                       <div
                         key={payout.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                        className="flex items-center justify-between p-4 rounded-xl bg-muted/30 card-glow"
                       >
                         <div className="flex items-center gap-3">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-green-600" />
+                          </div>
                           <div>
-                            <p className="text-sm font-medium">
+                            <p className="font-semibold">
                               {formatCurrency(payout.amount, payout.currency)}
                             </p>
                             <p className="text-xs text-muted-foreground">
@@ -310,12 +321,23 @@ export default function PaymentSettings() {
       {/* Payment Settings */}
       {status.connected && status.chargesEnabled && (
         <Card className="p-6">
-          <h3 className="font-semibold mb-4">Payment Options</h3>
-          <div className="space-y-4">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Payment Options</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Configure how payments are handled
+              </p>
+            </div>
+          </div>
+          
+          <div className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Auto-send payment links</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mt-1">
                   Automatically include a payment link when sending quotes
                 </p>
               </div>

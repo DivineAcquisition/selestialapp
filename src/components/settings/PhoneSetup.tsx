@@ -1,8 +1,11 @@
+"use client";
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
 import { formatPhone } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { 
   Phone, 
   Search, 
@@ -21,7 +25,9 @@ import {
   AlertCircle,
   Plus,
   Trash2,
-  MessageSquare
+  MessageSquare,
+  Zap,
+  Shield,
 } from 'lucide-react';
 
 export default function PhoneSetup() {
@@ -84,48 +90,71 @@ export default function PhoneSetup() {
   if (phoneNumber) {
     return (
       <>
-        <Card className="p-6 space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Phone className="h-5 w-5 text-primary" />
+        <Card className="overflow-hidden feature-card">
+          <div className="p-6 border-b border-border/50 bg-gradient-to-r from-green-500/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <Phone className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">SMS Phone Number</h3>
+                  <p className="text-sm text-muted-foreground">Your dedicated number for sending follow-ups</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium text-foreground">SMS Phone Number</h3>
-                <p className="text-sm text-muted-foreground">Your dedicated number for sending follow-ups</p>
-              </div>
+              <Badge variant="default" className="gap-1.5 bg-green-600">
+                <CheckCircle className="h-3.5 w-3.5" />
+                Active
+              </Badge>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between p-5 bg-gradient-to-r from-primary/5 to-transparent rounded-xl glow-border">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center glow-sm">
+                  <Phone className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatPhone(phoneNumber.phone_number)}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Ready to send messages</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-foreground">
-                  {formatPhone(phoneNumber.phone_number)}
-                </p>
-                <p className="text-sm text-muted-foreground">Active and ready to send</p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setShowRelease(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Release
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-muted/50 text-center">
+                <MessageSquare className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">SMS Enabled</p>
+              </div>
+              <div className="p-4 rounded-xl bg-muted/50 text-center">
+                <Zap className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Auto-replies</p>
+              </div>
+              <div className="p-4 rounded-xl bg-muted/50 text-center">
+                <Shield className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Verified</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-destructive hover:text-destructive"
-              onClick={() => setShowRelease(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Release
-            </Button>
-          </div>
 
-          <div className="flex items-start gap-2 text-sm text-muted-foreground">
-            <MessageSquare className="h-4 w-4 mt-0.5 shrink-0" />
-            <p>
-              All follow-up messages will be sent from this number. 
-              Customer replies will pause the sequence automatically.
-            </p>
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-sm">
+              <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+              <p className="text-blue-800 dark:text-blue-200">
+                All follow-up messages will be sent from this number. 
+                Customer replies will automatically pause the sequence.
+              </p>
+            </div>
           </div>
         </Card>
 
@@ -155,30 +184,35 @@ export default function PhoneSetup() {
 
   return (
     <>
-      <Card className="p-6 space-y-4">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-            <Phone className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">SMS Phone Number</h3>
-            <p className="text-sm text-muted-foreground">Get a phone number to send automated follow-ups</p>
+      <Card className="overflow-hidden">
+        <div className="p-6 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+              <Phone className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">SMS Phone Number</h3>
+              <p className="text-sm text-muted-foreground">Get a phone number to send automated follow-ups</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center py-6 text-center">
-          <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="font-medium text-foreground">No phone number configured</p>
-          <p className="text-sm text-muted-foreground max-w-sm mt-1">
-            You need a phone number to send SMS follow-ups. 
-            Get one now to start automating your quote follow-up.
-          </p>
+        <div className="p-6">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
+              <AlertCircle className="h-10 w-10 text-amber-600" />
+            </div>
+            <h4 className="text-lg font-semibold mb-2">No phone number configured</h4>
+            <p className="text-sm text-muted-foreground max-w-sm mb-8">
+              You need a phone number to send SMS follow-ups. 
+              Get one now to start automating your quote follow-up.
+            </p>
+            <Button onClick={() => setShowSearch(true)} className="gap-2 glow-sm">
+              <Plus className="h-4 w-4" />
+              Get Phone Number
+            </Button>
+          </div>
         </div>
-
-        <Button onClick={() => setShowSearch(true)} className="w-full gap-2">
-          <Plus className="h-4 w-4" />
-          Get Phone Number
-        </Button>
       </Card>
 
       {/* Search and purchase dialog */}
@@ -200,7 +234,7 @@ export default function PhoneSetup() {
             )}
 
             <div className="flex gap-2">
-              <div className="flex-1 space-y-1">
+              <div className="flex-1 space-y-1.5">
                 <Label htmlFor="areaCode">Area Code</Label>
                 <Input
                   id="areaCode"
@@ -209,7 +243,7 @@ export default function PhoneSetup() {
                   onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, '').slice(0, 3))}
                 />
               </div>
-              <Button className="mt-6" onClick={handleSearch} disabled={searching}>
+              <Button className="mt-7" onClick={handleSearch} disabled={searching}>
                 {searching ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -226,13 +260,14 @@ export default function PhoneSetup() {
                     key={number.phone_number}
                     type="button"
                     onClick={() => setSelectedNumber(number.phone_number)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    className={cn(
+                      "w-full flex items-center justify-between p-4 rounded-xl border transition-all",
                       selectedNumber === number.phone_number
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-muted-foreground/50'
-                    }`}
+                        ? 'border-primary bg-primary/5 glow-border'
+                        : 'border-border hover:border-primary/30 card-glow'
+                    )}
                   >
-                    <span className="font-medium text-foreground">
+                    <span className="font-semibold text-foreground">
                       {formatPhone(number.phone_number)}
                     </span>
                     <span className="text-sm text-muted-foreground">
@@ -254,7 +289,7 @@ export default function PhoneSetup() {
             <Button variant="outline" onClick={() => setShowSearch(false)}>
               Cancel
             </Button>
-            <Button onClick={handlePurchase} disabled={!selectedNumber || purchasing}>
+            <Button onClick={handlePurchase} disabled={!selectedNumber || purchasing} className="glow-sm">
               {purchasing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
