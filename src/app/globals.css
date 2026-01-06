@@ -124,6 +124,16 @@
     @apply border-border;
   }
 
+  html {
+    font-size: 14px; /* Smaller base font size */
+  }
+
+  @media (min-width: 1280px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
