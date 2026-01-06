@@ -2,14 +2,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { hover?: boolean; glow?: boolean }>(
-  ({ className, hover = false, glow = false, ...props }, ref) => (
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { neon?: boolean }>(
+  ({ className, neon = false, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border border-border/50 bg-card text-card-foreground shadow-lg shadow-black/10 transition-all duration-300",
-        hover && "hover:border-primary/30 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5 cursor-pointer",
-        glow && "shadow-glow-sm hover:shadow-glow",
+        "rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300",
+        neon && "card-neon",
         className
       )}
       {...props}

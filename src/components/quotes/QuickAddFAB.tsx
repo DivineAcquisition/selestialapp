@@ -13,7 +13,7 @@ export default function QuickAddFAB() {
       {/* FAB - visible on mobile, bottom right */}
       <Button
         onClick={() => setOpen(true)}
-        variant="gradient"
+        variant="neon"
         className="fixed bottom-6 right-6 w-16 h-16 rounded-2xl shadow-xl shadow-primary/30 lg:hidden z-40 hover:scale-105 transition-transform active:scale-95"
         size="icon"
       >

@@ -17,7 +17,6 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const { signIn, user, loading: authLoading } = useAuth();
   
-  // Get success message from URL params
   const successMessage = searchParams.get('message');
   
   const [email, setEmail] = useState('');
@@ -26,7 +25,6 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
       router.push('/');
@@ -42,11 +40,10 @@ function LoginForm() {
       const { error: signInError } = await signIn(email, password);
       
       if (signInError) {
-        // Handle specific error types
         if (signInError.message.includes('Invalid login')) {
           setError('Invalid email or password. Please try again.');
         } else if (signInError.message.includes('Email not confirmed')) {
-          setError('Please verify your email address before signing in. Check your inbox for a verification link.');
+          setError('Please verify your email address before signing in.');
         } else if (signInError.message.includes('Rate limit') || signInError.status === 429) {
           setError(signInError.message);
         } else {
@@ -55,7 +52,6 @@ function LoginForm() {
         return;
       }
       
-      // Get redirect path or default to dashboard
       const redirectTo = searchParams.get('from') || '/';
       router.push(redirectTo);
       
@@ -69,12 +65,7 @@ function LoginForm() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -86,17 +77,15 @@ function LoginForm() {
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to continue to your dashboard">
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Success message */}
         {successMessage && (
-          <div className="p-4 rounded-xl bg-success/10 border border-success/20 flex items-start gap-3 animate-fade-in">
+          <div className="p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
             <p className="text-sm text-success">{decodeURIComponent(successMessage)}</p>
           </div>
         )}
         
-        {/* Error alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 animate-fade-in">
+          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm text-destructive">{error}</p>
@@ -113,7 +102,6 @@ function LoginForm() {
           </div>
         )}
         
-        {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email">Email address</Label>
           <Input
@@ -127,10 +115,10 @@ function LoginForm() {
             autoFocus
             disabled={loading}
             icon={<Mail className="w-4 h-4" />}
+            neon
           />
         </div>
         
-        {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
@@ -153,6 +141,7 @@ function LoginForm() {
               disabled={loading}
               icon={<Lock className="w-4 h-4" />}
               className="pr-10"
+              neon
             />
             <button
               type="button"
@@ -165,11 +154,10 @@ function LoginForm() {
           </div>
         </div>
         
-        {/* Submit */}
         <Button 
           type="submit" 
-          className="w-full h-12" 
-          variant="gradient"
+          className="w-full h-11" 
+          variant="neon"
           disabled={loading}
         >
           {loading ? (
@@ -185,13 +173,10 @@ function LoginForm() {
           )}
         </Button>
         
-        {/* Divider */}
-        <Separator label="or continue with" />
+        <Separator className="my-6" />
         
-        {/* Social auth */}
         <SocialAuthButtons />
         
-        {/* Sign up link */}
         <p className="text-center text-sm text-muted-foreground pt-2">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-primary font-semibold hover:text-primary/80 transition-colors">
@@ -207,12 +192,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     }>
       <LoginForm />

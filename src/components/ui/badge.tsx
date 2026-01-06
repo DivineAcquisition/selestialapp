@@ -9,30 +9,23 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 
-          "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20",
+          "border-primary/30 bg-primary/10 text-primary",
         secondary: 
-          "border-border bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-border bg-secondary text-secondary-foreground",
         destructive: 
-          "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20",
+          "border-destructive/30 bg-destructive/10 text-destructive",
         outline: 
-          "border-border bg-transparent text-foreground hover:bg-secondary",
+          "border-border bg-transparent text-foreground",
         success: 
-          "border-success/30 bg-success/10 text-success hover:bg-success/20",
+          "border-success/30 bg-success/10 text-success",
         warning: 
-          "border-warning/30 bg-warning/10 text-warning hover:bg-warning/20",
+          "border-warning/30 bg-warning/10 text-warning",
         info: 
-          "border-info/30 bg-info/10 text-info hover:bg-info/20",
-        gradient: 
-          "border-0 bg-gradient-to-r from-primary/20 to-accent/20 text-foreground",
-        // Solid variants for more prominent badges
-        "solid-primary": 
-          "border-transparent bg-primary text-primary-foreground shadow-sm shadow-primary/25",
-        "solid-success": 
-          "border-transparent bg-success text-success-foreground shadow-sm shadow-success/25",
-        "solid-warning": 
-          "border-transparent bg-warning text-warning-foreground shadow-sm shadow-warning/25",
-        "solid-destructive": 
-          "border-transparent bg-destructive text-destructive-foreground shadow-sm shadow-destructive/25",
+          "border-info/30 bg-info/10 text-info",
+        neon: 
+          "border-[hsl(var(--neon-cyan))] bg-[hsl(var(--neon-cyan))]/10 text-[hsl(var(--neon-cyan))] shadow-[0_0_10px_hsl(var(--neon-cyan)/0.3)]",
+        "neon-purple": 
+          "border-[hsl(var(--neon-purple))] bg-[hsl(var(--neon-purple))]/10 text-[hsl(var(--neon-purple))] shadow-[0_0_10px_hsl(var(--neon-purple)/0.3)]",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",
@@ -50,12 +43,11 @@ const badgeVariants = cva(
 export interface BadgeProps 
   extends React.HTMLAttributes<HTMLDivElement>, 
     VariantProps<typeof badgeVariants> {
-  icon?: React.ReactNode;
   dot?: boolean;
   dotColor?: string;
 }
 
-function Badge({ className, variant, size, icon, dot, dotColor, children, ...props }: BadgeProps) {
+function Badge({ className, variant, size, dot, dotColor, children, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
       {dot && (
@@ -66,7 +58,6 @@ function Badge({ className, variant, size, icon, dot, dotColor, children, ...pro
           )} 
         />
       )}
-      {icon}
       {children}
     </div>
   );

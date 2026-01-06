@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { LucideIcon, TrendingUp, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
@@ -11,7 +11,7 @@ interface StatsCardProps {
     value: number;
     isPositive: boolean;
   };
-  accentColor?: 'default' | 'success' | 'warning' | 'danger';
+  accentColor?: 'default' | 'success' | 'warning' | 'danger' | 'neon';
   onClick?: () => void;
 }
 
@@ -19,26 +19,22 @@ const accentStyles = {
   default: {
     iconBg: 'bg-primary/10',
     iconText: 'text-primary',
-    border: 'hover:border-primary/30',
-    glow: 'group-hover:shadow-primary/5',
   },
   success: {
     iconBg: 'bg-success/10',
     iconText: 'text-success',
-    border: 'hover:border-success/30',
-    glow: 'group-hover:shadow-success/5',
   },
   warning: {
     iconBg: 'bg-warning/10',
     iconText: 'text-warning',
-    border: 'hover:border-warning/30',
-    glow: 'group-hover:shadow-warning/5',
   },
   danger: {
     iconBg: 'bg-destructive/10',
     iconText: 'text-destructive',
-    border: 'hover:border-destructive/30',
-    glow: 'group-hover:shadow-destructive/5',
+  },
+  neon: {
+    iconBg: 'bg-[hsl(var(--neon-cyan))]/10',
+    iconText: 'text-[hsl(var(--neon-cyan))]',
   },
 };
 
@@ -55,18 +51,14 @@ export default function StatsCard({
   
   return (
     <Card 
+      neon={accentColor === 'neon'}
       className={cn(
-        "group relative overflow-hidden p-5 transition-all duration-300",
-        accent.border,
-        accent.glow,
-        onClick && "cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
+        "p-5 transition-all duration-300 hover:shadow-md",
+        onClick && "cursor-pointer hover:-translate-y-0.5"
       )}
       onClick={onClick}
     >
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-muted/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-      
-      <div className="relative flex items-start justify-between">
+      <div className="flex items-start justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <div className="flex items-baseline gap-2">
@@ -94,20 +86,12 @@ export default function StatsCard({
         </div>
         
         <div className={cn(
-          "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
-          accent.iconBg,
-          "group-hover:scale-110"
+          "flex items-center justify-center w-12 h-12 rounded-lg transition-all duration-300",
+          accent.iconBg
         )}>
           <Icon className={cn("h-6 w-6", accent.iconText)} />
         </div>
       </div>
-      
-      {/* Click indicator */}
-      {onClick && (
-        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      )}
     </Card>
   );
 }

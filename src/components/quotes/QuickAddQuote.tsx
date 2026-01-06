@@ -359,7 +359,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             {!success && (
               <Button
                 type="submit"
-                variant="gradient"
+                variant="neon"
                 className="flex-1 h-11"
                 disabled={saving || !isValid()}
               >

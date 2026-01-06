@@ -16,30 +16,22 @@ export default function AuthLayout({
   subtitle
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute inset-0 gradient-mesh pointer-events-none" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl pointer-events-none" />
-      
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Main content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           {/* Card container */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl shadow-black/20 animate-fade-in-up">
+          <div className="bg-card border border-border rounded-xl p-8 shadow-lg animate-fade-in-up">
             {/* Logo and header */}
             <div className="flex flex-col items-center mb-8">
               <Link href="/" className="group mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Image 
-                    src="/logo-icon-new.png" 
-                    alt="Selestial" 
-                    width={64} 
-                    height={64} 
-                    className="relative rounded-2xl shadow-lg shadow-black/20 group-hover:scale-105 transition-transform" 
-                  />
-                </div>
+                <Image 
+                  src="/logo-icon-new.png" 
+                  alt="Selestial" 
+                  width={56} 
+                  height={56} 
+                  className="rounded-xl shadow-md group-hover:scale-105 transition-transform" 
+                />
               </Link>
               
               <h1 className="text-2xl font-bold text-foreground text-center">{title}</h1>
@@ -52,7 +44,7 @@ export default function AuthLayout({
           </div>
           
           {/* Trust badges */}
-          <div className="mt-8 flex flex-col items-center gap-4 animate-fade-in stagger-2">
+          <div className="mt-8 flex flex-col items-center gap-4">
             <div className="flex items-center gap-6 text-muted-foreground">
               <div className="flex items-center gap-2 text-xs">
                 <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,7 +64,7 @@ export default function AuthLayout({
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-6 px-4">
+      <footer className="py-6 px-4">
         <div className="flex flex-col items-center gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>

@@ -265,7 +265,7 @@ export default function SignupPage() {
         <Button 
           type="submit" 
           className="w-full h-12" 
-          variant="gradient"
+          variant="neon"
           disabled={loading || !isPasswordValid(password) || !agreedToTerms}
         >
           {loading ? (
