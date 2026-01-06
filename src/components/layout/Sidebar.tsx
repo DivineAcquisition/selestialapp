@@ -21,7 +21,6 @@ import {
   ConnectionIcon,
   BillingIcon,
   SettingsIcon,
-  SelestialIcon,
 } from '@/components/ui/custom-icons';
 
 const navigation = [
@@ -95,11 +94,13 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-5 border-b border-sidebar-border">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors glow-border">
-              <SelestialIcon className="text-primary" size={22} />
-            </div>
-          </div>
+          <Image 
+            src="/logo-icon-new.png" 
+            alt="Selestial" 
+            width={36} 
+            height={36} 
+            className="rounded-lg glow-sm" 
+          />
           <div className="flex flex-col">
             <span className="text-lg font-bold text-foreground">Selestial</span>
             <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Quote Follow-Up</span>
