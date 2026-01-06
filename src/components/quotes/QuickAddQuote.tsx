@@ -18,8 +18,15 @@ import {
   Check, 
   Zap,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  User,
+  Phone,
+  DollarSign,
+  Mail,
+  FileText,
+  Sparkles
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuickAddQuoteProps {
   open: boolean;
@@ -168,8 +175,10 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
         onKeyDown={handleKeyDown}
       >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
             Quick Add Quote
           </DialogTitle>
         </DialogHeader>
@@ -177,16 +186,23 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Success state */}
           {success && (
-            <div className="flex items-center justify-center py-4">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-                <Check className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex flex-col items-center justify-center py-8 animate-scale-in">
+              <div className="w-16 h-16 bg-gradient-to-br from-success/20 to-success/10 rounded-2xl flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-success" />
               </div>
+              <p className="text-lg font-semibold text-foreground">Quote Added!</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {addAnother ? 'Ready for the next one' : 'Closing...'}
+              </p>
             </div>
           )}
           
           {/* Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm flex items-start gap-3 animate-fade-in">
+              <div className="w-5 h-5 rounded-full bg-destructive/20 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-xs font-bold">!</span>
+              </div>
               {error}
             </div>
           )}
@@ -195,8 +211,8 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
           {!success && (
             <>
               {/* Name */}
-              <div className="space-y-1.5">
-                <Label htmlFor="quick-name" className="text-sm">
+              <div className="space-y-2">
+                <Label htmlFor="quick-name" className="text-sm font-medium">
                   Customer Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -207,12 +223,13 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   onChange={(e) => setName(e.target.value)}
                   disabled={saving}
                   autoComplete="off"
+                  icon={<User className="w-4 h-4" />}
                 />
               </div>
               
               {/* Phone */}
-              <div className="space-y-1.5">
-                <Label htmlFor="quick-phone" className="text-sm">
+              <div className="space-y-2">
+                <Label htmlFor="quick-phone" className="text-sm font-medium">
                   Phone <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -223,35 +240,38 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   disabled={saving}
                   type="tel"
                   autoComplete="off"
+                  icon={<Phone className="w-4 h-4" />}
                 />
               </div>
               
               {/* Amount */}
-              <div className="space-y-1.5">
-                <Label htmlFor="quick-amount" className="text-sm">
+              <div className="space-y-2">
+                <Label htmlFor="quick-amount" className="text-sm font-medium">
                   Quote Amount <span className="text-destructive">*</span>
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                  <Input
-                    id="quick-amount"
-                    placeholder="250"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    disabled={saving}
-                    className="pl-7"
-                    type="text"
-                    inputMode="decimal"
-                    autoComplete="off"
-                  />
-                </div>
+                <Input
+                  id="quick-amount"
+                  placeholder="250.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  disabled={saving}
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  icon={<DollarSign className="w-4 h-4" />}
+                />
               </div>
               
-              {/* Expandable section */}
+              {/* Expandable section toggle */}
               <button
                 type="button"
                 onClick={() => setShowMore(!showMore)}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className={cn(
+                  "flex items-center gap-2 text-sm font-medium transition-colors w-full justify-center py-2 rounded-lg",
+                  showMore 
+                    ? "text-primary bg-primary/5" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                )}
               >
                 {showMore ? (
                   <ChevronUp className="w-4 h-4" />
@@ -262,11 +282,11 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
               </button>
               
               {showMore && (
-                <div className="space-y-4 pt-2 border-t border-border">
+                <div className="space-y-4 pt-2 animate-fade-in-up">
                   {/* Email */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="quick-email" className="text-sm">
-                      Email (optional)
+                  <div className="space-y-2">
+                    <Label htmlFor="quick-email" className="text-sm font-medium">
+                      Email <span className="text-muted-foreground">(optional)</span>
                     </Label>
                     <Input
                       id="quick-email"
@@ -275,12 +295,13 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={saving}
+                      icon={<Mail className="w-4 h-4" />}
                     />
                   </div>
                   
                   {/* Service Type */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="quick-service" className="text-sm">
+                  <div className="space-y-2">
+                    <Label htmlFor="quick-service" className="text-sm font-medium">
                       Service Type
                     </Label>
                     <Input
@@ -289,12 +310,13 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={serviceType}
                       onChange={(e) => setServiceType(e.target.value)}
                       disabled={saving}
+                      icon={<Sparkles className="w-4 h-4" />}
                     />
                   </div>
                   
                   {/* Notes */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="quick-notes" className="text-sm">
+                  <div className="space-y-2">
+                    <Label htmlFor="quick-notes" className="text-sm font-medium">
                       Notes
                     </Label>
                     <Input
@@ -303,13 +325,14 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       disabled={saving}
+                      icon={<FileText className="w-4 h-4" />}
                     />
                   </div>
                 </div>
               )}
               
               {/* Add Another checkbox */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
                 <Checkbox
                   id="add-another"
                   checked={addAnother}
@@ -328,7 +351,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="flex-1"
+              className="flex-1 h-11"
               disabled={saving}
             >
               {success ? 'Close' : 'Cancel'}
@@ -336,17 +359,18 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             {!success && (
               <Button
                 type="submit"
-                className="flex-1"
+                variant="gradient"
+                className="flex-1 h-11"
                 disabled={saving || !isValid()}
               >
                 {saving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="w-4 h-4" />
                     Add Quote
                   </>
                 )}
@@ -356,8 +380,12 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
           
           {/* Keyboard hint */}
           {!success && (
-            <p className="text-xs text-muted-foreground text-center">
-              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-muted-foreground">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-muted rounded text-muted-foreground">Enter</kbd> to save
+            <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+              Press
+              <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border/50 font-mono text-[10px]">⌘</kbd>
+              <span>+</span>
+              <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border/50 font-mono text-[10px]">↵</kbd>
+              to save
             </p>
           )}
         </form>

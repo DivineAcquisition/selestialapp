@@ -8,7 +8,7 @@ import QuotePipeline from '@/components/dashboard/QuotePipeline';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickActions from '@/components/dashboard/QuickActions';
 import QuickAddQuote from '@/components/quotes/QuickAddQuote';
-import { FileText, TrendingUp, Target, DollarSign } from 'lucide-react';
+import { FileText, TrendingUp, Target, DollarSign, Sparkles } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { useBusiness } from '@/providers';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -73,24 +73,40 @@ export default function DashboardPage() {
     description: a.description,
     quote_id: a.quote_id ?? undefined,
   }));
+
+  // Get current time greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
   
   return (
     <Layout title="Dashboard">
-      {/* Welcome message */}
-      <div className="mb-6">
-        <p className="text-muted-foreground">
-          Welcome back, {business?.owner_name || 'User'}
+      {/* Welcome section */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="h-5 w-5 text-primary animate-pulse-subtle" />
+          <span className="text-sm font-medium text-primary">{getGreeting()}</span>
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+          Welcome back, {business?.owner_name?.split(' ')[0] || 'there'}
+        </h2>
+        <p className="text-muted-foreground mt-1">
+          Here&apos;s what&apos;s happening with your quotes today
         </p>
       </div>
       
-      {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Stats grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           title="Active Quotes"
           value={stats.activeQuotes.toString()}
           subtitle="Awaiting response"
           icon={FileText}
           accentColor="default"
+          onClick={() => router.push('/quotes?status=active')}
         />
         <StatsCard
           title="Conversion Rate"
@@ -106,6 +122,7 @@ export default function DashboardPage() {
           subtitle={formatCurrency(stats.wonAmount)}
           icon={Target}
           accentColor="success"
+          onClick={() => router.push('/quotes?status=won')}
         />
         <StatsCard
           title="Revenue Recovered"
@@ -119,15 +136,26 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <QuickActions onAddQuote={handleAddQuote} />
       
-      {/* Pipeline */}
-      <div className="mt-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Quote Pipeline</h2>
-        <QuotePipeline quotes={transformedQuotes} onQuoteClick={handleQuoteClick} />
-      </div>
-      
-      {/* Recent activity */}
-      <div className="mt-8">
-        <RecentActivity activities={transformedActivities} />
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mt-8">
+        {/* Pipeline - takes 2 columns on xl */}
+        <div className="xl:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Quote Pipeline</h2>
+            <button 
+              onClick={() => router.push('/quotes')}
+              className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              View all
+            </button>
+          </div>
+          <QuotePipeline quotes={transformedQuotes} onQuoteClick={handleQuoteClick} />
+        </div>
+        
+        {/* Recent activity - takes 1 column on xl */}
+        <div className="xl:col-span-1">
+          <RecentActivity activities={transformedActivities} />
+        </div>
       </div>
       
       {/* Quick Add Quote Modal */}

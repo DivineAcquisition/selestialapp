@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Loader2, AlertCircle, Mail, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, Mail, ArrowLeft, ArrowRight, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -71,7 +71,7 @@ export default function SignupPage() {
         router.push('/onboarding');
       }
       
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -94,7 +94,12 @@ export default function SignupPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -108,38 +113,45 @@ export default function SignupPage() {
       <AuthLayout title="Check your email" subtitle="We've sent you a verification link">
         <div className="space-y-6 text-center">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Mail className="w-8 h-8 text-primary" />
+            <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center animate-float">
+              <Mail className="w-10 h-10 text-primary" />
             </div>
           </div>
           
-          <div>
+          <div className="space-y-2">
             <p className="text-foreground">
-              We&apos;ve sent a verification email to <strong>{email}</strong>. 
+              We&apos;ve sent a verification email to
             </p>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-primary font-semibold">{email}</p>
+            <p className="text-sm text-muted-foreground mt-3">
               Click the link in the email to verify your account and get started.
             </p>
           </div>
           
-          <div className="p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground space-y-2">
-            <p className="font-medium text-foreground">Didn&apos;t receive the email?</p>
-            <ul className="list-disc list-inside space-y-1 text-left">
-              <li>Check your spam or junk folder</li>
-              <li>Make sure you entered the correct email</li>
+          <div className="p-4 rounded-xl bg-secondary/50 border border-border/50 text-sm space-y-3">
+            <p className="font-semibold text-foreground">Didn&apos;t receive the email?</p>
+            <ul className="text-muted-foreground space-y-2 text-left">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                <span>Check your spam or junk folder</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                <span>Make sure you entered the correct email</span>
+              </li>
             </ul>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-3 pt-2">
             <Button 
               variant="outline" 
-              className="w-full"
+              className="w-full h-11"
               onClick={handleResendVerification}
               disabled={resending}
             >
               {resending ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Sending...
                 </>
               ) : (
@@ -149,7 +161,7 @@ export default function SignupPage() {
             
             <Button 
               variant="ghost" 
-              className="w-full gap-2"
+              className="w-full h-11 gap-2"
               onClick={() => router.push('/login')}
             >
               <ArrowLeft className="w-4 h-4" />
@@ -158,9 +170,9 @@ export default function SignupPage() {
           </div>
           
           {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-2">
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 animate-fade-in">
               <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive text-left">{error}</p>
             </div>
           )}
         </div>
@@ -170,9 +182,22 @@ export default function SignupPage() {
   
   return (
     <AuthLayout title="Start your free trial" subtitle="14 days free, no credit card required">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Features list */}
+        <div className="flex flex-wrap gap-2 justify-center mb-2">
+          {['AI Replies', 'Auto Follow-ups', 'SMS & Email'].map((feature) => (
+            <div 
+              key={feature}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-full"
+            >
+              <Sparkles className="w-3 h-3 text-primary" />
+              {feature}
+            </div>
+          ))}
+        </div>
+        
         {error && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-2">
+          <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 animate-fade-in">
             <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
             <p className="text-sm text-destructive">{error}</p>
           </div>
@@ -183,13 +208,14 @@ export default function SignupPage() {
           <Input
             id="email"
             type="email"
-            placeholder="mike@johnsonplumbing.com"
+            placeholder="you@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
             autoFocus
             disabled={loading}
+            icon={<Mail className="w-4 h-4" />}
           />
         </div>
         
@@ -206,11 +232,12 @@ export default function SignupPage() {
               autoComplete="new-password"
               className="pr-10"
               disabled={loading}
+              icon={<Lock className="w-4 h-4" />}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -219,50 +246,48 @@ export default function SignupPage() {
           <PasswordStrengthIndicator password={password} />
         </div>
         
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
           <Checkbox
             id="terms"
             checked={agreedToTerms}
             onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
             disabled={loading}
+            className="mt-0.5"
           />
-          <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+          <label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
             I agree to the{' '}
-            <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            <Link href="/terms" className="text-primary hover:text-primary/80 font-medium transition-colors">Terms of Service</Link>
             {' '}and{' '}
-            <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+            <Link href="/privacy" className="text-primary hover:text-primary/80 font-medium transition-colors">Privacy Policy</Link>
           </label>
         </div>
         
         <Button 
           type="submit" 
-          className="w-full h-11" 
+          className="w-full h-12" 
+          variant="gradient"
           disabled={loading || !isPasswordValid(password) || !agreedToTerms}
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <Loader2 className="w-4 h-4 animate-spin" />
               Creating account...
             </>
           ) : (
-            'Create account'
+            <>
+              Create account
+              <ArrowRight className="w-4 h-4" />
+            </>
           )}
         </Button>
         
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or continue with</span>
-          </div>
-        </div>
+        <Separator label="or continue with" />
         
         <SocialAuthButtons />
         
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground pt-2">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary font-medium hover:underline">
+          <Link href="/login" className="text-primary font-semibold hover:text-primary/80 transition-colors">
             Sign in
           </Link>
         </p>

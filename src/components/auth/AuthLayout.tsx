@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -15,45 +16,74 @@ export default function AuthLayout({
   subtitle
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Main content - centered form */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm space-y-6">
-          {/* Centered logo */}
-          <div className="flex justify-center">
-            <Image 
-              src="/logo-icon-new.png" 
-              alt="Selestial" 
-              width={56} 
-              height={56} 
-              className="h-14 w-14 rounded-xl" 
-            />
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 gradient-mesh pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+        <div className="w-full max-w-md">
+          {/* Card container */}
+          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl shadow-black/20 animate-fade-in-up">
+            {/* Logo and header */}
+            <div className="flex flex-col items-center mb-8">
+              <Link href="/" className="group mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Image 
+                    src="/logo-icon-new.png" 
+                    alt="Selestial" 
+                    width={64} 
+                    height={64} 
+                    className="relative rounded-2xl shadow-lg shadow-black/20 group-hover:scale-105 transition-transform" 
+                  />
+                </div>
+              </Link>
+              
+              <h1 className="text-2xl font-bold text-foreground text-center">{title}</h1>
+              {subtitle && (
+                <p className="text-sm text-muted-foreground mt-2 text-center">{subtitle}</p>
+              )}
+            </div>
+            
+            {children}
           </div>
           
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          {/* Trust badges */}
+          <div className="mt-8 flex flex-col items-center gap-4 animate-fade-in stagger-2">
+            <div className="flex items-center gap-6 text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs">
+                <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>256-bit encryption</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>SOC 2 Compliant</span>
+              </div>
+            </div>
           </div>
-          
-          {children}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-8 px-6">
+      <footer className="relative z-10 py-6 px-4">
         <div className="flex flex-col items-center gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Image 
-              src="/logo-icon-new.png" 
-              alt="Selestial" 
-              width={20} 
-              height={20} 
-              className="h-5 w-5 rounded opacity-50" 
-            />
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <span className="text-border">•</span>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <span className="text-border">•</span>
+            <Link href="/support" className="hover:text-foreground transition-colors">Support</Link>
           </div>
-          <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} Selestial. All rights reserved.</span>
-          </div>
+          <p className="text-xs text-muted-foreground/70">
+            © {new Date().getFullYear()} Selestial. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

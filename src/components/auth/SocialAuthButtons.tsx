@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
@@ -38,16 +40,16 @@ export default function SocialAuthButtons() {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-11"
+        className="w-full h-12 gap-3 bg-secondary/30 hover:bg-secondary/50 border-border/50 transition-all duration-200"
         onClick={handleGoogleLogin}
         disabled={loading === 'google'}
       >
         {loading === 'google' ? (
-          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
-          <span className="mr-2"><GoogleIcon /></span>
+          <GoogleIcon />
         )}
-        Continue with Google
+        <span className="font-medium">Continue with Google</span>
       </Button>
     </div>
   );
