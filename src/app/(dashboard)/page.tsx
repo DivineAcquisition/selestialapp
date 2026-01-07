@@ -3,18 +3,35 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
-import StatsCard from '@/components/dashboard/StatsCard';
 import QuotePipeline from '@/components/dashboard/QuotePipeline';
 import RecentActivity from '@/components/dashboard/RecentActivity';
-import QuickActions from '@/components/dashboard/QuickActions';
 import QuickAddQuote from '@/components/quotes/QuickAddQuote';
-import { FileText, TrendingUp, Target, DollarSign, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { GradientText, AnimatedCounter } from '@/components/ui/text-effects';
+import { 
+  FileText, 
+  TrendingUp, 
+  Target, 
+  DollarSign, 
+  Sparkles, 
+  Plus, 
+  ArrowRight,
+  Zap,
+  Users,
+  MessageSquare,
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  Send,
+} from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { useBusiness } from '@/providers';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useActivities } from '@/hooks/useActivities';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { cn } from '@/lib/utils';
 import type { Quote, ActivityLog, QuoteStatus } from '@/types';
 
 export default function DashboardPage() {
@@ -33,10 +50,6 @@ export default function DashboardPage() {
   }), []);
   
   useKeyboardShortcuts(shortcuts);
-  
-  const handleAddQuote = () => {
-    setShowQuickAdd(true);
-  };
   
   const handleQuoteClick = (quoteId: string) => {
     router.push(`/quotes?id=${quoteId}`);
@@ -84,77 +97,272 @@ export default function DashboardPage() {
   
   return (
     <Layout title="Dashboard">
-      {/* Welcome section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-5 w-5 text-primary animate-pulse-subtle" />
-          <span className="text-sm font-medium text-primary">{getGreeting()}</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-          Welcome back, {business?.owner_name?.split(' ')[0] || 'there'}
-        </h2>
-        <p className="text-muted-foreground mt-1">
-          Here&apos;s what&apos;s happening with your quotes today
-        </p>
-      </div>
-      
-      {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatsCard
-          title="Active Quotes"
-          value={stats.activeQuotes.toString()}
-          subtitle="Awaiting response"
-          icon={FileText}
-          accentColor="default"
-          onClick={() => router.push('/quotes?status=active')}
-        />
-        <StatsCard
-          title="Conversion Rate"
-          value={`${stats.conversionRate}%`}
-          subtitle="Last 30 days"
-          icon={TrendingUp}
-          trend={{ value: 5, isPositive: true }}
-          accentColor="success"
-        />
-        <StatsCard
-          title="Won This Month"
-          value={stats.wonCount.toString()}
-          subtitle={formatCurrency(stats.wonAmount)}
-          icon={Target}
-          accentColor="success"
-          onClick={() => router.push('/quotes?status=won')}
-        />
-        <StatsCard
-          title="Revenue Recovered"
-          value={formatCurrency(stats.revenueRecovered)}
-          subtitle="From follow-ups"
-          icon={DollarSign}
-          accentColor="warning"
-        />
-      </div>
-      
-      {/* Quick actions */}
-      <QuickActions onAddQuote={handleAddQuote} />
-      
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mt-8">
-        {/* Pipeline - takes 2 columns on xl */}
-        <div className="xl:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Quote Pipeline</h2>
-            <button 
-              onClick={() => router.push('/quotes')}
-              className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-            >
-              View all
-            </button>
+      <div className="space-y-6">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-[#9D96FF] p-6 md:p-8 text-white">
+          {/* Background decoration */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#9D96FF]/30 rounded-full blur-3xl" />
           </div>
-          <QuotePipeline quotes={transformedQuotes} onQuoteClick={handleQuoteClick} />
+          
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-5 w-5 animate-pulse" />
+                  <span className="text-sm font-medium text-white/80">{getGreeting()}</span>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                  Welcome back, {business?.owner_name?.split(' ')[0] || 'there'}!
+                </h1>
+                <p className="text-white/70 max-w-lg">
+                  You have <span className="text-white font-semibold">{stats.activeQuotes} active quotes</span> awaiting follow-up. 
+                  Your conversion rate is up <span className="text-emerald-300 font-semibold">5%</span> this month!
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Button 
+                  size="lg"
+                  onClick={() => setShowQuickAdd(true)}
+                  className="bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/10 rounded-xl"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  New Quote
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="ghost"
+                  onClick={() => router.push('/inbox')}
+                  className="text-white border border-white/20 hover:bg-white/10 rounded-xl"
+                >
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Inbox
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {/* Recent activity - takes 1 column on xl */}
-        <div className="xl:col-span-1">
-          <RecentActivity activities={transformedActivities} />
+        {/* Stats Bento Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Active Quotes */}
+          <div 
+            onClick={() => router.push('/quotes?status=active')}
+            className="group card-elevated p-5 cursor-pointer"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <FileText className="h-5 w-5" />
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              <AnimatedCounter value={stats.activeQuotes} />
+            </div>
+            <p className="text-sm text-gray-500">Active Quotes</p>
+          </div>
+          
+          {/* Conversion Rate */}
+          <div className="group card-elevated p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                +5%
+              </Badge>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              <AnimatedCounter value={stats.conversionRate} suffix="%" />
+            </div>
+            <p className="text-sm text-gray-500">Conversion Rate</p>
+          </div>
+          
+          {/* Won This Month */}
+          <div 
+            onClick={() => router.push('/quotes?status=won')}
+            className="group card-elevated p-5 cursor-pointer"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                <Target className="h-5 w-5" />
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              <AnimatedCounter value={stats.wonCount} />
+            </div>
+            <p className="text-sm text-gray-500">Won This Month</p>
+            <p className="text-xs text-emerald-600 font-medium mt-1">
+              {formatCurrency(stats.wonAmount)}
+            </p>
+          </div>
+          
+          {/* Revenue Recovered */}
+          <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              {formatCurrency(stats.revenueRecovered)}
+            </div>
+            <p className="text-sm text-gray-500">Revenue Recovered</p>
+            <p className="text-xs text-primary font-medium mt-1">
+              From follow-ups ✨
+            </p>
+          </div>
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <button 
+            onClick={() => setShowQuickAdd(true)}
+            className="group p-4 rounded-xl border border-gray-200 bg-white hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <Plus className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Add Quote</p>
+                <p className="text-xs text-gray-500">Create new</p>
+              </div>
+            </div>
+          </button>
+          
+          <button 
+            onClick={() => router.push('/sequences')}
+            className="group p-4 rounded-xl border border-gray-200 bg-white hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                <Zap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Sequences</p>
+                <p className="text-xs text-gray-500">Automations</p>
+              </div>
+            </div>
+          </button>
+          
+          <button 
+            onClick={() => router.push('/customers')}
+            className="group p-4 rounded-xl border border-gray-200 bg-white hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Customers</p>
+                <p className="text-xs text-gray-500">View all</p>
+              </div>
+            </div>
+          </button>
+          
+          <button 
+            onClick={() => router.push('/analytics')}
+            className="group p-4 rounded-xl border border-gray-200 bg-white hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Analytics</p>
+                <p className="text-xs text-gray-500">Reports</p>
+              </div>
+            </div>
+          </button>
+        </div>
+        
+        {/* Main Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Pipeline */}
+          <div className="xl:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-gray-900">Quote Pipeline</h2>
+                <Badge variant="secondary" className="text-xs">
+                  {transformedQuotes.length} quotes
+                </Badge>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push('/quotes')}
+                className="text-primary hover:text-primary/80"
+              >
+                View all
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+            
+            <div className="card-elevated p-0 overflow-hidden">
+              <QuotePipeline quotes={transformedQuotes} onQuoteClick={handleQuoteClick} />
+            </div>
+          </div>
+          
+          {/* Activity + AI Insights */}
+          <div className="space-y-6">
+            {/* AI Insights Card */}
+            <div className="card-feature p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-[#9D96FF]">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">AI Insights</h3>
+                  <p className="text-xs text-gray-500">Smart recommendations</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <Clock className="h-4 w-4 text-amber-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-900">3 quotes need follow-up</p>
+                    <p className="text-xs text-amber-700">No response in 48+ hours</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-900">High win probability</p>
+                    <p className="text-xs text-emerald-700">2 quotes likely to convert</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <Send className="h-4 w-4 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">5 messages sent today</p>
+                    <p className="text-xs text-blue-700">Automated follow-ups working</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full mt-4 text-primary hover:text-primary/80 hover:bg-primary/5"
+                onClick={() => router.push('/analytics')}
+              >
+                View detailed insights
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+            
+            {/* Recent Activity */}
+            <RecentActivity activities={transformedActivities} />
+          </div>
         </div>
       </div>
       

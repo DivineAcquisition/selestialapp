@@ -7,8 +7,10 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 function LoginForm() {
   const router = useRouter()
@@ -20,6 +22,7 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,14 +65,41 @@ function LoginForm() {
     }
   }
 
+  const features = [
+    'AI-powered follow-ups',
+    'Automated sequences',
+    'Smart analytics',
+  ]
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-muted-foreground">
-          Sign in to your account to continue
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Badge className="bg-primary/10 text-primary border-0 font-medium">
+            <Sparkles className="h-3 w-3 mr-1" />
+            Welcome back
+          </Badge>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          Sign in to your account
+        </h1>
+        <p className="text-gray-500">
+          Continue where you left off with your quote follow-ups
         </p>
+      </div>
+
+      {/* Features */}
+      <div className="flex flex-wrap gap-2">
+        {features.map((feature) => (
+          <div 
+            key={feature}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full"
+          >
+            <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+            {feature}
+          </div>
+        ))}
       </div>
 
       {/* Google Sign In */}
@@ -78,7 +108,12 @@ function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={googleLoading}
-        className="w-full h-12 text-base font-medium border-2 hover:bg-secondary/80 transition-all"
+        className={cn(
+          "w-full h-12 text-sm font-medium border-2 rounded-xl",
+          "hover:bg-gray-50 hover:border-gray-300",
+          "transition-all duration-300",
+          "group"
+        )}
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -91,6 +126,7 @@ function LoginForm() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
+            <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </>
         )}
       </Button>
@@ -98,10 +134,10 @@ function LoginForm() {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
+          <div className="w-full border-t border-gray-200" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="px-4 bg-background text-muted-foreground font-medium tracking-wider">
+        <div className="relative flex justify-center">
+          <span className="px-4 bg-white text-xs font-medium text-gray-400 uppercase tracking-wider">
             Or continue with email
           </span>
         </div>
@@ -110,26 +146,34 @@ function LoginForm() {
       {/* Email Form */}
       <form onSubmit={handleEmailLogin} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium">
+          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
             Email address
           </Label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative rounded-xl transition-all duration-300",
+            focusedField === 'email' && "ring-2 ring-primary/20"
+          )}>
+            <Mail className={cn(
+              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              focusedField === 'email' ? "text-primary" : "text-gray-400"
+            )} />
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)}
               placeholder="you@company.com"
               required
-              className="h-12 pl-11 text-base"
+              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary"
             />
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
               Password
             </Label>
             <Link 
@@ -139,16 +183,24 @@ function LoginForm() {
               Forgot password?
             </Link>
           </div>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative rounded-xl transition-all duration-300",
+            focusedField === 'password' && "ring-2 ring-primary/20"
+          )}>
+            <Lock className={cn(
+              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              focusedField === 'password' ? "text-primary" : "text-gray-400"
+            )} />
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)}
               placeholder="••••••••"
               required
-              className="h-12 pl-11 text-base"
+              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary"
             />
           </div>
         </div>
@@ -156,13 +208,19 @@ function LoginForm() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-12 text-base font-semibold glow-sm group"
+          className={cn(
+            "w-full h-12 text-sm font-semibold rounded-xl",
+            "bg-gradient-to-r from-primary to-[#9D96FF]",
+            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25",
+            "transition-all duration-300",
+            "group"
+          )}
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              Sign in
+              Sign in to your account
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
@@ -170,15 +228,22 @@ function LoginForm() {
       </form>
 
       {/* Sign up link */}
-      <p className="text-center text-muted-foreground">
-        Don't have an account?{' '}
-        <Link 
-          href="/signup" 
-          className="text-primary hover:text-primary/80 font-semibold transition-colors"
-        >
-          Sign up free
-        </Link>
-      </p>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-100" />
+        </div>
+        <div className="relative flex justify-center">
+          <p className="px-4 bg-white text-sm text-gray-500">
+            New to Selestial?{' '}
+            <Link 
+              href="/signup" 
+              className="text-primary hover:text-primary/80 font-semibold transition-colors"
+            >
+              Create an account
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -187,7 +252,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     }>
       <LoginForm />
