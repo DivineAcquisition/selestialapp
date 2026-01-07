@@ -80,7 +80,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'cleaning',
     name: 'Cleaning Services',
-    icon: '🧹',
+    icon: 'sparkles',
     description: 'Residential and commercial cleaning services',
     avgTicket: { low: 120, avg: 175, high: 300 },
     conversionRate: 17.65,
@@ -182,7 +182,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'hvac',
     name: 'HVAC Services',
-    icon: '❄️',
+    icon: 'thermometer',
     description: 'Heating, ventilation, and air conditioning',
     avgTicket: { low: 350, avg: 750, high: 5750 },
     conversionRate: 5,
@@ -297,7 +297,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'plumbing',
     name: 'Plumbing Services',
-    icon: '🔧',
+    icon: 'wrench',
     description: 'Residential and commercial plumbing',
     avgTicket: { low: 175, avg: 350, high: 600 },
     conversionRate: 14,
@@ -386,7 +386,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'electrical',
     name: 'Electrical Services',
-    icon: '⚡',
+    icon: 'zap',
     description: 'Residential and commercial electrical work',
     avgTicket: { low: 150, avg: 275, high: 500 },
     conversionRate: 12,
@@ -454,7 +454,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'landscaping',
     name: 'Landscaping & Lawn Care',
-    icon: '🌿',
+    icon: 'leaf',
     description: 'Lawn maintenance and landscape services',
     avgTicket: { low: 50, avg: 150, high: 500 },
     conversionRate: 15,
@@ -554,7 +554,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'pest_control',
     name: 'Pest Control',
-    icon: '🐜',
+    icon: 'bug',
     description: 'Residential and commercial pest management',
     avgTicket: { low: 100, avg: 200, high: 500 },
     conversionRate: 18,
@@ -645,7 +645,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'roofing',
     name: 'Roofing Services',
-    icon: '🏠',
+    icon: 'home',
     description: 'Roof repair, replacement, and maintenance',
     avgTicket: { low: 350, avg: 7500, high: 25000 },
     conversionRate: 5,
@@ -722,7 +722,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'painting',
     name: 'Painting Services',
-    icon: '🎨',
+    icon: 'paintbrush',
     description: 'Interior and exterior painting',
     avgTicket: { low: 300, avg: 2500, high: 8000 },
     conversionRate: 12,
@@ -789,7 +789,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'handyman',
     name: 'Handyman Services',
-    icon: '🔨',
+    icon: 'hammer',
     description: 'General repairs and small projects',
     avgTicket: { low: 150, avg: 350, high: 800 },
     conversionRate: 13.45,
@@ -867,7 +867,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'pressure_washing',
     name: 'Pressure Washing',
-    icon: '💦',
+    icon: 'droplets',
     description: 'Exterior cleaning and pressure washing',
     avgTicket: { low: 150, avg: 350, high: 800 },
     conversionRate: 18,
@@ -924,7 +924,7 @@ export const INDUSTRIES: IndustryPricing[] = [
   {
     slug: 'pool_spa',
     name: 'Pool & Spa Services',
-    icon: '🏊',
+    icon: 'waves',
     description: 'Pool cleaning, maintenance, and repair',
     avgTicket: { low: 100, avg: 175, high: 500 },
     conversionRate: 20,

@@ -66,12 +66,12 @@ export default function CampaignsPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'seasonal': return '🌸';
-      case 'holiday': return '🎉';
-      case 'weather': return '🌤️';
-      case 'slow_season': return '📉';
-      case 'custom': return '✏️';
-      default: return '📣';
+      case 'seasonal': return <Sparkles className="w-5 h-5 text-pink-500" />;
+      case 'holiday': return <Calendar className="w-5 h-5 text-purple-500" />;
+      case 'weather': return <TrendingUp className="w-5 h-5 text-blue-500" />;
+      case 'slow_season': return <Target className="w-5 h-5 text-amber-500" />;
+      case 'custom': return <Edit className="w-5 h-5 text-gray-500" />;
+      default: return <Megaphone className="w-5 h-5 text-primary" />;
     }
   };
 
@@ -226,7 +226,7 @@ export default function CampaignsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="text-2xl">{getTypeIcon(campaign.campaign_type)}</span>
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">{getTypeIcon(campaign.campaign_type)}</div>
                       <h3 className="font-semibold text-gray-900 text-lg">{campaign.name}</h3>
                       <Badge className={cn('text-xs', getStatusColor(campaign.status))}>
                         {campaign.status}

@@ -215,7 +215,7 @@ export default function DashboardPage() {
             </div>
             <p className="text-sm text-gray-500">Revenue Recovered</p>
             <p className="text-xs text-primary font-medium mt-1">
-              From follow-ups ✨
+              From follow-ups
             </p>
           </div>
         </div>

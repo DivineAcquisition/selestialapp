@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: email,
-      subject: 'Welcome to Selestial! 🎉',
+      subject: 'Welcome to Selestial!',
       react: WelcomeEmail({ name }),
     })
 

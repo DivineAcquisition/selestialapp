@@ -480,15 +480,17 @@ export default function ConnectionsPage() {
               <h3 className="font-semibold text-gray-900 mb-4">Supported Events</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[
-                  { event: 'customer.created', desc: 'New customers', icon: '👤' },
-                  { event: 'customer.updated', desc: 'Updates', icon: '✏️' },
-                  { event: 'job.scheduled', desc: 'Bookings', icon: '📅' },
-                  { event: 'job.completed', desc: 'Completions', icon: '✅' },
-                  { event: 'invoice.paid', desc: 'Payments', icon: '💰' },
-                  { event: 'quote.created', desc: 'New quotes', icon: '📝' },
-                ].map(({ event, desc, icon }) => (
+                  { event: 'customer.created', desc: 'New customers', color: 'bg-blue-100 text-blue-600' },
+                  { event: 'customer.updated', desc: 'Updates', color: 'bg-amber-100 text-amber-600' },
+                  { event: 'job.scheduled', desc: 'Bookings', color: 'bg-purple-100 text-purple-600' },
+                  { event: 'job.completed', desc: 'Completions', color: 'bg-emerald-100 text-emerald-600' },
+                  { event: 'invoice.paid', desc: 'Payments', color: 'bg-green-100 text-green-600' },
+                  { event: 'quote.created', desc: 'New quotes', color: 'bg-primary/10 text-primary' },
+                ].map(({ event, desc, color }) => (
                   <div key={event} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <span className="text-2xl">{icon}</span>
+                    <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", color)}>
+                      <Zap className="w-5 h-5" />
+                    </div>
                     <div>
                       <Badge variant="outline" className="font-mono text-[10px] rounded-lg">
                         {event}

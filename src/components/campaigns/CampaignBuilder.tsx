@@ -29,10 +29,10 @@ interface CampaignBuilderProps {
 }
 
 const CAMPAIGN_TYPES = [
-  { value: 'seasonal', label: '🌸 Seasonal', description: 'Spring cleaning, fall prep, etc.' },
-  { value: 'holiday', label: '🎉 Holiday', description: 'Memorial Day, Thanksgiving, etc.' },
-  { value: 'slow_season', label: '📉 Slow Season', description: 'Discounts during low demand' },
-  { value: 'custom', label: '✏️ Custom', description: 'Create your own campaign' },
+  { value: 'seasonal', label: 'Seasonal', description: 'Spring cleaning, fall prep, etc.' },
+  { value: 'holiday', label: 'Holiday', description: 'Memorial Day, Thanksgiving, etc.' },
+  { value: 'slow_season', label: 'Slow Season', description: 'Discounts during low demand' },
+  { value: 'custom', label: 'Custom', description: 'Create your own campaign' },
 ];
 
 const AUDIENCES = [

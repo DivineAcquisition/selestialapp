@@ -38,11 +38,11 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
 
   const getSeasonIcon = (season: string | null) => {
     switch (season) {
-      case 'spring': return '🌸';
-      case 'summer': return '☀️';
-      case 'fall': return '🍂';
-      case 'winter': return '❄️';
-      default: return '📅';
+      case 'spring': return <Calendar className="w-4 h-4 text-pink-500" />;
+      case 'summer': return <Calendar className="w-4 h-4 text-amber-500" />;
+      case 'fall': return <Calendar className="w-4 h-4 text-orange-500" />;
+      case 'winter': return <Calendar className="w-4 h-4 text-blue-500" />;
+      default: return <Calendar className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -54,9 +54,9 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
   }, {} as Record<string, CampaignTemplate[]>);
 
   const typeLabels: Record<string, string> = {
-    holiday: '🎉 Holiday Campaigns',
-    seasonal: '🌸 Seasonal Campaigns',
-    slow_season: '📉 Slow Season Campaigns',
+    holiday: 'Holiday Campaigns',
+    seasonal: 'Seasonal Campaigns',
+    slow_season: 'Slow Season Campaigns',
   };
 
   return (
@@ -95,7 +95,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-lg">{getSeasonIcon(template.season)}</span>
+                              <span className="flex items-center justify-center">{getSeasonIcon(template.season)}</span>
                               <h4 className="font-medium text-foreground">{template.name}</h4>
                               <Badge className={cn('text-xs', getTypeColor(template.campaign_type))}>
                                 {template.campaign_type}

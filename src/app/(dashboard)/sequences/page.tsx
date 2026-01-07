@@ -37,7 +37,22 @@ import {
   Pause,
   Crown,
   ArrowRight,
+  Leaf,
+  Flame,
+  Hand,
+  RefreshCw,
+  Gift,
+  LucideIcon,
 } from 'lucide-react';
+
+const TEMPLATE_ICONS: Record<string, LucideIcon> = {
+  zap: Zap,
+  leaf: Leaf,
+  flame: Flame,
+  hand: Hand,
+  refresh: RefreshCw,
+  gift: Gift,
+};
 import type { TablesInsert } from '@/integrations/supabase/types';
 import type { Sequence, SequenceStep } from '@/types';
 import { cn } from '@/lib/utils';
@@ -47,7 +62,7 @@ const sequenceTemplates = [
   {
     id: 'quick-follow-up',
     name: 'Quick Follow-Up',
-    emoji: '⚡',
+    icon: 'zap',
     description: '3 messages over 5 days to convert quotes fast',
     type: 'quote',
     steps: 3,
@@ -58,7 +73,7 @@ const sequenceTemplates = [
   {
     id: 'gentle-nurture',
     name: 'Gentle Nurture',
-    emoji: '🌱',
+    icon: 'leaf',
     description: 'Soft touch sequence over 2 weeks',
     type: 'quote',
     steps: 5,
@@ -68,7 +83,7 @@ const sequenceTemplates = [
   {
     id: 'urgency-builder',
     name: 'Urgency Builder',
-    emoji: '🔥',
+    icon: 'flame',
     description: 'Create FOMO with limited availability',
     type: 'quote',
     steps: 4,
@@ -78,7 +93,7 @@ const sequenceTemplates = [
   {
     id: 'retention-welcome',
     name: 'Welcome & Thank You',
-    emoji: '👋',
+    icon: 'hand',
     description: 'Post-job follow-up for reviews & referrals',
     type: 'retention',
     steps: 3,
@@ -88,7 +103,7 @@ const sequenceTemplates = [
   {
     id: 'retention-reactivation',
     name: 'Customer Reactivation',
-    emoji: '🔄',
+    icon: 'refresh',
     description: 'Win back past customers',
     type: 'retention',
     steps: 4,
@@ -98,7 +113,7 @@ const sequenceTemplates = [
   {
     id: 'seasonal-promo',
     name: 'Seasonal Promo',
-    emoji: '🎁',
+    icon: 'gift',
     description: 'Holiday and seasonal offers',
     type: 'retention',
     steps: 3,
@@ -454,10 +469,10 @@ export default function SequencesPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center text-xl",
+                        "w-12 h-12 rounded-xl flex items-center justify-center",
                         isQuoteType ? "bg-amber-100" : "bg-purple-100"
                       )}>
-                        {isQuoteType ? '💬' : '❤️'}
+                        {isQuoteType ? <MessageSquare className="w-6 h-6 text-amber-600" /> : <Heart className="w-6 h-6 text-purple-600" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -504,7 +519,7 @@ export default function SequencesPage() {
                     </span>
                     {emailCount > 0 && (
                       <span className="flex items-center gap-1.5">
-                        📧 {emailCount} Email
+                        {emailCount} Email
                       </span>
                     )}
                     <span className="flex items-center gap-1.5">
@@ -559,7 +574,7 @@ export default function SequencesPage() {
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
-                      ✨ Generate with AI
+                      Generate with AI
                     </h4>
                     <p className="text-sm text-gray-500">
                       Describe your goal and let AI create the perfect sequence
@@ -586,8 +601,11 @@ export default function SequencesPage() {
                     className="p-4 bg-white border rounded-xl hover:border-primary/40 hover:shadow-sm transition-all text-left group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-xl", template.color, "text-white shadow-lg")}>
-                        {template.emoji}
+                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", template.color, "text-white shadow-lg")}>
+                        {(() => {
+                          const IconComponent = TEMPLATE_ICONS[template.icon] || Zap;
+                          return <IconComponent className="w-6 h-6" />;
+                        })()}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -627,8 +645,11 @@ export default function SequencesPage() {
                     className="p-4 bg-white border rounded-xl hover:border-primary/40 hover:shadow-sm transition-all text-left group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-xl", template.color, "text-white shadow-lg")}>
-                        {template.emoji}
+                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", template.color, "text-white shadow-lg")}>
+                        {(() => {
+                          const IconComponent = TEMPLATE_ICONS[template.icon] || Heart;
+                          return <IconComponent className="w-6 h-6" />;
+                        })()}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">

@@ -221,7 +221,7 @@ export default function AISettings() {
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="minimal">Minimal (1-2)</SelectItem>
                 <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="heavy">Heavy 🎉✨</SelectItem>
+                <SelectItem value="heavy">Heavy</SelectItem>
               </SelectContent>
             </Select>
             <FieldDescription>Emoji frequency</FieldDescription>

@@ -23,7 +23,7 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
       <Preview>Welcome to Selestial - Let's get you set up!</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Welcome to Selestial! 🎉</Heading>
+          <Heading style={h1}>Welcome to Selestial!</Heading>
           
           <Text style={text}>Hi {name},</Text>
           
@@ -36,10 +36,10 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
           </Text>
 
           <ul style={list}>
-            <li>📱 Automate quote follow-up sequences</li>
-            <li>🤖 Use AI-powered smart replies</li>
-            <li>📊 Track your win rate and revenue</li>
-            <li>💬 Manage all conversations in one inbox</li>
+            <li>Automate quote follow-up sequences</li>
+            <li>Use AI-powered smart replies</li>
+            <li>Track your win rate and revenue</li>
+            <li>Manage all conversations in one inbox</li>
           </ul>
 
           <Section style={buttonContainer}>
