@@ -163,13 +163,6 @@ export default function Sidebar() {
         <NavSection label="Settings" items={settingsNavigation} />
       </nav>
       
-      {/* Attribution */}
-      <div className="px-4 py-2 border-t border-gray-100">
-        <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-400 hover:text-gray-500">
-          Icons by Flaticon
-        </a>
-      </div>
-      
       {/* User section */}
       <div className="border-t border-gray-200 p-3">
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
