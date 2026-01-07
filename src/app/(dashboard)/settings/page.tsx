@@ -31,8 +31,9 @@ import {
   Zap,
   Mail,
   MessageSquare,
-  ArrowRight,
+  BarChart3,
 } from 'lucide-react';
+import { NavigationCard } from '@/components/ui/interactive-card';
 import type { Business } from '@/types';
 
 function SettingsContent() {
@@ -285,45 +286,34 @@ function SettingsContent() {
         </Tabs>
 
         {/* Quick Links */}
-        <Card className="card-elevated p-6 bg-gray-50/50 rounded-2xl">
+        <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl">
           <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <NavigationCard 
+              icon={<CreditCard className="h-5 w-5" />}
+              title="Billing"
+              description="Manage subscription"
               onClick={() => router.push('/billing')}
-              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
-            >
-              <CreditCard className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-medium text-gray-900 mb-1">Billing</p>
-              <p className="text-xs text-gray-500">Manage subscription</p>
-              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-            </button>
-            <button 
+            />
+            <NavigationCard 
+              icon={<Globe className="h-5 w-5" />}
+              title="Integrations"
+              description="Connect your tools"
+              badge="3 connected"
               onClick={() => router.push('/connections')}
-              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
-            >
-              <Globe className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-medium text-gray-900 mb-1">Integrations</p>
-              <p className="text-xs text-gray-500">Connect your tools</p>
-              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-            </button>
-            <button 
+            />
+            <NavigationCard 
+              icon={<Zap className="h-5 w-5" />}
+              title="Sequences"
+              description="Manage automations"
               onClick={() => router.push('/sequences')}
-              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
-            >
-              <Zap className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-medium text-gray-900 mb-1">Sequences</p>
-              <p className="text-xs text-gray-500">Manage automations</p>
-              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-            </button>
-            <button 
+            />
+            <NavigationCard 
+              icon={<BarChart3 className="h-5 w-5" />}
+              title="Analytics"
+              description="View performance"
               onClick={() => router.push('/analytics')}
-              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
-            >
-              <Mail className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-medium text-gray-900 mb-1">Analytics</p>
-              <p className="text-xs text-gray-500">View performance</p>
-              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-            </button>
+            />
           </div>
         </Card>
       </div>

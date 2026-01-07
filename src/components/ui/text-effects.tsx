@@ -160,3 +160,151 @@ export const TypingEffect = ({
     </span>
   );
 };
+
+// Word by word reveal
+interface WordRevealProps {
+  text: string;
+  delay?: number;
+  className?: string;
+  wordClassName?: string;
+}
+
+export const WordReveal = ({
+  text,
+  delay = 50,
+  className,
+  wordClassName,
+}: WordRevealProps) => {
+  const words = text.split(" ");
+  
+  return (
+    <span className={className}>
+      {words.map((word, i) => (
+        <span
+          key={i}
+          className={cn(
+            "inline-block opacity-0 animate-slide-up",
+            wordClassName
+          )}
+          style={{ animationDelay: `${i * delay}ms`, animationFillMode: "forwards" }}
+        >
+          {word}&nbsp;
+        </span>
+      ))}
+    </span>
+  );
+};
+
+// Letter by letter reveal
+interface LetterRevealProps {
+  text: string;
+  delay?: number;
+  className?: string;
+}
+
+export const LetterReveal = ({
+  text,
+  delay = 30,
+  className,
+}: LetterRevealProps) => {
+  return (
+    <span className={className}>
+      {text.split("").map((letter, i) => (
+        <span
+          key={i}
+          className="inline-block opacity-0 animate-scale-fade"
+          style={{ animationDelay: `${i * delay}ms`, animationFillMode: "forwards" }}
+        >
+          {letter === " " ? "\u00A0" : letter}
+        </span>
+      ))}
+    </span>
+  );
+};
+
+// Highlight text (like a text marker)
+interface HighlightTextProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode;
+  color?: string;
+}
+
+export const HighlightText = ({
+  children,
+  color = "rgba(85, 0, 255, 0.15)",
+  className,
+  ...props
+}: HighlightTextProps) => {
+  return (
+    <span
+      className={cn(
+        "relative inline-block",
+        className
+      )}
+      {...props}
+    >
+      <span className="relative z-10">{children}</span>
+      <span
+        className="absolute inset-0 -skew-x-2 rounded-sm"
+        style={{ backgroundColor: color }}
+      />
+    </span>
+  );
+};
+
+// Underline animation
+interface AnimatedUnderlineProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode;
+}
+
+export const AnimatedUnderline = ({
+  children,
+  className,
+  ...props
+}: AnimatedUnderlineProps) => {
+  return (
+    <span
+      className={cn(
+        "relative inline-block group cursor-pointer",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-[#9D96FF] group-hover:w-full transition-all duration-300" />
+    </span>
+  );
+};
+
+// Badge pulse
+interface PulseBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  children: React.ReactNode;
+  variant?: "primary" | "success" | "warning" | "danger";
+}
+
+export const PulseBadge = ({
+  children,
+  variant = "primary",
+  className,
+  ...props
+}: PulseBadgeProps) => {
+  const variants = {
+    primary: "bg-primary/10 text-primary ring-primary/30",
+    success: "bg-emerald-100 text-emerald-700 ring-emerald-300",
+    warning: "bg-amber-100 text-amber-700 ring-amber-300",
+    danger: "bg-red-100 text-red-700 ring-red-300",
+  };
+
+  return (
+    <span
+      className={cn(
+        "relative inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full",
+        variants[variant],
+        className
+      )}
+      {...props}
+    >
+      <span className="absolute -inset-0.5 rounded-full animate-ping opacity-30 ring-2 ring-current" />
+      {children}
+    </span>
+  );
+};

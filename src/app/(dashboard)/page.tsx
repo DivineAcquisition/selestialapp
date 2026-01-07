@@ -24,7 +24,9 @@ import {
   Clock,
   CheckCircle2,
   Send,
+  ChevronDown,
 } from 'lucide-react';
+import { FeaturesBento } from '@/components/ui/features-bento';
 import { formatCurrency } from '@/lib/formatters';
 import { useBusiness } from '@/providers';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -363,6 +365,34 @@ export default function DashboardPage() {
             <RecentActivity activities={transformedActivities} />
           </div>
         </div>
+        
+        {/* Features Showcase - Show only for new users or as a collapsed section */}
+        {stats.wonCount === 0 && (
+          <div className="mt-8">
+            <FeaturesBento />
+          </div>
+        )}
+        
+        {/* Collapsible Features for existing users */}
+        {stats.wonCount > 0 && (
+          <details className="mt-8 group">
+            <summary className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5 rounded-xl cursor-pointer hover:from-primary/10 hover:to-[#9D96FF]/10 transition-all duration-300 border border-primary/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Explore Selestial Features</h3>
+                  <p className="text-sm text-gray-500">See what else you can do with your account</p>
+                </div>
+              </div>
+              <ChevronDown className="h-5 w-5 text-gray-400 group-open:rotate-180 transition-transform" />
+            </summary>
+            <div className="mt-4">
+              <FeaturesBento />
+            </div>
+          </details>
+        )}
       </div>
       
       {/* Quick Add Quote Modal */}

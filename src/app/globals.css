@@ -290,6 +290,36 @@
   100% { transform: scale(4); opacity: 0; }
 }
 
+/* Move animation for features */
+@keyframes move {
+  0% { transform: translateX(-200px); }
+  100% { transform: translateX(200px); }
+}
+
+/* Orbit animation */
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+
+/* Text reveal */
+@keyframes text-reveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+/* Subtle pulse */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Scale fade */
+@keyframes scale-fade {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* ==================== ANIMATION UTILITIES ==================== */
 
 @layer utilities {
@@ -306,6 +336,11 @@
   .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
   .animate-bounce { animation: bounce 1s infinite; }
   .animate-shake { animation: shake 0.5s ease-in-out; }
+  .animate-move { animation: move 5s linear infinite; }
+  .animate-orbit { animation: orbit 20s linear infinite; }
+  .animate-text-reveal { animation: text-reveal 0.8s ease forwards; }
+  .animate-subtle-pulse { animation: subtle-pulse 3s ease-in-out infinite; }
+  .animate-scale-fade { animation: scale-fade 0.4s ease-out forwards; }
   
   /* Advanced animations */
   .animate-aurora { animation: aurora 15s ease infinite; }
