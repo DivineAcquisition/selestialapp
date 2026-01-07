@@ -231,6 +231,8 @@ export const icons = {
   bank: "bank",
   briefcase: "briefcase",
   receipt: "receipt",
+  scale: "balance-scale",
+  balance: "balance-scale",
   invoice: "file-invoice",
   quote: "file-invoice-dollar",
   fileInvoice: "file-invoice-dollar",
