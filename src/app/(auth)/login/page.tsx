@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
-import { Loader2, Mail, Lock, ArrowRight, Bot, CheckCircle, Zap } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -84,9 +84,9 @@ function LoginForm() {
   }
 
   const features = [
-    { text: 'AI-powered follow-ups', icon: Bot },
-    { text: 'Automated sequences', icon: Zap },
-    { text: 'Smart analytics', icon: CheckCircle },
+    { text: 'AI-powered follow-ups', icon: 'robot' as const },
+    { text: 'Automated sequences', icon: 'bolt' as const },
+    { text: 'Smart analytics', icon: 'checkCircle' as const },
   ]
 
   return (
@@ -95,7 +95,7 @@ function LoginForm() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Badge className="bg-primary/10 text-primary border-0 font-medium">
-            <Bot className="h-3 w-3 mr-1" />
+            <Icon name="robot" size="xs" className="mr-1" />
             Welcome back
           </Badge>
         </div>
@@ -114,7 +114,7 @@ function LoginForm() {
             key={feature.text}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 cursor-default"
           >
-            <feature.icon className="h-3.5 w-3.5 text-primary" />
+            <Icon name={feature.icon} size="xs" className="text-primary" />
             {feature.text}
           </div>
         ))}
@@ -135,7 +135,7 @@ function LoginForm() {
         )}
       >
         {googleLoading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Icon name="spinner" size="lg" className="animate-spin" />
         ) : (
           <>
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -145,7 +145,7 @@ function LoginForm() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
-            <ArrowRight className="w-4 h-4 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+            <Icon name="arrowRight" size="sm" className="opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
           </>
         )}
         <BottomGradient />
@@ -159,7 +159,7 @@ function LoginForm() {
         <Field name="email">
           <FieldLabel>Email address</FieldLabel>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 peer-focus:text-primary transition-colors" />
+            <Icon name="email" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 peer-focus:text-primary transition-colors" />
             <Input
               name="email"
               type="email"
@@ -183,7 +183,7 @@ function LoginForm() {
             </Link>
           </div>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 peer-focus:text-primary transition-colors" />
+            <Icon name="lock" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 peer-focus:text-primary transition-colors" />
             <Input
               name="password"
               type="password"
@@ -206,11 +206,11 @@ function LoginForm() {
           )}
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icon name="spinner" size="lg" className="animate-spin" />
           ) : (
             <>
               Sign in to your account
-              <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="sm" className="ml-2 group-hover/btn:translate-x-1 transition-transform" />
             </>
           )}
         </Button>
@@ -241,7 +241,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Icon name="spinner" size="xl" className="animate-spin text-gray-400" />
       </div>
     }>
       <LoginForm />

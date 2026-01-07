@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
-import { Loader2, User, Mail, Lock, ArrowRight, Gift, Zap, Shield, Wand2 } from 'lucide-react'
+import { Icon, IconName } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -115,10 +115,10 @@ export default function SignupPage() {
     }
   }
 
-  const benefits = [
-    { text: '14-day free trial', highlight: true, icon: Gift },
-    { text: 'No credit card required', highlight: false, icon: Shield },
-    { text: 'Cancel anytime', highlight: false, icon: Zap },
+  const benefits: { text: string; highlight: boolean; icon: IconName }[] = [
+    { text: '14-day free trial', highlight: true, icon: 'gift' },
+    { text: 'No credit card required', highlight: false, icon: 'shield' },
+    { text: 'Cancel anytime', highlight: false, icon: 'bolt' },
   ]
 
   return (
@@ -126,7 +126,7 @@ export default function SignupPage() {
       {/* Header */}
       <div className="space-y-3">
         <Badge className="bg-primary/10 text-primary border-0 px-3 py-1.5">
-          <Wand2 className="w-3.5 h-3.5 mr-1.5" />
+          <Icon name="magic" size="xs" className="mr-1.5" />
           Start free today
         </Badge>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create your account</h1>
@@ -147,7 +147,7 @@ export default function SignupPage() {
                 : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 border border-gray-200/50 hover:border-primary/30'
             )}
           >
-            <benefit.icon className={cn("w-3.5 h-3.5", benefit.highlight ? "text-primary" : "text-gray-500")} />
+            <Icon name={benefit.icon} size="xs" className={benefit.highlight ? "text-primary" : "text-gray-500"} />
             {benefit.text}
           </div>
         ))}
@@ -169,7 +169,7 @@ export default function SignupPage() {
         )}
       >
         {googleLoading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Icon name="spinner" size="lg" className="animate-spin" />
         ) : (
           <>
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@ export default function SignupPage() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
-            <ArrowRight className="w-4 h-4 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+            <Icon name="arrowRight" size="sm" className="opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
           </>
         )}
         <BottomGradient />
@@ -193,7 +193,7 @@ export default function SignupPage() {
         <Field name="name">
           <FieldLabel>Full name</FieldLabel>
           <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="user" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="name"
               type="text"
@@ -209,7 +209,7 @@ export default function SignupPage() {
         <Field name="email">
           <FieldLabel>Work email</FieldLabel>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="email" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="email"
               type="email"
@@ -225,7 +225,7 @@ export default function SignupPage() {
         <Field name="password">
           <FieldLabel>Password</FieldLabel>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="lock" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="password"
               type="password"
@@ -250,11 +250,11 @@ export default function SignupPage() {
           )}
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icon name="spinner" size="lg" className="animate-spin" />
           ) : (
             <>
               Create account
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="sm" className="ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </Button>

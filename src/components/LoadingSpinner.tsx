@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
@@ -7,15 +7,15 @@ interface LoadingSpinnerProps {
 }
 
 export default function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
+  const sizeMap = {
+    sm: 'sm' as const,
+    md: 'lg' as const,
+    lg: '2xl' as const,
   };
 
   return (
     <div className={cn('flex items-center justify-center', className)}>
-      <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
+      <Icon name="spinner" size={sizeMap[size]} className="animate-spin text-primary" />
     </div>
   );
 }
