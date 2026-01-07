@@ -1,589 +1,775 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Icon, IconName } from "@/components/ui/icon";
 import Layout from "@/components/layout/Layout";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import {
+  INDUSTRIES,
+  REGIONAL_MULTIPLIERS,
+  CONVERSION_INSIGHTS,
+  getIndustryBySlug,
+  getRecommendedPricingModel,
+  type IndustryPricing,
+  type ServicePricing,
+  type PricingModel,
+  type RetentionModel,
+} from "@/lib/pricing/pricing-data";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-interface PriceTier {
+interface EnabledService extends ServicePricing {
   id: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  priceUnit: "flat" | "per_sqft" | "per_hour" | "starting_at";
-  features: string[];
-  recommended?: boolean;
-  color: string;
-}
-
-interface PriceAddon {
-  id: string;
-  name: string;
-  price: number;
-  unit: "flat" | "per_sqft" | "per_hour" | "per_room";
+  enabled: boolean;
+  customPrice?: number;
 }
 
 interface PriceRule {
   id: string;
   name: string;
-  type: "multiplier" | "flat_add" | "percentage_add";
+  type: "multiplier" | "percentage" | "flat";
   value: number;
   condition: string;
   enabled: boolean;
+}
+
+interface PriceConfig {
+  industry: string;
+  region: string;
+  pricingModel: string;
+  services: EnabledService[];
+  rules: PriceRule[];
+  retentionPlan: string | null;
 }
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-const TIER_COLORS = [
-  { name: "slate", bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-200" },
-  { name: "violet", bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-300" },
-  { name: "amber", bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" },
-  { name: "emerald", bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-200" },
-  { name: "blue", bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" },
-  { name: "rose", bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200" },
-];
-
-const PROPERTY_SIZES = [
-  { label: "Studio/1BR", sqft: "< 800 sq ft", multiplier: 0.8 },
-  { label: "2 Bedroom", sqft: "800-1,200 sq ft", multiplier: 1.0 },
-  { label: "3 Bedroom", sqft: "1,200-1,800 sq ft", multiplier: 1.3 },
-  { label: "4 Bedroom", sqft: "1,800-2,500 sq ft", multiplier: 1.6 },
-  { label: "5+ Bedroom", sqft: "2,500+ sq ft", multiplier: 2.0 },
-];
-
-const DEFAULT_TIERS: PriceTier[] = [
-  {
-    id: "basic",
-    name: "Basic",
-    description: "Essential cleaning for maintained homes",
-    basePrice: 99,
-    priceUnit: "starting_at",
-    features: ["Dusting & vacuuming", "Kitchen wipe-down", "Bathroom cleaning", "Floor mopping"],
-    color: "slate",
-  },
-  {
-    id: "standard",
-    name: "Standard",
-    description: "Our most popular deep clean package",
-    basePrice: 179,
-    priceUnit: "starting_at",
-    features: ["Everything in Basic", "Inside appliances", "Baseboards", "Window sills", "Cabinet fronts"],
-    recommended: true,
-    color: "violet",
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    description: "White-glove service for the perfectionist",
-    basePrice: 299,
-    priceUnit: "starting_at",
-    features: ["Everything in Standard", "Inside windows", "Garage sweep", "Laundry & folding", "Organize closets"],
-    color: "amber",
-  },
-];
-
-const DEFAULT_ADDONS: PriceAddon[] = [
-  { id: "1", name: "Inside Refrigerator", price: 35, unit: "flat" },
-  { id: "2", name: "Inside Oven", price: 40, unit: "flat" },
-  { id: "3", name: "Interior Windows", price: 8, unit: "per_room" },
-  { id: "4", name: "Laundry (wash & fold)", price: 25, unit: "flat" },
-  { id: "5", name: "Garage Cleaning", price: 75, unit: "flat" },
-  { id: "6", name: "Patio/Deck", price: 50, unit: "flat" },
-];
+const INDUSTRY_ICONS: Record<string, IconName> = {
+  cleaning: "sparkles",
+  hvac: "thermometer",
+  plumbing: "wrench",
+  electrical: "bolt",
+  landscaping: "leaf",
+  pest_control: "bug",
+  roofing: "home",
+  painting: "paintBrush",
+  handyman: "hammer",
+  pressure_washing: "droplet",
+  pool_spa: "waves",
+  flooring: "grid",
+  garage_door: "car",
+  locksmith: "lock",
+  window_cleaning: "sparkles",
+  appliance: "plug",
+};
 
 const DEFAULT_RULES: PriceRule[] = [
   { id: "1", name: "Same-Day Service", type: "multiplier", value: 1.5, condition: "Booking within 24 hours", enabled: true },
-  { id: "2", name: "Weekend Premium", type: "percentage_add", value: 15, condition: "Saturday or Sunday", enabled: true },
-  { id: "3", name: "After Hours", type: "flat_add", value: 50, condition: "Service after 6 PM", enabled: false },
-  { id: "4", name: "Pet Surcharge", type: "flat_add", value: 25, condition: "Homes with pets", enabled: true },
-  { id: "5", name: "First-Time Discount", type: "percentage_add", value: -10, condition: "New customer", enabled: true },
+  { id: "2", name: "Weekend Premium", type: "percentage", value: 15, condition: "Saturday or Sunday", enabled: true },
+  { id: "3", name: "After Hours", type: "flat", value: 50, condition: "Service after 6 PM", enabled: false },
+  { id: "4", name: "Emergency (24/7)", type: "multiplier", value: 1.75, condition: "Emergency calls", enabled: false },
+  { id: "5", name: "Holiday Rate", type: "multiplier", value: 2.0, condition: "Major holidays", enabled: false },
+  { id: "6", name: "Recurring Customer", type: "percentage", value: -15, condition: "Subscription clients", enabled: true },
+  { id: "7", name: "First-Time Discount", type: "percentage", value: -10, condition: "New customers", enabled: true },
+  { id: "8", name: "Senior Discount", type: "percentage", value: -10, condition: "65+ customers", enabled: false },
 ];
 
 // ============================================================================
-// COMPONENTS
+// HELPER FUNCTIONS
 // ============================================================================
 
-function TierCard({
-  tier,
-  onUpdate,
-  onDelete,
-  onDuplicate,
-}: {
-  tier: PriceTier;
-  onUpdate: (tier: PriceTier) => void;
-  onDelete: () => void;
-  onDuplicate: () => void;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTier, setEditedTier] = useState(tier);
-  const [newFeature, setNewFeature] = useState("");
-
-  const colorConfig = TIER_COLORS.find((c) => c.name === tier.color) || TIER_COLORS[0];
-
-  const handleSave = () => {
-    onUpdate(editedTier);
-    setIsEditing(false);
-  };
-
-  const addFeature = () => {
-    if (newFeature.trim()) {
-      setEditedTier({ ...editedTier, features: [...editedTier.features, newFeature.trim()] });
-      setNewFeature("");
-    }
-  };
-
-  const removeFeature = (index: number) => {
-    setEditedTier({
-      ...editedTier,
-      features: editedTier.features.filter((_, i) => i !== index),
-    });
-  };
-
-  if (isEditing) {
-    return (
-      <div className="rounded-xl border-2 border-violet-300 bg-white p-5 shadow-lg dark:bg-card">
-        <div className="mb-4 flex items-center justify-between">
-          <input
-            type="text"
-            value={editedTier.name}
-            onChange={(e) => setEditedTier({ ...editedTier, name: e.target.value })}
-            className="border-b border-dashed border-gray-300 bg-transparent text-lg font-semibold outline-none focus:border-violet-500"
-          />
-          <div className="flex gap-2">
-            <button onClick={() => setIsEditing(false)} className="rounded-lg px-3 py-1 text-sm text-gray-500 hover:bg-gray-100">
-              Cancel
-            </button>
-            <button onClick={handleSave} className="rounded-lg bg-violet-600 px-3 py-1 text-sm text-white hover:bg-violet-700">
-              Save
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
-            <input
-              type="text"
-              value={editedTier.description}
-              onChange={(e) => setEditedTier({ ...editedTier, description: e.target.value })}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Base Price</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <input
-                  type="number"
-                  value={editedTier.basePrice}
-                  onChange={(e) => setEditedTier({ ...editedTier, basePrice: Number(e.target.value) })}
-                  className="w-full rounded-lg border bg-background py-2 pl-7 pr-3 text-sm"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Price Type</label>
-              <select
-                value={editedTier.priceUnit}
-                onChange={(e) => setEditedTier({ ...editedTier, priceUnit: e.target.value as PriceTier["priceUnit"] })}
-                className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
-              >
-                <option value="starting_at">Starting at</option>
-                <option value="flat">Flat rate</option>
-                <option value="per_sqft">Per sq ft</option>
-                <option value="per_hour">Per hour</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Color</label>
-            <div className="flex gap-2">
-              {TIER_COLORS.map((c) => (
-                <button
-                  key={c.name}
-                  onClick={() => setEditedTier({ ...editedTier, color: c.name })}
-                  className={`h-8 w-8 rounded-full ${c.bg} ${editedTier.color === c.name ? "ring-2 ring-violet-500 ring-offset-2" : ""}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Features</label>
-            <div className="space-y-2">
-              {editedTier.features.map((feature, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={feature}
-                    onChange={(e) => {
-                      const newFeatures = [...editedTier.features];
-                      newFeatures[i] = e.target.value;
-                      setEditedTier({ ...editedTier, features: newFeatures });
-                    }}
-                    className="flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm"
-                  />
-                  <button onClick={() => removeFeature(i)} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:text-destructive">
-                    <Icon name="trash" size="sm" />
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newFeature}
-                  onChange={(e) => setNewFeature(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addFeature()}
-                  placeholder="Add feature..."
-                  className="flex-1 rounded-lg border bg-background px-3 py-1.5 text-sm"
-                />
-                <button onClick={addFeature} className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted hover:bg-muted/80">
-                  <Icon name="plus" size="sm" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={editedTier.recommended}
-              onChange={(e) => setEditedTier({ ...editedTier, recommended: e.target.checked })}
-              className="rounded border-gray-300"
-            />
-            <span className="text-sm">Mark as recommended</span>
-          </label>
-        </div>
-      </div>
-    );
+function formatPrice(price: number, unit: string): string {
+  if (unit === "sqft" || unit === "linear_ft" || unit === "each") {
+    return `$${price.toFixed(2)}`;
   }
+  return `$${Math.round(price)}`;
+}
 
+function getUnitLabel(unit: string): string {
+  const labels: Record<string, string> = {
+    flat: "",
+    sqft: "/sq ft",
+    linear_ft: "/linear ft",
+    each: "/each",
+    hour: "/hour",
+    room: "/room",
+    window: "/window",
+    visit: "/visit",
+    week: "/week",
+    month: "/month",
+    quarter: "/quarter",
+    square: "/square",
+    cubic_yard: "/cu yd",
+    lb: "/lb",
+  };
+  return labels[unit] || "";
+}
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+function IndustrySelector({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (slug: string) => void;
+}) {
   return (
-    <div className={`relative rounded-xl border-2 ${tier.recommended ? "border-violet-300" : "border-border"} bg-card p-5 transition-shadow hover:shadow-md`}>
-      {tier.recommended && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-violet-600 px-3 py-0.5 text-xs font-medium text-white">
-          Most Popular
-        </div>
-      )}
-
-      <div className="mb-3 flex items-start justify-between">
-        <div className={`rounded-lg px-3 py-1 ${colorConfig.bg} ${colorConfig.text}`}>
-          <span className="text-sm font-medium">{tier.name}</span>
-        </div>
-        <div className="flex gap-1">
-          <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-foreground">
-            <Icon name="edit" size="sm" />
-          </button>
-          <button onClick={onDuplicate} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-foreground">
-            <Icon name="copy" size="sm" />
-          </button>
-          <button onClick={onDelete} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-destructive">
-            <Icon name="trash" size="sm" />
-          </button>
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold">${tier.basePrice}</span>
-          <span className="text-sm text-muted-foreground">
-            {tier.priceUnit === "starting_at" && "starting"}
-            {tier.priceUnit === "per_sqft" && "/sq ft"}
-            {tier.priceUnit === "per_hour" && "/hour"}
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">{tier.description}</p>
-      </div>
-
-      <ul className="space-y-2">
-        {tier.features.map((feature, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm">
-            <span className="flex items-center justify-center w-4 h-4 mt-0.5 shrink-0">
-              <Icon name="check" size="sm" className="text-emerald-500" />
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      {INDUSTRIES.map((industry) => {
+        const isSelected = selected === industry.slug;
+        const iconName = INDUSTRY_ICONS[industry.slug] || "briefcase";
+        
+        return (
+          <button
+            key={industry.slug}
+            onClick={() => onSelect(industry.slug)}
+            className={cn(
+              "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+              isSelected
+                ? "border-primary bg-primary/5 shadow-md"
+                : "border-border hover:border-primary/50 hover:bg-muted/50"
+            )}
+          >
+            <div className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center",
+              isSelected ? "bg-primary/20" : "bg-muted"
+            )}>
+              <Icon 
+                name={iconName} 
+                size="xl" 
+                className={isSelected ? "text-primary" : "text-muted-foreground"} 
+              />
+            </div>
+            <span className={cn(
+              "text-sm font-medium text-center",
+              isSelected ? "text-primary" : "text-foreground"
+            )}>
+              {industry.name}
             </span>
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
+            {isSelected && (
+              <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                Selected
+              </Badge>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-function AddonRow({
-  addon,
-  onUpdate,
-  onDelete,
+function ServiceRow({
+  service,
+  regionMultiplier,
+  onToggle,
+  onPriceChange,
 }: {
-  addon: PriceAddon;
-  onUpdate: (addon: PriceAddon) => void;
-  onDelete: () => void;
+  service: EnabledService;
+  regionMultiplier: number;
+  onToggle: () => void;
+  onPriceChange: (price: number) => void;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const unitLabels = { flat: "Flat", per_sqft: "/sq ft", per_hour: "/hour", per_room: "/room" };
+  const adjustedAvg = Math.round(service.avgPrice * regionMultiplier);
+  const adjustedLow = Math.round(service.lowPrice * regionMultiplier);
+  const adjustedHigh = Math.round(service.highPrice * regionMultiplier);
+  const currentPrice = service.customPrice ?? adjustedAvg;
+  const unit = getUnitLabel(service.pricingUnit);
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-muted-foreground/30">
-      <span className="flex items-center justify-center w-6 h-6 text-muted-foreground/50 cursor-grab">
-        <Icon name="grip" size="sm" />
-      </span>
+    <div className={cn(
+      "flex items-center gap-4 p-4 rounded-xl border transition-all",
+      service.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
+    )}>
+      <Switch
+        checked={service.enabled}
+        onCheckedChange={onToggle}
+        className="data-[state=checked]:bg-primary"
+      />
+      
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate">{service.name}</p>
+        <p className="text-xs text-muted-foreground">
+          {service.category} • Range: {formatPrice(adjustedLow, service.pricingUnit)} - {formatPrice(adjustedHigh, service.pricingUnit)}{unit}
+        </p>
+      </div>
 
-      {isEditing ? (
-        <>
-          <input
-            type="text"
-            value={addon.name}
-            onChange={(e) => onUpdate({ ...addon, name: e.target.value })}
-            className="flex-1 rounded border bg-background px-2 py-1 text-sm"
-          />
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">$</span>
-            <input
-              type="number"
-              value={addon.price}
-              onChange={(e) => onUpdate({ ...addon, price: Number(e.target.value) })}
-              className="w-16 rounded border bg-background px-2 py-1 text-sm"
-            />
-          </div>
-          <select
-            value={addon.unit}
-            onChange={(e) => onUpdate({ ...addon, unit: e.target.value as PriceAddon["unit"] })}
-            className="rounded border bg-background px-2 py-1 text-sm"
-          >
-            <option value="flat">Flat</option>
-            <option value="per_sqft">/sq ft</option>
-            <option value="per_hour">/hour</option>
-            <option value="per_room">/room</option>
-          </select>
-          <button onClick={() => setIsEditing(false)} className="rounded bg-violet-600 px-3 py-1 text-sm text-white">
-            Done
-          </button>
-        </>
-      ) : (
-        <>
-          <span className="flex-1 text-sm font-medium">{addon.name}</span>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
-            ${addon.price} {unitLabels[addon.unit]}
-          </span>
-          <button onClick={() => setIsEditing(true)} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-foreground">
-            <Icon name="edit" size="sm" />
-          </button>
-          <button onClick={onDelete} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-destructive">
-            <Icon name="trash" size="sm" />
-          </button>
-        </>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground text-sm">$</span>
+        <Input
+          type="number"
+          value={currentPrice}
+          onChange={(e) => onPriceChange(e.target.value === '' ? adjustedAvg : Number(e.target.value))}
+          disabled={!service.enabled}
+          className="w-24 h-9 text-right"
+          min={0}
+          step={service.pricingUnit === "sqft" || service.pricingUnit === "linear_ft" ? 0.01 : 1}
+        />
+        <span className="text-sm text-muted-foreground w-16">{unit}</span>
+      </div>
     </div>
   );
 }
 
 function RuleRow({
   rule,
+  onToggle,
   onUpdate,
   onDelete,
 }: {
   rule: PriceRule;
-  onUpdate: (rule: PriceRule) => void;
+  onToggle: () => void;
+  onUpdate: (updates: Partial<PriceRule>) => void;
   onDelete: () => void;
 }) {
   const formatValue = () => {
     if (rule.type === "multiplier") return `${rule.value}x`;
-    if (rule.type === "percentage_add") return `${rule.value > 0 ? "+" : ""}${rule.value}%`;
+    if (rule.type === "percentage") return `${rule.value > 0 ? "+" : ""}${rule.value}%`;
     return `${rule.value > 0 ? "+$" : "-$"}${Math.abs(rule.value)}`;
   };
 
   return (
-    <div className={`flex items-center gap-3 rounded-lg border p-3 ${rule.enabled ? "bg-card" : "bg-muted/50 opacity-60"}`}>
-      <button
-        onClick={() => onUpdate({ ...rule, enabled: !rule.enabled })}
-        className={`h-5 w-9 rounded-full transition-colors ${rule.enabled ? "bg-violet-600" : "bg-muted-foreground/30"}`}
-      >
-        <div className={`h-4 w-4 rounded-full bg-white shadow transition-transform ${rule.enabled ? "translate-x-4" : "translate-x-0.5"}`} />
-      </button>
-
-      <div className="flex-1">
-        <p className="text-sm font-medium">{rule.name}</p>
+    <div className={cn(
+      "flex items-center gap-4 p-4 rounded-xl border transition-all",
+      rule.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
+    )}>
+      <Switch
+        checked={rule.enabled}
+        onCheckedChange={onToggle}
+        className="data-[state=checked]:bg-primary"
+      />
+      
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm">{rule.name}</p>
         <p className="text-xs text-muted-foreground">{rule.condition}</p>
       </div>
 
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${rule.value > 0 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+      <Badge className={cn(
+        "text-xs",
+        rule.value > 0 || rule.type === "multiplier"
+          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+      )}>
         {formatValue()}
-      </span>
+      </Badge>
 
-      <button onClick={onDelete} className="flex items-center justify-center w-8 h-8 rounded text-muted-foreground hover:bg-muted hover:text-destructive">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onDelete}
+        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+      >
         <Icon name="trash" size="sm" />
-      </button>
+      </Button>
     </div>
   );
 }
 
-function QuotePreview({
-  tiers,
-  addons,
-  rules,
-  selectedTier,
-  selectedAddons,
-  propertySize,
+function RetentionPlanCard({
+  plan,
+  isSelected,
+  onSelect,
 }: {
-  tiers: PriceTier[];
-  addons: PriceAddon[];
-  rules: PriceRule[];
-  selectedTier: string;
-  selectedAddons: string[];
-  propertySize: number;
+  plan: RetentionModel;
+  isSelected: boolean;
+  onSelect: () => void;
 }) {
-  const tier = tiers.find((t) => t.id === selectedTier);
-  if (!tier) return null;
-
-  const sizeMultiplier = PROPERTY_SIZES[propertySize]?.multiplier || 1;
-  const basePrice = tier.basePrice * sizeMultiplier;
-
-  const selectedAddonItems = addons.filter((a) => selectedAddons.includes(a.id));
-  const addonsTotal = selectedAddonItems.reduce((sum, a) => sum + a.price, 0);
-
-  let subtotal = basePrice + addonsTotal;
-
-  const enabledRules = rules.filter((r) => r.enabled);
-  const adjustments: { name: string; amount: number }[] = [];
-
-  enabledRules.forEach((rule) => {
-    let amount = 0;
-    if (rule.type === "multiplier") {
-      amount = subtotal * (rule.value - 1);
-    } else if (rule.type === "percentage_add") {
-      amount = subtotal * (rule.value / 100);
-    } else {
-      amount = rule.value;
-    }
-    adjustments.push({ name: rule.name, amount });
-  });
-
-  const adjustmentsTotal = adjustments.reduce((sum, a) => sum + a.amount, 0);
-  const total = subtotal + adjustmentsTotal;
-
   return (
-    <div className="rounded-xl border bg-card p-5">
-      <h3 className="mb-4 font-semibold">Quote Preview</h3>
-
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span>{tier.name} ({PROPERTY_SIZES[propertySize]?.label})</span>
-          <span className="font-medium">${basePrice.toFixed(0)}</span>
-        </div>
-
-        {selectedAddonItems.map((addon) => (
-          <div key={addon.id} className="flex justify-between text-muted-foreground">
-            <span className="pl-4">+ {addon.name}</span>
-            <span>${addon.price}</span>
-          </div>
+    <button
+      onClick={onSelect}
+      className={cn(
+        "text-left p-4 rounded-xl border-2 transition-all",
+        isSelected
+          ? "border-primary bg-primary/5"
+          : "border-border hover:border-primary/50"
+      )}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="font-semibold text-sm">{plan.name}</h4>
+        <Badge variant={isSelected ? "default" : "secondary"} className="text-xs">
+          {plan.frequency}
+        </Badge>
+      </div>
+      <p className="text-lg font-bold text-primary mb-2">
+        ${plan.priceRange.low} - ${plan.priceRange.high}
+      </p>
+      <ul className="space-y-1">
+        {plan.includes.slice(0, 3).map((item, i) => (
+          <li key={i} className="text-xs text-muted-foreground flex items-center gap-1">
+            <Icon name="check" size="xs" className="text-emerald-500" />
+            {item}
+          </li>
         ))}
+      </ul>
+      <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Retention lift:</span>
+        <span className="font-medium text-emerald-600">+{plan.retentionLift}%</span>
+      </div>
+    </button>
+  );
+}
 
-        {adjustments.length > 0 && (
-          <>
-            <div className="border-t pt-3">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(0)}</span>
-              </div>
-            </div>
-            {adjustments.map((adj, i) => (
-              <div key={i} className={`flex justify-between ${adj.amount >= 0 ? "text-amber-600" : "text-emerald-600"}`}>
-                <span className="pl-4">{adj.name}</span>
-                <span>{adj.amount >= 0 ? "+" : "-"}${Math.abs(adj.amount).toFixed(0)}</span>
-              </div>
-            ))}
-          </>
-        )}
-
-        <div className="border-t pt-3">
-          <div className="flex justify-between text-lg font-semibold">
-            <span>Total</span>
-            <span className="text-violet-600">${total.toFixed(0)}</span>
-          </div>
+function IndustryBenchmarks({ industry }: { industry: IndustryPricing }) {
+  return (
+    <Card className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
+      <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+        <Icon name="chart" size="sm" className="text-primary" />
+        Industry Benchmarks
+      </h3>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p className="text-muted-foreground text-xs">Avg Ticket</p>
+          <p className="font-semibold">${industry.avgTicket.avg}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground text-xs">Conversion Rate</p>
+          <p className="font-semibold">{industry.conversionRate}%</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground text-xs">Gross Margin</p>
+          <p className="font-semibold">{industry.grossMargin.low}-{industry.grossMargin.high}%</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground text-xs">Net Margin (Top)</p>
+          <p className="font-semibold text-emerald-600">{industry.netMargin.top}%</p>
         </div>
       </div>
+    </Card>
+  );
+}
+
+function QuoteCalculator({
+  services,
+  rules,
+  regionMultiplier,
+}: {
+  services: EnabledService[];
+  rules: PriceRule[];
+  regionMultiplier: number;
+}) {
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  
+  const enabledServices = services.filter(s => s.enabled);
+  
+  const subtotal = useMemo(() => {
+    return selectedServices.reduce((sum, id) => {
+      const service = enabledServices.find(s => s.id === id);
+      if (!service) return sum;
+      const price = service.customPrice ?? Math.round(service.avgPrice * regionMultiplier);
+      return sum + price;
+    }, 0);
+  }, [selectedServices, enabledServices, regionMultiplier]);
+
+  const enabledRules = rules.filter(r => r.enabled);
+  
+  const adjustments = useMemo(() => {
+    return enabledRules.map(rule => {
+      let amount = 0;
+      if (rule.type === "multiplier") {
+        amount = subtotal * (rule.value - 1);
+      } else if (rule.type === "percentage") {
+        amount = subtotal * (rule.value / 100);
+      } else {
+        amount = rule.value;
+      }
+      return { name: rule.name, amount };
+    });
+  }, [enabledRules, subtotal]);
+
+  const total = subtotal + adjustments.reduce((sum, a) => sum + a.amount, 0);
+
+  return (
+    <Card className="p-5 rounded-xl">
+      <h3 className="font-semibold mb-4 flex items-center gap-2">
+        <Icon name="calculator" size="sm" className="text-primary" />
+        Quote Calculator
+      </h3>
+
+      <div className="space-y-2 mb-4">
+        <p className="text-xs font-medium text-muted-foreground mb-2">Select services:</p>
+        <div className="max-h-48 overflow-auto space-y-1">
+          {enabledServices.map(service => {
+            const price = service.customPrice ?? Math.round(service.avgPrice * regionMultiplier);
+            const isSelected = selectedServices.includes(service.id);
+            return (
+              <button
+                key={service.id}
+                onClick={() => setSelectedServices(prev =>
+                  isSelected ? prev.filter(id => id !== service.id) : [...prev, service.id]
+                )}
+                className={cn(
+                  "w-full flex items-center justify-between p-2 rounded-lg text-sm transition-colors",
+                  isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  {isSelected && <Icon name="check" size="sm" />}
+                  {service.name}
+                </span>
+                <span className="font-medium">{formatPrice(price, service.pricingUnit)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {selectedServices.length > 0 && (
+        <div className="border-t pt-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Subtotal</span>
+            <span className="font-medium">${subtotal.toFixed(0)}</span>
+          </div>
+          
+          {adjustments.filter(a => a.amount !== 0).map((adj, i) => (
+            <div key={i} className={cn(
+              "flex justify-between text-sm",
+              adj.amount > 0 ? "text-amber-600" : "text-emerald-600"
+            )}>
+              <span className="pl-2">{adj.name}</span>
+              <span>{adj.amount > 0 ? "+" : ""}{adj.amount.toFixed(0)}</span>
+            </div>
+          ))}
+
+          <div className="flex justify-between text-lg font-bold pt-2 border-t">
+            <span>Total</span>
+            <span className="text-primary">${total.toFixed(0)}</span>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function AISuggestionsPanel({
+  industry,
+  services,
+  regionMultiplier,
+  onClose,
+  onApplySuggestion,
+}: {
+  industry: IndustryPricing;
+  services: EnabledService[];
+  regionMultiplier: number;
+  onClose: () => void;
+  onApplySuggestion: (suggestion: string, data?: Record<string, unknown>) => void;
+}) {
+  const enabledCount = services.filter(s => s.enabled).length;
+  const totalServices = services.length;
+  const recommendedModel = getRecommendedPricingModel(industry);
+
+  // Calculate average price vs benchmark
+  const avgEnabledPrice = services
+    .filter(s => s.enabled)
+    .reduce((sum, s) => sum + (s.customPrice ?? s.avgPrice * regionMultiplier), 0) / Math.max(enabledCount, 1);
+
+  const suggestions = [
+    {
+      id: "enable-high-margin",
+      icon: "trendUp" as IconName,
+      iconColor: "text-emerald-500",
+      title: "Enable High-Margin Services",
+      description: `You have ${totalServices - enabledCount} services disabled. Consider enabling services with ${industry.grossMargin.high}%+ margins.`,
+      action: "Enable Suggested",
+      show: enabledCount < totalServices * 0.7,
+    },
+    {
+      id: "pricing-model",
+      icon: "target" as IconName,
+      iconColor: "text-blue-500",
+      title: `Switch to ${recommendedModel.name}`,
+      description: `${recommendedModel.prevalence}% of ${industry.name} businesses use this model. It has +${recommendedModel.conversionImpact}% conversion impact.`,
+      action: "Learn More",
+      show: true,
+    },
+    {
+      id: "retention",
+      icon: "refresh" as IconName,
+      iconColor: "text-purple-500",
+      title: "Add Retention Program",
+      description: industry.retentionModels[0] 
+        ? `A ${industry.retentionModels[0].name} could increase LTV by ${industry.retentionModels[0].ltv_multiplier}x.`
+        : "Add a maintenance plan to increase customer lifetime value.",
+      action: "Configure Plan",
+      show: industry.retentionModels.length > 0,
+    },
+    {
+      id: "emergency-pricing",
+      icon: "alertCircle" as IconName,
+      iconColor: "text-amber-500",
+      title: "Enable Emergency Pricing",
+      description: `Industry standard is ${industry.emergencyMultiplier.afterHours}x for after-hours, ${industry.emergencyMultiplier.weekend}x weekends, ${industry.emergencyMultiplier.holiday}x holidays.`,
+      action: "Enable Rules",
+      show: true,
+    },
+  ].filter(s => s.show);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <Card className="w-full max-w-lg p-6 m-4 max-h-[90vh] overflow-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center">
+              <Icon name="sparkles" size="lg" className="text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold">AI Pricing Suggestions</h3>
+              <p className="text-xs text-muted-foreground">Based on {industry.name} benchmarks</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
+            <Icon name="close" size="lg" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          {suggestions.map((suggestion) => (
+            <div key={suggestion.id} className="p-4 rounded-xl border bg-card">
+              <div className="flex items-start gap-3">
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center bg-muted", suggestion.iconColor)}>
+                  <Icon name={suggestion.icon} size="sm" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm">{suggestion.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{suggestion.description}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 h-8 text-xs"
+                    onClick={() => onApplySuggestion(suggestion.id)}
+                  >
+                    {suggestion.action}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Conversion Insights */}
+        <div className="mt-6 pt-6 border-t">
+          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+            <Icon name="lightbulb" size="sm" className="text-amber-500" />
+            Conversion Insights
+          </h4>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="text-muted-foreground">Flat rate preference</p>
+              <p className="font-bold text-lg">{CONVERSION_INSIGHTS.flatRatePreference}%</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="text-muted-foreground">Middle tier selection</p>
+              <p className="font-bold text-lg">{CONVERSION_INSIGHTS.tieredPricing.middleTierSelection}%</p>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
 
 // ============================================================================
-// TAB CONFIG
+// TABS CONFIG
 // ============================================================================
 
-interface TabConfig {
-  id: string;
+type TabId = "industry" | "services" | "rules" | "retention" | "preview";
+
+interface Tab {
+  id: TabId;
   label: string;
   icon: IconName;
-  count?: number;
 }
 
+const TABS: Tab[] = [
+  { id: "industry", label: "Industry", icon: "briefcase" },
+  { id: "services", label: "Services", icon: "layers" },
+  { id: "rules", label: "Price Rules", icon: "settings" },
+  { id: "retention", label: "Retention", icon: "refresh" },
+  { id: "preview", label: "Calculator", icon: "calculator" },
+];
+
 // ============================================================================
-// MAIN PAGE
+// MAIN PAGE COMPONENT
 // ============================================================================
 
 export default function PriceBuilderPage() {
-  const [activeTab, setActiveTab] = useState<"tiers" | "addons" | "rules" | "preview">("tiers");
-  const [tiers, setTiers] = useState<PriceTier[]>(DEFAULT_TIERS);
-  const [addons, setAddons] = useState<PriceAddon[]>(DEFAULT_ADDONS);
-  const [rules, setRules] = useState<PriceRule[]>(DEFAULT_RULES);
-
-  // Preview state
-  const [selectedTier, setSelectedTier] = useState("standard");
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
-  const [propertySize, setPropertySize] = useState(1);
-
+  const { toast } = useToast();
+  
+  // State
+  const [activeTab, setActiveTab] = useState<TabId>("industry");
+  const [config, setConfig] = useState<PriceConfig>({
+    industry: "cleaning",
+    region: "Baseline",
+    pricingModel: "flat_rate",
+    services: [],
+    rules: DEFAULT_RULES,
+    retentionPlan: null,
+  });
+  const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [showAISuggestion, setShowAISuggestion] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Derived state
+  const selectedIndustry = useMemo(() => 
+    getIndustryBySlug(config.industry),
+    [config.industry]
+  );
+
+  const regionMultiplier = useMemo(() => {
+    const region = REGIONAL_MULTIPLIERS.find(r => r.region === config.region);
+    return region ? (region.multiplier.low + region.multiplier.high) / 2 : 1;
+  }, [config.region]);
+
+  // Initialize services when industry changes
+  useEffect(() => {
+    if (selectedIndustry) {
+      const services: EnabledService[] = selectedIndustry.services.map((service, index) => ({
+        ...service,
+        id: `${selectedIndustry.slug}-${index}`,
+        enabled: index < 8, // Enable first 8 by default
+      }));
+      setConfig(prev => ({ ...prev, services }));
+    }
+  }, [selectedIndustry]);
+
+  // Track changes
   useEffect(() => {
     setHasChanges(true);
-  }, [tiers, addons, rules]);
+  }, [config.services, config.rules, config.retentionPlan]);
 
-  const addTier = () => {
-    setTiers([...tiers, {
-      id: `tier-${Date.now()}`,
-      name: "New Tier",
-      description: "Description",
-      basePrice: 149,
-      priceUnit: "starting_at",
-      features: ["Feature 1", "Feature 2"],
-      color: TIER_COLORS[tiers.length % TIER_COLORS.length].name,
-    }]);
-  };
+  // Handlers
+  const handleIndustryChange = useCallback((slug: string) => {
+    setConfig(prev => ({ ...prev, industry: slug }));
+    setActiveTab("services");
+  }, []);
 
-  const addAddon = () => {
-    setAddons([...addons, {
-      id: `addon-${Date.now()}`,
-      name: "New Add-on",
-      price: 25,
-      unit: "flat",
-    }]);
-  };
+  const handleServiceToggle = useCallback((serviceId: string) => {
+    setConfig(prev => ({
+      ...prev,
+      services: prev.services.map(s =>
+        s.id === serviceId ? { ...s, enabled: !s.enabled } : s
+      ),
+    }));
+  }, []);
 
-  const addRule = () => {
-    setRules([...rules, {
+  const handleServicePriceChange = useCallback((serviceId: string, price: number) => {
+    setConfig(prev => ({
+      ...prev,
+      services: prev.services.map(s =>
+        s.id === serviceId ? { ...s, customPrice: price } : s
+      ),
+    }));
+  }, []);
+
+  const handleRuleToggle = useCallback((ruleId: string) => {
+    setConfig(prev => ({
+      ...prev,
+      rules: prev.rules.map(r =>
+        r.id === ruleId ? { ...r, enabled: !r.enabled } : r
+      ),
+    }));
+  }, []);
+
+  const handleRuleDelete = useCallback((ruleId: string) => {
+    setConfig(prev => ({
+      ...prev,
+      rules: prev.rules.filter(r => r.id !== ruleId),
+    }));
+  }, []);
+
+  const handleAddRule = useCallback(() => {
+    const newRule: PriceRule = {
       id: `rule-${Date.now()}`,
       name: "New Rule",
-      type: "percentage_add",
+      type: "percentage",
       value: 10,
-      condition: "Condition description",
+      condition: "Custom condition",
       enabled: true,
-    }]);
-  };
+    };
+    setConfig(prev => ({
+      ...prev,
+      rules: [...prev.rules, newRule],
+    }));
+  }, []);
 
-  const tabs: TabConfig[] = [
-    { id: "tiers", label: "Pricing Tiers", icon: "layers", count: tiers.length },
-    { id: "addons", label: "Add-ons", icon: "tag", count: addons.length },
-    { id: "rules", label: "Price Rules", icon: "settings", count: rules.filter((r) => r.enabled).length },
-    { id: "preview", label: "Preview", icon: "eye" },
-  ];
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      // TODO: Save to Supabase
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setHasChanges(false);
+      toast({
+        title: "Saved successfully",
+        description: "Your pricing configuration has been saved.",
+      });
+    } catch {
+      toast({
+        title: "Error saving",
+        description: "Failed to save your configuration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [toast]);
+
+  const handleApplySuggestion = useCallback((suggestionId: string) => {
+    switch (suggestionId) {
+      case "enable-high-margin":
+        setConfig(prev => ({
+          ...prev,
+          services: prev.services.map(s => ({ ...s, enabled: true })),
+        }));
+        toast({ title: "All services enabled" });
+        break;
+      case "emergency-pricing":
+        setConfig(prev => ({
+          ...prev,
+          rules: prev.rules.map(r => 
+            ["3", "4", "5"].includes(r.id) ? { ...r, enabled: true } : r
+          ),
+        }));
+        toast({ title: "Emergency rules enabled" });
+        break;
+      default:
+        toast({ title: "Suggestion applied" });
+    }
+    setShowAISuggestions(false);
+  }, [toast]);
+
+  // Stats
+  const enabledServicesCount = config.services.filter(s => s.enabled).length;
+  const enabledRulesCount = config.rules.filter(r => r.enabled).length;
+
+  if (!selectedIndustry) {
+    return (
+      <Layout title="Price Builder">
+        <div className="flex items-center justify-center py-12">
+          <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Price Builder">
@@ -595,296 +781,330 @@ export default function PriceBuilderPage() {
               <Icon name="dollar" size="xl" className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Price Builder</h1>
-              <p className="text-gray-500">Build and customize your service pricing</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Price Builder
+              </h1>
+              <p className="text-muted-foreground">
+                Configure pricing for {selectedIndustry.name}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowAISuggestion(true)}
-              className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-100 dark:bg-violet-950/50 dark:text-violet-300"
+            <Button
+              variant="outline"
+              onClick={() => setShowAISuggestions(true)}
+              className="gap-2 rounded-xl"
             >
               <Icon name="sparkles" size="sm" />
               AI Suggestions
-            </button>
-            <button
-              disabled={!hasChanges}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+              className="gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
             >
-              <Icon name="save" size="sm" />
+              {isSaving ? (
+                <Icon name="spinner" size="sm" className="animate-spin" />
+              ) : (
+                <Icon name="save" size="sm" />
+              )}
               Save Changes
-            </button>
+            </Button>
           </div>
         </div>
 
+        {/* Region Selector */}
+        <Card className="p-4 rounded-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Icon name="mapPin" size="lg" className="text-muted-foreground" />
+              <div>
+                <p className="font-medium text-sm">Market Region</p>
+                <p className="text-xs text-muted-foreground">Adjusts all prices automatically</p>
+              </div>
+            </div>
+            <div className="flex-1 max-w-xs">
+              <Select value={config.region} onValueChange={(v) => setConfig(prev => ({ ...prev, region: v }))}>
+                <SelectTrigger className="h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIONAL_MULTIPLIERS.map((region) => (
+                    <SelectItem key={region.region} value={region.region}>
+                      {region.region} ({((region.multiplier.low + region.multiplier.high) / 2 * 100).toFixed(0)}%)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Badge variant="secondary" className="text-xs">
+              {regionMultiplier > 1 ? "+" : ""}{((regionMultiplier - 1) * 100).toFixed(0)}% adjustment
+            </Badge>
+          </div>
+        </Card>
+
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-gray-100/80 rounded-xl w-fit">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.id ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Icon name={tab.icon} size="sm" />
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className={`rounded-full px-2 py-0.5 text-xs ${activeTab === tab.id ? "bg-primary/10" : "bg-muted"}`}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="flex gap-1 p-1 bg-muted/50 rounded-xl w-fit overflow-x-auto">
+          {TABS.map((tab) => {
+            let count: number | undefined;
+            if (tab.id === "services") count = enabledServicesCount;
+            if (tab.id === "rules") count = enabledRulesCount;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap",
+                  activeTab === tab.id
+                    ? "bg-background text-primary shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon name={tab.icon} size="sm" />
+                {tab.label}
+                {count !== undefined && (
+                  <Badge variant="secondary" className={cn(
+                    "text-xs",
+                    activeTab === tab.id && "bg-primary/10"
+                  )}>
+                    {count}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}
-        <div className="card-elevated rounded-2xl p-6">
-          {/* Tiers Tab */}
-          {activeTab === "tiers" && (
-            <div>
-              <div className="mb-6 flex items-center justify-between">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <Card className="p-6 rounded-2xl">
+              {/* Industry Tab */}
+              {activeTab === "industry" && (
                 <div>
-                  <h2 className="font-semibold text-gray-900">Pricing Tiers</h2>
-                  <p className="text-sm text-muted-foreground">Define your service packages with Good-Better-Best pricing</p>
-                </div>
-                <button onClick={addTier} className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm hover:bg-muted">
-                  <Icon name="plus" size="sm" />
-                  Add Tier
-                </button>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                {tiers.map((tier) => (
-                  <TierCard
-                    key={tier.id}
-                    tier={tier}
-                    onUpdate={(updated) => setTiers(tiers.map((t) => (t.id === tier.id ? updated : t)))}
-                    onDelete={() => setTiers(tiers.filter((t) => t.id !== tier.id))}
-                    onDuplicate={() => setTiers([...tiers, { ...tier, id: `tier-${Date.now()}`, name: `${tier.name} (Copy)`, recommended: false }])}
+                  <div className="mb-6">
+                    <h2 className="font-semibold text-lg mb-1">Select Your Industry</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Choose your industry to load pre-configured services and benchmarks
+                    </p>
+                  </div>
+                  <IndustrySelector
+                    selected={config.industry}
+                    onSelect={handleIndustryChange}
                   />
-                ))}
-              </div>
-
-              {/* AI Insight */}
-              <div className="mt-6 flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 p-4 dark:bg-violet-950/30">
-                <span className="flex items-center justify-center w-5 h-5 mt-0.5">
-                  <Icon name="sparkles" size="lg" className="text-violet-600" />
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-violet-800 dark:text-violet-200">AI Insight</p>
-                  <p className="mt-1 text-sm text-violet-700 dark:text-violet-300">
-                    3-tier pricing (Good-Better-Best) increases revenue by 30%. Most customers (42%) choose the middle option.
-                  </p>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Add-ons Tab */}
-          {activeTab === "addons" && (
-            <div>
-              <div className="mb-6 flex items-center justify-between">
+              {/* Services Tab */}
+              {activeTab === "services" && (
                 <div>
-                  <h2 className="font-semibold text-gray-900">Service Add-ons</h2>
-                  <p className="text-sm text-muted-foreground">Extra services customers can add to their booking</p>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="font-semibold text-lg mb-1">Services & Pricing</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Toggle services and customize prices for your market
+                      </p>
+                    </div>
+                    <Badge variant="outline">
+                      {enabledServicesCount} of {config.services.length} enabled
+                    </Badge>
+                  </div>
+
+                  {/* Group by category */}
+                  {Object.entries(
+                    config.services.reduce((acc, service) => {
+                      if (!acc[service.category]) acc[service.category] = [];
+                      acc[service.category].push(service);
+                      return acc;
+                    }, {} as Record<string, EnabledService[]>)
+                  ).map(([category, services]) => (
+                    <div key={category} className="mb-6">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <Icon name="folder" size="sm" />
+                        {category}
+                      </h3>
+                      <div className="space-y-2">
+                        {services.map((service) => (
+                          <ServiceRow
+                            key={service.id}
+                            service={service}
+                            regionMultiplier={regionMultiplier}
+                            onToggle={() => handleServiceToggle(service.id)}
+                            onPriceChange={(price) => handleServicePriceChange(service.id, price)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <button onClick={addAddon} className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm hover:bg-muted">
-                  <Icon name="plus" size="sm" />
-                  Add Add-on
-                </button>
-              </div>
+              )}
 
-              <div className="space-y-2">
-                {addons.map((addon) => (
-                  <AddonRow
-                    key={addon.id}
-                    addon={addon}
-                    onUpdate={(updated) => setAddons(addons.map((a) => (a.id === addon.id ? updated : a)))}
-                    onDelete={() => setAddons(addons.filter((a) => a.id !== addon.id))}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Rules Tab */}
-          {activeTab === "rules" && (
-            <div>
-              <div className="mb-6 flex items-center justify-between">
+              {/* Rules Tab */}
+              {activeTab === "rules" && (
                 <div>
-                  <h2 className="font-semibold text-gray-900">Price Rules</h2>
-                  <p className="text-sm text-muted-foreground">Automatic adjustments based on conditions</p>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="font-semibold text-lg mb-1">Price Rules</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Automatic adjustments for rush, discounts, and surcharges
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleAddRule} className="gap-2 rounded-xl">
+                      <Icon name="plus" size="sm" />
+                      Add Rule
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {config.rules.map((rule) => (
+                      <RuleRow
+                        key={rule.id}
+                        rule={rule}
+                        onToggle={() => handleRuleToggle(rule.id)}
+                        onUpdate={(updates) => {
+                          setConfig(prev => ({
+                            ...prev,
+                            rules: prev.rules.map(r =>
+                              r.id === rule.id ? { ...r, ...updates } : r
+                            ),
+                          }));
+                        }}
+                        onDelete={() => handleRuleDelete(rule.id)}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <button onClick={addRule} className="flex items-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm hover:bg-muted">
-                  <Icon name="plus" size="sm" />
-                  Add Rule
-                </button>
-              </div>
+              )}
 
-              <div className="space-y-2">
-                {rules.map((rule) => (
-                  <RuleRow
-                    key={rule.id}
-                    rule={rule}
-                    onUpdate={(updated) => setRules(rules.map((r) => (r.id === rule.id ? updated : r)))}
-                    onDelete={() => setRules(rules.filter((r) => r.id !== rule.id))}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Retention Tab */}
+              {activeTab === "retention" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="font-semibold text-lg mb-1">Retention Programs</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Recurring service plans increase customer lifetime value by up to 5x
+                    </p>
+                  </div>
 
-          {/* Preview Tab */}
-          {activeTab === "preview" && (
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                <div className="rounded-xl border bg-card p-5">
-                  <h3 className="mb-4 font-semibold">Configure Quote</h3>
-
-                  {/* Property Size */}
-                  <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium">Property Size</label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {PROPERTY_SIZES.map((size, i) => (
-                        <button
+                  {selectedIndustry.retentionModels.length > 0 ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {selectedIndustry.retentionModels.map((plan, i) => (
+                        <RetentionPlanCard
                           key={i}
-                          onClick={() => setPropertySize(i)}
-                          className={`rounded-lg border p-2 text-center text-xs transition-colors ${
-                            propertySize === i ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50" : "hover:bg-muted"
-                          }`}
-                        >
-                          <p className="font-medium">{size.label}</p>
-                          <p className="text-muted-foreground">{size.sqft}</p>
-                        </button>
+                          plan={plan}
+                          isSelected={config.retentionPlan === plan.name}
+                          onSelect={() => setConfig(prev => ({
+                            ...prev,
+                            retentionPlan: prev.retentionPlan === plan.name ? null : plan.name,
+                          }))}
+                        />
                       ))}
                     </div>
-                  </div>
-
-                  {/* Select Tier */}
-                  <div className="mb-4">
-                    <label className="mb-2 block text-sm font-medium">Service Tier</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {tiers.map((tier) => {
-                        const colorConfig = TIER_COLORS.find((c) => c.name === tier.color) || TIER_COLORS[0];
-                        return (
-                          <button
-                            key={tier.id}
-                            onClick={() => setSelectedTier(tier.id)}
-                            className={`rounded-lg border p-3 text-center transition-colors ${
-                              selectedTier === tier.id ? `${colorConfig.border} ${colorConfig.bg}` : "hover:bg-muted"
-                            }`}
-                          >
-                            <p className="font-medium">{tier.name}</p>
-                            <p className="text-sm text-muted-foreground">${tier.basePrice}</p>
-                          </button>
-                        );
-                      })}
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Icon name="info" size="xl" className="mx-auto mb-2 opacity-50" />
+                      <p>No retention models available for this industry yet.</p>
                     </div>
-                  </div>
-
-                  {/* Add-ons */}
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">Add-ons</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {addons.map((addon) => (
-                        <button
-                          key={addon.id}
-                          onClick={() =>
-                            setSelectedAddons(
-                              selectedAddons.includes(addon.id)
-                                ? selectedAddons.filter((id) => id !== addon.id)
-                                : [...selectedAddons, addon.id]
-                            )
-                          }
-                          className={`flex items-center justify-between rounded-lg border p-2 text-left text-sm transition-colors ${
-                            selectedAddons.includes(addon.id) ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50" : "hover:bg-muted"
-                          }`}
-                        >
-                          <span>{addon.name}</span>
-                          <span className="text-muted-foreground">+${addon.price}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
+              )}
 
-              <QuotePreview
-                tiers={tiers}
-                addons={addons}
-                rules={rules}
-                selectedTier={selectedTier}
-                selectedAddons={selectedAddons}
-                propertySize={propertySize}
-              />
-            </div>
-          )}
+              {/* Preview/Calculator Tab */}
+              {activeTab === "preview" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="font-semibold text-lg mb-1">Quote Calculator</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Test your pricing by building sample quotes
+                    </p>
+                  </div>
+                  <QuoteCalculator
+                    services={config.services}
+                    rules={config.rules}
+                    regionMultiplier={regionMultiplier}
+                  />
+                </div>
+              )}
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-4">
+            <IndustryBenchmarks industry={selectedIndustry} />
+
+            {/* Pricing Model Info */}
+            <Card className="p-4 rounded-xl">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Icon name="lightbulb" size="sm" className="text-amber-500" />
+                Recommended Model
+              </h3>
+              {selectedIndustry.pricingModels.length > 0 && (
+                <div className="space-y-2">
+                  {selectedIndustry.pricingModels.slice(0, 2).map((model, i) => (
+                    <div key={i} className={cn(
+                      "p-3 rounded-lg text-sm",
+                      i === 0 ? "bg-primary/5 border border-primary/20" : "bg-muted/50"
+                    )}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{model.name}</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {model.prevalence}%
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{model.description}</p>
+                      {model.conversionImpact > 0 && (
+                        <p className="text-xs text-emerald-600 mt-1">
+                          +{model.conversionImpact}% conversion
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Quick Stats */}
+            <Card className="p-4 rounded-xl">
+              <h3 className="font-semibold text-sm mb-3">Your Configuration</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Industry</span>
+                  <span className="font-medium">{selectedIndustry.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Region</span>
+                  <span className="font-medium">{config.region}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Services</span>
+                  <span className="font-medium">{enabledServicesCount} enabled</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Price Rules</span>
+                  <span className="font-medium">{enabledRulesCount} active</span>
+                </div>
+                {config.retentionPlan && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Retention</span>
+                    <span className="font-medium text-emerald-600">{config.retentionPlan}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
-      {/* AI Suggestion Modal */}
-      {showAISuggestion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Icon name="sparkles" size="lg" className="text-violet-600" />
-                <h3 className="font-semibold">AI Pricing Suggestions</h3>
-              </div>
-              <button onClick={() => setShowAISuggestion(false)} className="flex items-center justify-center w-8 h-8 rounded hover:bg-muted">
-                <Icon name="close" size="lg" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-xl border p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5">
-                    <Icon name="trendUp" size="sm" className="text-emerald-500" />
-                  </span>
-                  <span className="text-sm font-medium">Increase Revenue</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Your Standard tier is priced 15% below market average. Consider raising to $199 starting.
-                </p>
-                <button className="mt-2 rounded-lg bg-emerald-100 px-3 py-1.5 text-sm text-emerald-700 hover:bg-emerald-200">
-                  Apply Suggestion
-                </button>
-              </div>
-
-              <div className="rounded-xl border p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5">
-                    <Icon name="target" size="sm" className="text-blue-500" />
-                  </span>
-                  <span className="text-sm font-medium">Improve Conversion</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Add a "Deep Clean" add-on at $75. 68% of customers in your area request this service.
-                </p>
-                <button className="mt-2 rounded-lg bg-blue-100 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-200">
-                  Add Deep Clean
-                </button>
-              </div>
-
-              <div className="rounded-xl border p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5">
-                    <Icon name="alertCircle" size="sm" className="text-amber-500" />
-                  </span>
-                  <span className="text-sm font-medium">Missing Opportunity</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  You don't have a recurring service discount. Adding 20% off for weekly customers increases retention by 3x.
-                </p>
-                <button className="mt-2 rounded-lg bg-amber-100 px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-200">
-                  Add Recurring Discount
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* AI Suggestions Modal */}
+      {showAISuggestions && (
+        <AISuggestionsPanel
+          industry={selectedIndustry}
+          services={config.services}
+          regionMultiplier={regionMultiplier}
+          onClose={() => setShowAISuggestions(false)}
+          onApplySuggestion={handleApplySuggestion}
+        />
       )}
     </Layout>
   );

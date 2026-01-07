@@ -384,9 +384,17 @@ export const icons = {
   snowflake: "snowflake",
   thermometer: "thermometer-half",
   droplet: "droplet",
+  water: "water",
+  waves: "water",
   leaf: "leaf",
   tree: "tree",
   flower: "flower",
+  bug: "bug",
+  hammer: "hammer",
+  wrench: "wrench",
+  tools: "tools",
+  screwdriver: "screwdriver",
+  paintBrush: "paint-brush",
   
   // Buildings & Places
   home2: "house",
