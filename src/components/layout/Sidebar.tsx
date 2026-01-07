@@ -3,49 +3,48 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ChevronDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
 import { useConversations } from '@/hooks/useConversations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DashboardIcon,
-  InboxIcon,
-  QuoteIcon,
-  CustomerIcon,
-  SequenceIcon,
-  CampaignIcon,
-  AnalyticsIcon,
-  ConnectionIcon,
-  BillingIcon,
-  SettingsIcon,
-} from '@/components/ui/custom-icons';
+import { Icon } from '@/components/ui/icon';
 
-const mainNavigation = [
-  { name: 'Dashboard', href: '/', icon: DashboardIcon },
-  { name: 'Inbox', href: '/inbox', icon: InboxIcon, showBadge: true },
+import type { IconName } from '@/components/ui/icon';
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: IconName;
+  showBadge?: boolean;
+  badge?: string;
+}
+
+const mainNavigation: NavItem[] = [
+  { name: 'Dashboard', href: '/', icon: 'home' },
+  { name: 'Inbox', href: '/inbox', icon: 'inbox', showBadge: true },
 ];
 
-const manageNavigation = [
-  { name: 'Quotes', href: '/quotes', icon: QuoteIcon },
-  { name: 'Customers', href: '/customers', icon: CustomerIcon },
+const manageNavigation: NavItem[] = [
+  { name: 'Quotes', href: '/quotes', icon: 'quote' },
+  { name: 'Customers', href: '/customers', icon: 'users' },
 ];
 
-const engageNavigation = [
-  { name: 'Sequences', href: '/sequences', icon: SequenceIcon },
-  { name: 'Campaigns', href: '/campaigns', icon: CampaignIcon },
+const engageNavigation: NavItem[] = [
+  { name: 'Sequences', href: '/sequences', icon: 'sequence' },
+  { name: 'Campaigns', href: '/campaigns', icon: 'megaphone' },
 ];
 
-const analyzeNavigation = [
-  { name: 'Analytics', href: '/analytics', icon: AnalyticsIcon },
+const analyzeNavigation: NavItem[] = [
+  { name: 'Analytics', href: '/analytics', icon: 'chart' },
+  { name: 'Pricing AI', href: '/pricing', icon: 'sparkles', badge: 'AI' },
 ];
 
-const settingsNavigation = [
-  { name: 'Connections', href: '/connections', icon: ConnectionIcon },
-  { name: 'Billing', href: '/billing', icon: BillingIcon },
-  { name: 'Settings', href: '/settings', icon: SettingsIcon },
+const settingsNavigation: NavItem[] = [
+  { name: 'Connections', href: '/connections', icon: 'plug' },
+  { name: 'Billing', href: '/billing', icon: 'creditCard' },
+  { name: 'Settings', href: '/settings', icon: 'settings' },
 ];
 
 export default function Sidebar() {
@@ -64,9 +63,8 @@ export default function Sidebar() {
     router.push('/login');
   };
 
-  const NavLink = ({ item }: { item: typeof mainNavigation[0] & { showBadge?: boolean } }) => {
+  const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-    const Icon = item.icon;
     
     return (
       <Link
@@ -79,11 +77,20 @@ export default function Sidebar() {
         )}
       >
         <div className="flex items-center gap-3">
-          <Icon className={cn(
-            "transition-colors",
-            isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600"
-          )} size={18} />
+          <Icon 
+            name={item.icon} 
+            size="md"
+            className={cn(
+              "transition-colors",
+              isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600"
+            )} 
+          />
           <span>{item.name}</span>
+          {item.badge && (
+            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-primary/10 text-primary">
+              {item.badge}
+            </span>
+          )}
         </div>
         
         {item.showBadge && totalUnread > 0 && (
@@ -95,7 +102,7 @@ export default function Sidebar() {
     );
   };
 
-  const NavSection = ({ label, items }: { label: string; items: typeof mainNavigation }) => (
+  const NavSection = ({ label, items }: { label: string; items: NavItem[] }) => (
     <div className="space-y-1">
       <p className="px-3 mb-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
       {items.map((item) => (
@@ -121,14 +128,14 @@ export default function Sidebar() {
           </span>
         </Link>
         <button className="p-1 rounded hover:bg-gray-100">
-          <ChevronDown className="h-4 w-4 text-gray-400" />
+          <Icon name="chevronDown" size="sm" className="text-gray-400" />
         </button>
       </div>
       
       {/* Search */}
       <div className="px-3 py-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Icon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Search for anything"
             className="w-full h-8 pl-8 text-sm bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-400 focus:bg-white"
@@ -155,6 +162,13 @@ export default function Sidebar() {
         <NavSection label="Settings" items={settingsNavigation} />
       </nav>
       
+      {/* Attribution */}
+      <div className="px-4 py-2 border-t border-gray-100">
+        <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-400 hover:text-gray-500">
+          Icons by Flaticon
+        </a>
+      </div>
+      
       {/* User section */}
       <div className="border-t border-gray-200 p-3">
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
@@ -176,7 +190,7 @@ export default function Sidebar() {
             title="Sign out"
             className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 hover:bg-gray-100 hover:text-gray-700"
           >
-            <LogOut className="h-4 w-4" />
+            <Icon name="logout" size="sm" />
           </Button>
         </div>
       </div>

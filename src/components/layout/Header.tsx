@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Bell, Menu, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Icon } from '@/components/ui/icon';
 
 interface HeaderProps {
   title?: string;
@@ -17,7 +16,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-4">
         {onMenuClick && (
           <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden h-9 w-9">
-            <Menu className="h-5 w-5 text-gray-600" />
+            <Icon name="menu" size="lg" className="text-gray-600" />
           </Button>
         )}
         {title && (
@@ -32,7 +31,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           size="sm"
           className="h-9 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Icon name="plus" size="sm" className="mr-1.5" />
           Create
         </Button>
         
@@ -42,7 +41,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           size="icon" 
           className="relative h-9 w-9 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <Bell className="h-5 w-5 text-gray-600" />
+          <Icon name="bell" size="lg" className="text-gray-600" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
         </Button>
       </div>
