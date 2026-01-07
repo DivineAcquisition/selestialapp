@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { Bell, Search, Sparkles, Command, Menu } from 'lucide-react';
+import { Bell, Search, Wand2, Command, Menu, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -71,12 +70,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           size="sm"
           className="hidden sm:flex items-center gap-2 px-3 text-gray-600 hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-300"
         >
-          <div className="relative">
-            <Sparkles className="h-4 w-4" />
-            <div className="absolute inset-0 animate-pulse-slow">
-              <Sparkles className="h-4 w-4 text-primary/50" />
-            </div>
-          </div>
+          <Wand2 className="h-4 w-4" />
           <span className="text-sm font-medium">AI</span>
           <kbd className="hidden lg:inline-flex px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-500 rounded">
             ⌘J
@@ -103,7 +97,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           size="sm"
           className="hidden lg:flex items-center gap-2 bg-gradient-to-r from-primary to-[#9D96FF] text-white rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:opacity-95 transition-all duration-300"
         >
-          <Sparkles className="h-4 w-4" />
+          <Zap className="h-4 w-4" />
           Upgrade
         </Button>
       </div>

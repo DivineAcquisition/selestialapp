@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
-import { Loader2, User, Mail, Lock, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react'
+import { Loader2, User, Mail, Lock, ArrowRight, Gift, Zap, Shield, Wand2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -116,7 +116,7 @@ export default function SignupPage() {
   }
 
   const benefits = [
-    { text: '14-day free trial', highlight: true, icon: Sparkles },
+    { text: '14-day free trial', highlight: true, icon: Gift },
     { text: 'No credit card required', highlight: false, icon: Shield },
     { text: 'Cancel anytime', highlight: false, icon: Zap },
   ]
@@ -126,7 +126,7 @@ export default function SignupPage() {
       {/* Header */}
       <div className="space-y-3">
         <Badge className="bg-primary/10 text-primary border-0 px-3 py-1.5">
-          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          <Wand2 className="w-3.5 h-3.5 mr-1.5" />
           Start free today
         </Badge>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create your account</h1>

@@ -15,7 +15,7 @@ import {
 import StepEditor from './StepEditor';
 import TemplateLibrary from './TemplateLibrary';
 import { generateId } from '@/lib/formatters';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, Wand2 } from 'lucide-react';
 
 interface SequenceEditorProps {
   open: boolean;
@@ -165,7 +165,7 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
               onClick={() => setShowTemplates(true)}
               className="w-full gap-2 border-dashed"
             >
-              <Sparkles className="w-4 h-4" />
+              <Wand2 className="w-4 h-4" />
               Start from Template
             </Button>
           )}

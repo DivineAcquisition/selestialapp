@@ -16,7 +16,7 @@ import { useMessageThread } from '@/hooks/useMessageThread';
 import { useQuotes } from '@/hooks/useQuotes';
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
 import { useSmartReplies } from '@/hooks/useSmartReplies';
-import { Loader2, MessageSquare, Phone, Sparkles, Inbox, ArrowRight } from 'lucide-react';
+import { Loader2, MessageSquare, Phone, Bot, Inbox, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function InboxPage() {
@@ -162,7 +162,7 @@ export default function InboxPage() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
               <Badge className="bg-primary/10 text-primary border-0">
-                <Sparkles className="h-3 w-3 mr-1" />
+                <Bot className="h-3 w-3 mr-1" />
                 AI-Powered
               </Badge>
             </div>

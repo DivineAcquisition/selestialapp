@@ -131,6 +131,30 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Global form input focus styles - subtle purple glow */
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    transition: all 200ms ease;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):focus,
+  input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(85, 0, 255, 0.1) !important;
+    border-color: rgba(85, 0, 255, 0.5) !important;
+  }
+
+  /* Override thick ring styles globally */
+  *:focus-visible {
+    --tw-ring-offset-width: 0px;
+    --tw-ring-color: transparent;
+  }
 }
 
 /* ==================== KEYFRAME ANIMATIONS ==================== */

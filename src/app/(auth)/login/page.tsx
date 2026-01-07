@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
-import { Loader2, Mail, Lock, ArrowRight, Sparkles, CheckCircle, Zap } from 'lucide-react'
+import { Loader2, Mail, Lock, ArrowRight, Bot, CheckCircle, Zap } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -84,7 +84,7 @@ function LoginForm() {
   }
 
   const features = [
-    { text: 'AI-powered follow-ups', icon: Sparkles },
+    { text: 'AI-powered follow-ups', icon: Bot },
     { text: 'Automated sequences', icon: Zap },
     { text: 'Smart analytics', icon: CheckCircle },
   ]
@@ -95,7 +95,7 @@ function LoginForm() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Badge className="bg-primary/10 text-primary border-0 font-medium">
-            <Sparkles className="h-3 w-3 mr-1" />
+            <Bot className="h-3 w-3 mr-1" />
             Welcome back
           </Badge>
         </div>

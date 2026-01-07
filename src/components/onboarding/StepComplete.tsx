@@ -9,7 +9,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toE164 } from '@/lib/formatters';
-import { CheckCircle, Loader2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, ArrowRight, Lightbulb } from 'lucide-react';
 
 export default function StepComplete() {
   const router = useRouter();
@@ -176,7 +176,7 @@ export default function StepComplete() {
               {/* What's next */}
               <div className="bg-muted/50 rounded-lg p-6 text-left">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Lightbulb className="h-4 w-4 text-primary" />
                   What&apos;s next?
                 </h3>
                 <div className="space-y-3">

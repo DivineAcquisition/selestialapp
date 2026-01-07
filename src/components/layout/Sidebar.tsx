@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, Sparkles } from 'lucide-react';
+import { LogOut, ChevronRight, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
@@ -153,7 +153,7 @@ export default function Sidebar() {
       <div className="mx-3 mb-3 p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
         <div className="flex items-center gap-2 mb-2">
           <div className="p-1.5 rounded-lg bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Wand2 className="h-4 w-4 text-primary" />
           </div>
           <span className="text-sm font-semibold text-gray-900">AI Assistant</span>
         </div>

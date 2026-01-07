@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Zap, Lock, Crown, ArrowRight } from 'lucide-react'
+import { Rocket, Zap, Lock, Crown, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface UpgradePromptProps {
@@ -33,7 +33,7 @@ export default function UpgradePrompt({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
-              <Sparkles className="w-5 h-5" />
+              <Rocket className="w-5 h-5" />
             </div>
             <div>
               <p className="font-semibold">Upgrade to Growth</p>
