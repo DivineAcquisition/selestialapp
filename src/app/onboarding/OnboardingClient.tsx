@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -29,7 +31,9 @@ import {
   MessageSquare,
   TrendingUp,
   Clock,
-  Zap
+  Zap,
+  Bot,
+  Target,
 } from 'lucide-react';
 
 type Step = 'welcome' | 'business' | 'complete';
@@ -168,10 +172,10 @@ export default function OnboardingClient() {
   
   if (authLoading || businessLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-secondary/20">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     );
@@ -180,20 +184,20 @@ export default function OnboardingClient() {
   if (!user) return null;
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <header className="border-b border-gray-200/60 bg-white/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/logo-icon-new.png" alt="Selestial" width={36} height={36} className="rounded-lg" />
-            <span className="font-bold text-lg">Selestial</span>
+            <Image src="/logo-icon-new.png" alt="Selestial" width={40} height={40} className="rounded-xl shadow-lg shadow-primary/20" />
+            <span className="font-bold text-xl text-gray-900">Selestial</span>
           </div>
           {step !== 'welcome' && step !== 'complete' && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="hidden sm:inline">Step</span>
-              <span className="font-medium text-foreground">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-400">Step</span>
+              <Badge className="bg-primary/10 text-primary border-0 font-semibold">
                 {step === 'business' ? '1' : '2'} of 2
-              </span>
+              </Badge>
             </div>
           )}
         </div>
@@ -204,51 +208,54 @@ export default function OnboardingClient() {
         {step === 'welcome' && (
           <div className="text-center space-y-8 animate-fade-in">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-medium">Welcome to Selestial</span>
-              </div>
+              <Badge className="bg-primary/10 text-primary border-0 px-4 py-2">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Welcome to Selestial
+              </Badge>
               
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
                 Win more jobs with
-                <span className="text-primary block mt-1">automated follow-ups</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#9D96FF] block mt-2">automated follow-ups</span>
               </h1>
               
-              <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                Never let a quote go cold again. We'll help you follow up at the perfect time.
+              <p className="text-lg text-gray-500 max-w-md mx-auto">
+                Never let a quote go cold again. We&apos;ll help you follow up at the perfect time.
               </p>
             </div>
             
             {/* Features */}
             <div className="grid sm:grid-cols-3 gap-4 py-6">
               {[
-                { icon: MessageSquare, title: 'Smart Follow-Ups', desc: 'Automated SMS sequences' },
-                { icon: TrendingUp, title: 'Win More Jobs', desc: 'Increase close rate by 30%' },
-                { icon: Clock, title: 'Save 10+ Hours', desc: 'Per week on follow-ups' },
+                { icon: MessageSquare, title: 'Smart Follow-Ups', desc: 'Automated SMS sequences', color: 'bg-blue-100 text-blue-600' },
+                { icon: TrendingUp, title: 'Win More Jobs', desc: 'Increase close rate by 30%', color: 'bg-emerald-100 text-emerald-600' },
+                { icon: Clock, title: 'Save 10+ Hours', desc: 'Per week on follow-ups', color: 'bg-amber-100 text-amber-600' },
               ].map((feature, i) => (
-                <div 
+                <Card 
                   key={i}
-                  className="p-4 rounded-xl bg-card border border-border/50 text-center"
+                  className="card-elevated p-5 text-center hover:shadow-lg transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <feature.icon className="w-5 h-5 text-primary" />
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110",
+                    feature.color
+                  )}>
+                    <feature.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-semibold text-sm">{feature.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{feature.desc}</p>
-                </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
+                  <p className="text-sm text-gray-500">{feature.desc}</p>
+                </Card>
               ))}
             </div>
             
             <Button 
               size="lg" 
               onClick={() => setStep('business')}
-              className="h-14 px-8 text-lg font-semibold gap-2 glow-sm"
+              className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
             >
               Get Started
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               Takes less than 2 minutes to set up
             </p>
           </div>
@@ -257,98 +264,100 @@ export default function OnboardingClient() {
         {/* Business Info Step */}
         {step === 'business' && (
           <div className="space-y-8 animate-fade-in">
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-7 h-7 text-primary" />
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
+                <Building2 className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold">Tell us about your business</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Tell us about your business</h1>
+              <p className="text-gray-500">
                 This info helps us personalize your follow-up messages
               </p>
             </div>
             
             {error && (
-              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-center text-destructive">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center text-red-600">
                 {error}
               </div>
             )}
             
-            <div className="space-y-5 bg-card rounded-2xl border border-border/50 p-6 md:p-8">
-              {/* Business Name */}
-              <div className="space-y-2">
-                <Label htmlFor="businessName" className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-muted-foreground" />
-                  Business Name
-                </Label>
-                <Input
-                  id="businessName"
-                  placeholder="Johnson Plumbing"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  className="h-12"
-                  autoFocus
-                />
-              </div>
-              
-              {/* Owner Name */}
-              <div className="space-y-2">
-                <Label htmlFor="ownerName" className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  Your Name
-                </Label>
-                <Input
-                  id="ownerName"
-                  placeholder="Mike Johnson"
-                  value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
-                  className="h-12"
-                />
-              </div>
-              
-              {/* Phone & Industry */}
-              <div className="grid sm:grid-cols-2 gap-4">
+            <Card className="card-elevated p-6 md:p-8 rounded-2xl">
+              <div className="space-y-5">
+                {/* Business Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    Business Phone
+                  <Label htmlFor="businessName" className="flex items-center gap-2 text-gray-700">
+                    <Building2 className="w-4 h-4 text-gray-400" />
+                    Business Name
                   </Label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(555) 123-4567"
-                    value={phone}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    className="h-12"
+                    id="businessName"
+                    placeholder="Johnson Plumbing"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    className="h-12 rounded-xl"
+                    autoFocus
                   />
                 </div>
                 
+                {/* Owner Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="industry" className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-muted-foreground" />
-                    Industry
+                  <Label htmlFor="ownerName" className="flex items-center gap-2 text-gray-700">
+                    <User className="w-4 h-4 text-gray-400" />
+                    Your Name
                   </Label>
-                  <Select value={industry} onValueChange={setIndustry}>
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDUSTRIES.map((ind) => (
-                        <SelectItem key={ind.value} value={ind.value}>
-                          {ind.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="ownerName"
+                    placeholder="Mike Johnson"
+                    value={ownerName}
+                    onChange={(e) => setOwnerName(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                </div>
+                
+                {/* Phone & Industry */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="flex items-center gap-2 text-gray-700">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      Business Phone
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      className="h-12 rounded-xl"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="industry" className="flex items-center gap-2 text-gray-700">
+                      <Zap className="w-4 h-4 text-gray-400" />
+                      Industry
+                    </Label>
+                    <Select value={industry} onValueChange={setIndustry}>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDUSTRIES.map((ind) => (
+                          <SelectItem key={ind.value} value={ind.value}>
+                            {ind.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Card>
             
             <div className="flex justify-center">
               <Button
                 size="lg"
                 onClick={handleCreateBusiness}
                 disabled={!isBusinessFormValid() || saving}
-                className="h-14 px-10 text-lg font-semibold gap-2 glow-sm"
+                className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
               >
                 {saving ? (
                   <>
@@ -358,7 +367,7 @@ export default function OnboardingClient() {
                 ) : (
                   <>
                     Complete Setup
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </Button>
@@ -370,60 +379,61 @@ export default function OnboardingClient() {
         {step === 'complete' && (
           <div className="text-center space-y-8 animate-fade-in">
             <div className="space-y-4">
-              <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
-                <CheckCircle className="w-10 h-10 text-emerald-600" />
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center mx-auto shadow-lg">
+                <CheckCircle className="w-12 h-12 text-emerald-600" />
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold">
-                You're all set, {ownerName.split(' ')[0]}!
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                You&apos;re all set, {ownerName.split(' ')[0]}!
               </h1>
               
-              <p className="text-lg text-muted-foreground">
-                Your account is ready. Let's start winning more jobs.
+              <p className="text-lg text-gray-500">
+                Your account is ready. Let&apos;s start winning more jobs.
               </p>
             </div>
             
             {/* Next Steps */}
-            <div className="bg-card rounded-2xl border border-border/50 p-6 text-left max-w-md mx-auto">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
+            <Card className="card-elevated p-6 text-left max-w-md mx-auto rounded-2xl">
+              <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
                 Quick Start Guide
               </h3>
               
               <div className="space-y-4">
                 {[
-                  { num: 1, text: 'Add your first quote', desc: 'Enter a recent quote you gave' },
-                  { num: 2, text: 'Watch the magic', desc: 'We auto-follow up at the perfect time' },
-                  { num: 3, text: 'Win the job', desc: 'Track your success in the dashboard' },
+                  { num: 1, text: 'Add your first quote', desc: 'Enter a recent quote you gave', icon: Target },
+                  { num: 2, text: 'Watch the magic', desc: 'We auto-follow up at the perfect time', icon: Bot },
+                  { num: 3, text: 'Win the job', desc: 'Track your success in the dashboard', icon: TrendingUp },
                 ].map((item) => (
-                  <div key={item.num} className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  <div key={item.num} className="flex items-start gap-4 p-3 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-lg shadow-primary/20">
                       {item.num}
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{item.text}</p>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{item.text}</p>
+                      <p className="text-sm text-gray-500">{item.desc}</p>
                     </div>
+                    <item.icon className="w-5 h-5 text-gray-300" />
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
             
             <Button 
               size="lg"
               onClick={() => router.push('/')}
-              className="h-14 px-10 text-lg font-semibold gap-2 glow-sm"
+              className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
             >
               Go to Dashboard
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         )}
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 mt-auto">
-        <p className="text-center text-sm text-muted-foreground">
+      <footer className="border-t border-gray-200/60 py-6 mt-auto">
+        <p className="text-center text-sm text-gray-400">
           © {new Date().getFullYear()} Selestial · All rights reserved
         </p>
       </footer>

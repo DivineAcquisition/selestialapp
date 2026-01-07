@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AnimatedCounter } from '@/components/ui/text-effects';
 import { useToast } from '@/hooks/use-toast';
 import { useWebhookConfig } from '@/hooks/useWebhookConfig';
 import { useIntegrations } from '@/hooks/useIntegrations';
@@ -258,19 +259,19 @@ export default function ConnectionsPage() {
       case 'processed':
         return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-destructive" />;
+        return <XCircle className="h-4 w-4 text-red-500" />;
       case 'ignored':
         return <AlertCircle className="h-4 w-4 text-amber-500" />;
       default:
-        return <Clock className="h-4 w-4 text-muted-foreground" />;
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
 
   if (loading) {
     return (
       <Layout title="Connections">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -280,15 +281,13 @@ export default function ConnectionsPage() {
     <Layout title="Connections">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
             <Globe className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Integrations & Connections</h2>
-            <p className="text-sm text-muted-foreground">
-              Connect your tools and automate your workflow
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Integrations & Connections</h1>
+            <p className="text-gray-500">Connect your tools and automate your workflow</p>
           </div>
         </div>
 
@@ -302,16 +301,16 @@ export default function ConnectionsPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-muted/50">
-            <TabsTrigger value="integrations" className="gap-2">
+          <TabsList className="bg-gray-100/80 p-1 rounded-xl">
+            <TabsTrigger value="integrations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Sparkles className="h-4 w-4" />
               Integrations
             </TabsTrigger>
-            <TabsTrigger value="webhook" className="gap-2">
+            <TabsTrigger value="webhook" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Webhook className="h-4 w-4" />
               Webhook API
             </TabsTrigger>
-            <TabsTrigger value="events" className="gap-2">
+            <TabsTrigger value="events" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Clock className="h-4 w-4" />
               Event Log
             </TabsTrigger>
@@ -322,8 +321,8 @@ export default function ConnectionsPage() {
             {integrationCategories.map((category) => (
               <div key={category.id}>
                 <div className="flex items-center gap-2 mb-4">
-                  <category.icon className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="font-semibold">{category.name}</h3>
+                  <category.icon className="h-5 w-5 text-gray-400" />
+                  <h3 className="font-semibold text-gray-900">{category.name}</h3>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -335,32 +334,32 @@ export default function ConnectionsPage() {
                       <Card 
                         key={integration.id}
                         className={cn(
-                          "p-4 hover:shadow-md transition-all cursor-pointer group",
+                          "card-elevated p-5 hover:shadow-lg transition-all cursor-pointer group",
                           isConnected && "border-primary/30 bg-primary/5"
                         )}
                       >
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white shadow-sm border">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-white shadow-sm border p-2">
                               <LogoComponent />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <h4 className="font-semibold">{integration.name}</h4>
+                                <h4 className="font-semibold text-gray-900">{integration.name}</h4>
                                 {'popular' in integration && integration.popular && (
-                                  <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700 border-0">
+                                  <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0">
                                     Popular
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-gray-500 mt-1">
                                 {integration.description}
                               </p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="mt-4 flex items-center justify-between">
+                        <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-100">
                           {isConnected ? (
                             <>
                               <Badge className="bg-emerald-100 text-emerald-700 border-0">
@@ -370,7 +369,7 @@ export default function ConnectionsPage() {
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-red-600"
                                 onClick={() => disconnectIntegration(integration.id)}
                               >
                                 Disconnect
@@ -378,11 +377,11 @@ export default function ConnectionsPage() {
                             </>
                           ) : (
                             <>
-                              <span className="text-xs text-muted-foreground">Not connected</span>
+                              <span className="text-xs text-gray-400">Not connected</span>
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                className="gap-1"
+                                className="gap-1 rounded-xl"
                                 onClick={() => markAsConnected(integration.id, integration.name)}
                                 disabled={!hasIntegrations}
                               >
@@ -402,21 +401,21 @@ export default function ConnectionsPage() {
 
           {/* Webhook Tab */}
           <TabsContent value="webhook" className="mt-6 space-y-6">
-            <Card className="p-6">
+            <Card className="card-elevated p-6">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Webhook className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <Webhook className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Webhook Endpoint</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-gray-900">Webhook Endpoint</h3>
+                    <p className="text-sm text-gray-500">
                       Receive events from external platforms
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="webhook-active" className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="webhook-active" className="text-sm text-gray-500">
                     {config?.is_active ? 'Active' : 'Inactive'}
                   </Label>
                   <Switch 
@@ -429,14 +428,14 @@ export default function ConnectionsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium">Your Webhook URL</Label>
+                  <Label className="text-sm font-medium text-gray-700">Your Webhook URL</Label>
                   <div className="flex gap-2 mt-1.5">
                     <Input 
                       value={webhookUrl} 
                       readOnly 
-                      className="font-mono text-sm bg-muted"
+                      className="font-mono text-sm bg-gray-50 rounded-xl"
                     />
-                    <Button variant="outline" size="icon" onClick={handleCopy}>
+                    <Button variant="outline" size="icon" onClick={handleCopy} className="rounded-xl">
                       {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
                     <Button 
@@ -444,6 +443,7 @@ export default function ConnectionsPage() {
                       size="icon" 
                       onClick={handleRegenerateKey}
                       disabled={regenerating}
+                      className="rounded-xl"
                     >
                       <RefreshCw className={cn("h-4 w-4", regenerating && "animate-spin")} />
                     </Button>
@@ -452,17 +452,23 @@ export default function ConnectionsPage() {
 
                 {config && (
                   <div className="grid grid-cols-3 gap-4 pt-4">
-                    <div className="text-center p-4 bg-muted/50 rounded-xl">
-                      <p className="text-2xl font-bold">{config.total_events_received}</p>
-                      <p className="text-xs text-muted-foreground">Events Received</p>
+                    <div className="text-center p-5 bg-gray-50 rounded-xl">
+                      <p className="text-3xl font-bold text-gray-900">
+                        <AnimatedCounter value={config.total_events_received} />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Events Received</p>
                     </div>
-                    <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                      <p className="text-2xl font-bold text-emerald-600">{config.total_events_processed}</p>
-                      <p className="text-xs text-muted-foreground">Processed</p>
+                    <div className="text-center p-5 bg-emerald-50 rounded-xl">
+                      <p className="text-3xl font-bold text-emerald-600">
+                        <AnimatedCounter value={config.total_events_processed} />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Processed</p>
                     </div>
-                    <div className="text-center p-4 bg-red-50 rounded-xl">
-                      <p className="text-2xl font-bold text-red-600">{config.total_events_failed}</p>
-                      <p className="text-xs text-muted-foreground">Failed</p>
+                    <div className="text-center p-5 bg-red-50 rounded-xl">
+                      <p className="text-3xl font-bold text-red-600">
+                        <AnimatedCounter value={config.total_events_failed} />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Failed</p>
                     </div>
                   </div>
                 )}
@@ -470,8 +476,8 @@ export default function ConnectionsPage() {
             </Card>
 
             {/* Supported Events */}
-            <Card className="p-6">
-              <h3 className="font-semibold mb-4">Supported Events</h3>
+            <Card className="card-elevated p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Supported Events</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[
                   { event: 'customer.created', desc: 'New customers', icon: '👤' },
@@ -481,13 +487,13 @@ export default function ConnectionsPage() {
                   { event: 'invoice.paid', desc: 'Payments', icon: '💰' },
                   { event: 'quote.created', desc: 'New quotes', icon: '📝' },
                 ].map(({ event, desc, icon }) => (
-                  <div key={event} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <span className="text-lg">{icon}</span>
+                  <div key={event} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <span className="text-2xl">{icon}</span>
                     <div>
-                      <Badge variant="outline" className="font-mono text-[10px]">
+                      <Badge variant="outline" className="font-mono text-[10px] rounded-lg">
                         {event}
                       </Badge>
-                      <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                      <p className="text-xs text-gray-500 mt-1">{desc}</p>
                     </div>
                   </div>
                 ))}
@@ -497,10 +503,10 @@ export default function ConnectionsPage() {
 
           {/* Events Log Tab */}
           <TabsContent value="events" className="mt-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Recent Events</h3>
-                <Button variant="outline" size="sm" onClick={refetch}>
+            <Card className="card-elevated p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-semibold text-gray-900">Recent Events</h3>
+                <Button variant="outline" size="sm" onClick={refetch} className="rounded-xl">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
@@ -508,26 +514,28 @@ export default function ConnectionsPage() {
               
               {events.length === 0 ? (
                 <div className="text-center py-12">
-                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">No events received yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Clock className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium">No events received yet</p>
+                  <p className="text-sm text-gray-400 mt-1">
                     Events will appear here when your integrations send data
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {events.map((event) => (
                     <div 
                       key={event.id} 
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
                         {getStatusIcon(event.status)}
-                        <Badge variant="outline" className="font-mono text-xs">
+                        <Badge variant="outline" className="font-mono text-xs rounded-lg">
                           {event.event_type}
                         </Badge>
                         {event.result_type && (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-gray-500">
                             → {event.result_type}
                           </span>
                         )}
@@ -538,7 +546,7 @@ export default function ConnectionsPage() {
                             {event.error_message}
                           </span>
                         )}
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-gray-400">
                           {format(new Date(event.created_at), 'MMM d, h:mm a')}
                         </span>
                       </div>

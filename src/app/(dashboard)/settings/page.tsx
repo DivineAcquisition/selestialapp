@@ -13,30 +13,25 @@ import ReviewSettings from '@/components/settings/ReviewSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import AISettings from '@/components/settings/AISettings';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness, useAuth } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 import { 
-  User, 
   Bell, 
   Clock, 
   Phone, 
-  Send, 
   Loader2, 
-  ThumbsUp, 
   CreditCard, 
   Sparkles,
   Building2,
   Settings2,
-  Palette,
   Shield,
   Globe,
   Zap,
   Mail,
   MessageSquare,
+  ArrowRight,
 } from 'lucide-react';
 import type { Business } from '@/types';
 
@@ -144,8 +139,8 @@ function SettingsContent() {
   if (loading || !transformedBusiness) {
     return (
       <Layout title="Settings">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -156,12 +151,12 @@ function SettingsContent() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
+          <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
             <Settings2 className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">Settings</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-500">
               Manage your business preferences and configurations
             </p>
           </div>
@@ -169,27 +164,27 @@ function SettingsContent() {
 
         {/* Tabs Layout */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-muted/50 p-1 h-auto flex-wrap">
-            <TabsTrigger value="general" className="gap-2 data-[state=active]:bg-white">
+          <TabsList className="bg-gray-100/80 p-1 h-auto flex-wrap rounded-xl">
+            <TabsTrigger value="general" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Building2 className="h-4 w-4" />
               General
             </TabsTrigger>
-            <TabsTrigger value="ai" className="gap-2 data-[state=active]:bg-white">
+            <TabsTrigger value="ai" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Sparkles className="h-4 w-4" />
               AI Assistant
-              <Badge variant="secondary" className="text-[10px] ml-1 bg-primary/10 text-primary border-0">
+              <Badge className="text-[10px] ml-1 bg-primary/10 text-primary border-0">
                 New
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="communications" className="gap-2 data-[state=active]:bg-white">
+            <TabsTrigger value="communications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <MessageSquare className="h-4 w-4" />
               Communications
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2 data-[state=active]:bg-white">
+            <TabsTrigger value="payments" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <CreditCard className="h-4 w-4" />
               Payments
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-white">
+            <TabsTrigger value="notifications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Bell className="h-4 w-4" />
               Notifications
             </TabsTrigger>
@@ -204,28 +199,28 @@ function SettingsContent() {
               </div>
               
               {/* Business Hours */}
-              <Card className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+              <Card className="card-elevated p-6 rounded-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-blue-100 rounded-xl">
                     <Clock className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Business Hours</h3>
-                    <p className="text-sm text-muted-foreground">Set when sequences can send messages</p>
+                    <h3 className="font-semibold text-gray-900">Business Hours</h3>
+                    <p className="text-sm text-gray-500">Set when sequences can send messages</p>
                   </div>
                 </div>
                 <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />
               </Card>
 
               {/* Account */}
-              <Card className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-red-100 rounded-lg">
+              <Card className="card-elevated p-6 rounded-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-red-100 rounded-xl">
                     <Shield className="h-5 w-5 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Account</h3>
-                    <p className="text-sm text-muted-foreground">Manage your account settings</p>
+                    <h3 className="font-semibold text-gray-900">Account</h3>
+                    <p className="text-sm text-gray-500">Manage your account settings</p>
                   </div>
                 </div>
                 <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
@@ -240,17 +235,17 @@ function SettingsContent() {
 
           {/* Communications Tab */}
           <TabsContent value="communications" className="space-y-6 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Phone Setup */}
-              <Card className="p-0 overflow-hidden lg:col-span-2">
-                <div className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
+              <Card className="card-elevated p-0 overflow-hidden rounded-2xl">
+                <div className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b border-gray-100">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
                       <Phone className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">Phone & SMS Setup</h3>
-                      <p className="text-sm text-muted-foreground">Configure Twilio for SMS messaging</p>
+                      <h3 className="font-semibold text-gray-900">Phone & SMS Setup</h3>
+                      <p className="text-sm text-gray-500">Configure Twilio for SMS messaging</p>
                     </div>
                   </div>
                 </div>
@@ -260,14 +255,10 @@ function SettingsContent() {
               </Card>
               
               {/* Quote Notifications */}
-              <div className="lg:col-span-2">
-                <QuoteNotificationSettings />
-              </div>
+              <QuoteNotificationSettings />
               
               {/* Review Requests */}
-              <div className="lg:col-span-2">
-                <ReviewSettings />
-              </div>
+              <ReviewSettings />
             </div>
           </TabsContent>
 
@@ -278,14 +269,14 @@ function SettingsContent() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications" className="mt-6">
-            <Card className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-amber-100 rounded-lg">
+            <Card className="card-elevated p-6 rounded-2xl">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-amber-100 rounded-xl">
                   <Bell className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Notification Preferences</h3>
-                  <p className="text-sm text-muted-foreground">Choose how you want to be notified</p>
+                  <h3 className="font-semibold text-gray-900">Notification Preferences</h3>
+                  <p className="text-sm text-gray-500">Choose how you want to be notified</p>
                 </div>
               </div>
               <NotificationSettings settings={notificationSettings} onChange={handleNotificationChange} />
@@ -294,40 +285,44 @@ function SettingsContent() {
         </Tabs>
 
         {/* Quick Links */}
-        <Card className="p-6 bg-muted/30">
-          <h3 className="font-semibold mb-4">Quick Links</h3>
+        <Card className="card-elevated p-6 bg-gray-50/50 rounded-2xl">
+          <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button 
               onClick={() => router.push('/billing')}
-              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
             >
-              <CreditCard className="h-5 w-5 text-primary mb-2" />
-              <p className="font-medium text-sm">Billing</p>
-              <p className="text-xs text-muted-foreground">Manage subscription</p>
+              <CreditCard className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <p className="font-medium text-gray-900 mb-1">Billing</p>
+              <p className="text-xs text-gray-500">Manage subscription</p>
+              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </button>
             <button 
               onClick={() => router.push('/connections')}
-              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
             >
-              <Globe className="h-5 w-5 text-primary mb-2" />
-              <p className="font-medium text-sm">Integrations</p>
-              <p className="text-xs text-muted-foreground">Connect your tools</p>
+              <Globe className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <p className="font-medium text-gray-900 mb-1">Integrations</p>
+              <p className="text-xs text-gray-500">Connect your tools</p>
+              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </button>
             <button 
               onClick={() => router.push('/sequences')}
-              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
             >
-              <Zap className="h-5 w-5 text-primary mb-2" />
-              <p className="font-medium text-sm">Sequences</p>
-              <p className="text-xs text-muted-foreground">Manage automations</p>
+              <Zap className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <p className="font-medium text-gray-900 mb-1">Sequences</p>
+              <p className="text-xs text-gray-500">Manage automations</p>
+              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </button>
             <button 
               onClick={() => router.push('/analytics')}
-              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+              className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-primary/40 hover:shadow-md transition-all text-left"
             >
-              <Mail className="h-5 w-5 text-primary mb-2" />
-              <p className="font-medium text-sm">Analytics</p>
-              <p className="text-xs text-muted-foreground">View performance</p>
+              <Mail className="h-6 w-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <p className="font-medium text-gray-900 mb-1">Analytics</p>
+              <p className="text-xs text-gray-500">View performance</p>
+              <ArrowRight className="h-4 w-4 mt-2 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </button>
           </div>
         </Card>
@@ -340,8 +335,8 @@ export default function SettingsPage() {
   return (
     <Suspense fallback={
       <Layout title="Settings">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     }>

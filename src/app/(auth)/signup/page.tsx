@@ -7,8 +7,10 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Check, User, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, User, Mail, Lock, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -19,6 +21,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +34,7 @@ export default function SignupPage() {
         options: {
           data: { 
             full_name: name,
-            name: name, // Also store as name
+            name: name,
           },
           emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
         },
@@ -47,16 +50,13 @@ export default function SignupPage() {
         return
       }
 
-      // Check if we got a session (email confirmation disabled) or need verification
       if (data.session) {
-        // User is signed in immediately - go to onboarding
         toast({
           title: 'Account created!',
           description: 'Welcome to Selestial.',
         })
         router.push('/onboarding')
       } else if (data.user && !data.session) {
-        // Email confirmation required
         toast({
           title: 'Check your email',
           description: 'We sent you a confirmation link to verify your account.',
@@ -104,13 +104,13 @@ export default function SignupPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
-          <Sparkles className="w-4 h-4" />
+      <div className="space-y-3">
+        <Badge className="bg-primary/10 text-primary border-0 px-3 py-1.5">
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
           Start free today
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight">Create your account</h1>
-        <p className="text-muted-foreground">
+        </Badge>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create your account</h1>
+        <p className="text-gray-500">
           Join 500+ home service businesses winning more jobs
         </p>
       </div>
@@ -120,13 +120,14 @@ export default function SignupPage() {
         {benefits.map((benefit, i) => (
           <div 
             key={i} 
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm ${
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm",
               benefit.highlight 
                 ? 'bg-primary/10 text-primary font-medium' 
-                : 'bg-secondary text-muted-foreground'
-            }`}
+                : 'bg-gray-100 text-gray-600'
+            )}
           >
-            <Check className="w-3.5 h-3.5" />
+            <CheckCircle className="w-3.5 h-3.5" />
             {benefit.text}
           </div>
         ))}
@@ -138,7 +139,7 @@ export default function SignupPage() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={googleLoading}
-        className="w-full h-12 text-base font-medium border-2 hover:bg-secondary/80 transition-all"
+        className="w-full h-12 text-base font-medium rounded-xl border-2 hover:bg-gray-50 hover:border-gray-300 transition-all group"
       >
         {googleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -151,6 +152,7 @@ export default function SignupPage() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
+            <ArrowRight className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </>
         )}
       </Button>
@@ -158,10 +160,10 @@ export default function SignupPage() {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
+          <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="px-4 bg-background text-muted-foreground font-medium tracking-wider">
+          <span className="px-4 bg-white text-gray-400 font-medium tracking-wider">
             Or continue with email
           </span>
         </div>
@@ -170,59 +172,83 @@ export default function SignupPage() {
       {/* Email Form */}
       <form onSubmit={handleSignup} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-medium">
+          <Label htmlFor="name" className="text-sm font-medium text-gray-700">
             Full name
           </Label>
-          <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative rounded-xl transition-all duration-300",
+            focusedField === 'name' && "ring-2 ring-primary/20"
+          )}>
+            <User className={cn(
+              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              focusedField === 'name' ? "text-primary" : "text-gray-400"
+            )} />
             <Input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onFocus={() => setFocusedField('name')}
+              onBlur={() => setFocusedField(null)}
               placeholder="John Smith"
               required
-              className="h-12 pl-11 text-base"
+              className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium">
+          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
             Work email
           </Label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative rounded-xl transition-all duration-300",
+            focusedField === 'email' && "ring-2 ring-primary/20"
+          )}>
+            <Mail className={cn(
+              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              focusedField === 'email' ? "text-primary" : "text-gray-400"
+            )} />
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)}
               placeholder="you@company.com"
               required
-              className="h-12 pl-11 text-base"
+              className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm font-medium">
+          <Label htmlFor="password" className="text-sm font-medium text-gray-700">
             Password
           </Label>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "relative rounded-xl transition-all duration-300",
+            focusedField === 'password' && "ring-2 ring-primary/20"
+          )}>
+            <Lock className={cn(
+              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              focusedField === 'password' ? "text-primary" : "text-gray-400"
+            )} />
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)}
               placeholder="••••••••"
               required
               minLength={8}
-              className="h-12 pl-11 text-base"
+              className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-gray-400">
             Must be at least 8 characters
           </p>
         </div>
@@ -230,7 +256,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-12 text-base font-semibold glow-sm group"
+          className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 shadow-lg shadow-primary/25 group"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -244,7 +270,7 @@ export default function SignupPage() {
       </form>
 
       {/* Terms */}
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-xs text-gray-400">
         By signing up, you agree to our{' '}
         <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
         {' '}and{' '}
@@ -252,15 +278,17 @@ export default function SignupPage() {
       </p>
 
       {/* Sign in link */}
-      <p className="text-center text-muted-foreground">
-        Already have an account?{' '}
-        <Link 
-          href="/login" 
-          className="text-primary hover:text-primary/80 font-semibold transition-colors"
-        >
-          Sign in
-        </Link>
-      </p>
+      <div className="relative pt-4 border-t border-gray-100">
+        <p className="text-center text-gray-500">
+          Already have an account?{' '}
+          <Link 
+            href="/login" 
+            className="text-primary hover:text-primary/80 font-semibold transition-colors"
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

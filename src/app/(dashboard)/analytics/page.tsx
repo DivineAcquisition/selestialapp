@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ import MetricCard from '@/components/analytics/MetricCard';
 import PerformanceChart from '@/components/analytics/PerformanceChart';
 import BenchmarkComparison from '@/components/analytics/BenchmarkComparison';
 import InsightsPanel from '@/components/analytics/InsightsPanel';
+import { AnimatedCounter } from '@/components/ui/text-effects';
 import { useAnalytics, useMetricsSummary } from '@/hooks/useAnalytics';
 import {
   Loader2,
@@ -22,6 +24,10 @@ import {
   Users,
   DollarSign,
   Target,
+  BarChart3,
+  ArrowRight,
+  Sparkles,
+  Calendar,
 } from 'lucide-react';
 
 export default function AnalyticsPage() {
@@ -41,18 +47,22 @@ export default function AnalyticsPage() {
 
   return (
     <Layout title="Analytics">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-            <p className="text-muted-foreground">
-              Track performance against industry benchmarks
-            </p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
+              <BarChart3 className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+              <p className="text-gray-500">Track performance against industry benchmarks</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Select value={period} onValueChange={(v) => setPeriod(v as 'weekly' | 'monthly')}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-36 bg-white rounded-xl">
+                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -65,58 +75,65 @@ export default function AnalyticsPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
           <>
-            {/* Summary Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Target className="w-5 h-5 text-primary" />
+            {/* Summary Stats - Bento Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="group card-elevated p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <Target className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{summary?.winRate.toFixed(0) || 0}%</p>
-                    <p className="text-sm text-muted-foreground">Win Rate</p>
-                  </div>
+                  <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                    +5%
+                  </Badge>
                 </div>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-100">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">
-                      ${((summary?.totalRevenue || 0) / 100).toLocaleString()}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Revenue</p>
-                  </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  <AnimatedCounter value={summary?.winRate || 0} suffix="%" />
                 </div>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Users className="w-5 h-5 text-blue-600" />
+                <p className="text-sm text-gray-500">Win Rate</p>
+              </div>
+              
+              <div className="group card-elevated p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                    <DollarSign className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{summary?.totalCustomers || 0}</p>
-                    <p className="text-sm text-muted-foreground">Customers</p>
-                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                 </div>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-100">
-                    <TrendingUp className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{summary?.recurringRate.toFixed(0) || 0}%</p>
-                    <p className="text-sm text-muted-foreground">Recurring</p>
-                  </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  ${((summary?.totalRevenue || 0) / 100).toLocaleString()}
                 </div>
-              </Card>
+                <p className="text-sm text-gray-500">Revenue</p>
+              </div>
+              
+              <div className="group card-elevated p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  <AnimatedCounter value={summary?.totalCustomers || 0} />
+                </div>
+                <p className="text-sm text-gray-500">Customers</p>
+              </div>
+              
+              <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  <AnimatedCounter value={summary?.recurringRate || 0} suffix="%" />
+                </div>
+                <p className="text-sm text-gray-500">Recurring Rate</p>
+              </div>
             </div>
 
             {/* Insights */}
@@ -125,11 +142,17 @@ export default function AnalyticsPage() {
             )}
 
             {/* Metrics Tabs */}
-            <Tabs defaultValue="performance" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-                <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                <TabsTrigger value="retention">Retention</TabsTrigger>
+            <Tabs defaultValue="performance" className="space-y-6">
+              <TabsList className="bg-gray-100/80 p-1 rounded-xl">
+                <TabsTrigger value="performance" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  Performance
+                </TabsTrigger>
+                <TabsTrigger value="revenue" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  Revenue
+                </TabsTrigger>
+                <TabsTrigger value="retention" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  Retention
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance" className="space-y-4">
@@ -160,21 +183,42 @@ export default function AnalyticsPage() {
             {/* Charts & Benchmarks */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {metricsHistory && metricsHistory.length > 0 && (
-                <PerformanceChart
-                  data={metricsHistory}
-                  metric="quote_win_rate"
-                  title="Win Rate Trend"
-                />
+                <Card className="card-elevated p-0 overflow-hidden">
+                  <div className="p-5 border-b border-gray-100">
+                    <h3 className="font-semibold text-gray-900">Win Rate Trend</h3>
+                  </div>
+                  <div className="p-5">
+                    <PerformanceChart
+                      data={metricsHistory}
+                      metric="quote_win_rate"
+                      title=""
+                    />
+                  </div>
+                </Card>
               )}
-              <BenchmarkComparison metrics={currentMetrics} />
+              <Card className="card-elevated p-0 overflow-hidden">
+                <div className="p-5 border-b border-gray-100">
+                  <h3 className="font-semibold text-gray-900">Industry Benchmarks</h3>
+                </div>
+                <div className="p-5">
+                  <BenchmarkComparison metrics={currentMetrics} />
+                </div>
+              </Card>
             </div>
 
             {metricsHistory && metricsHistory.length > 0 && (
-              <PerformanceChart
-                data={metricsHistory}
-                metric="total_revenue"
-                title="Revenue Trend"
-              />
+              <Card className="card-elevated p-0 overflow-hidden">
+                <div className="p-5 border-b border-gray-100">
+                  <h3 className="font-semibold text-gray-900">Revenue Trend</h3>
+                </div>
+                <div className="p-5">
+                  <PerformanceChart
+                    data={metricsHistory}
+                    metric="total_revenue"
+                    title=""
+                  />
+                </div>
+              </Card>
             )}
           </>
         )}

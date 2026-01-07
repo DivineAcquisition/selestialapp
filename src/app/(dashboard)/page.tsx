@@ -8,7 +8,7 @@ import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickAddQuote from '@/components/quotes/QuickAddQuote';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { GradientText, AnimatedCounter } from '@/components/ui/text-effects';
+import { AnimatedCounter } from '@/components/ui/text-effects';
 import { 
   FileText, 
   TrendingUp, 
@@ -31,7 +31,6 @@ import { useQuotes } from '@/hooks/useQuotes';
 import { useActivities } from '@/hooks/useActivities';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { cn } from '@/lib/utils';
 import type { Quote, ActivityLog, QuoteStatus } from '@/types';
 
 export default function DashboardPage() {

@@ -7,6 +7,9 @@ import { useQuotes } from '@/hooks/useQuotes'
 import { usePayments } from '@/hooks/usePayments'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { AnimatedCounter } from '@/components/ui/text-effects'
 import { useToast } from '@/hooks/use-toast'
 import {
   Plus,
@@ -29,6 +32,8 @@ import {
   Loader2,
   Copy,
   MessageSquare,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
@@ -45,7 +50,7 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
   },
   new: { 
     label: 'New', 
-    icon: Clock, 
+    icon: Sparkles, 
     color: 'text-blue-600', 
     bg: 'bg-blue-50 border-blue-200' 
   },
@@ -148,7 +153,7 @@ export default function QuotesPage() {
 
     // Sort
     result.sort((a, b) => {
-      let aVal: any, bVal: any
+      let aVal: string | number, bVal: string | number
 
       switch (sortField) {
         case 'created_at':
@@ -231,7 +236,7 @@ export default function QuotesPage() {
       const link = await createPaymentLink(quote.id)
       await navigator.clipboard.writeText(link)
       toast({ title: 'Payment link copied!' })
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to create link', variant: 'destructive' })
     }
   }
@@ -250,7 +255,7 @@ export default function QuotesPage() {
       })
       toast({ title: 'Quote sent!' })
       refetch()
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to send', variant: 'destructive' })
     }
   }
@@ -261,7 +266,7 @@ export default function QuotesPage() {
     try {
       await deleteQuote(id)
       toast({ title: 'Quote deleted' })
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to delete', variant: 'destructive' })
     }
   }
@@ -281,62 +286,86 @@ export default function QuotesPage() {
     <Layout title="Quotes">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Quotes</h1>
-            <p className="text-gray-500 mt-1">
-              {stats.total} total • ${(stats.totalValue / 100).toLocaleString()} pipeline value
-            </p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
+              <FileText className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Quotes</h1>
+              <p className="text-gray-500">
+                {stats.total} total • ${(stats.totalValue / 100).toLocaleString()} pipeline value
+              </p>
+            </div>
           </div>
 
           <Button
             onClick={() => router.push('/quotes/new')}
-            className="bg-[#5500FF] hover:bg-[#4400CC] text-white"
+            className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Quote
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Bento Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Total Quotes</span>
-              <FileText className="w-4 h-4 text-gray-400" />
+          <div className="group card-elevated p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <FileText className="w-5 h-5" />
+              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              <AnimatedCounter value={stats.total} />
+            </div>
+            <p className="text-sm text-gray-500">Total Quotes</p>
           </div>
           
-          <div className="bg-white rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Pending</span>
-              <Clock className="w-4 h-4 text-amber-500" />
+          <div className="group card-elevated p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                <Clock className="w-5 h-5" />
+              </div>
+              <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
+                Active
+              </Badge>
             </div>
-            <p className="text-2xl font-bold text-amber-600 mt-1">{stats.pending}</p>
+            <div className="text-3xl font-bold text-amber-600 mb-1">
+              <AnimatedCounter value={stats.pending} />
+            </div>
+            <p className="text-sm text-gray-500">Pending</p>
           </div>
           
-          <div className="bg-white rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Won</span>
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
+          <div className="group card-elevated p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                <CheckCircle className="w-5 h-5" />
+              </div>
+              <Sparkles className="h-4 w-4 text-emerald-500" />
             </div>
-            <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.won}</p>
+            <div className="text-3xl font-bold text-emerald-600 mb-1">
+              <AnimatedCounter value={stats.won} />
+            </div>
+            <p className="text-sm text-gray-500">Won</p>
           </div>
           
-          <div className="bg-white rounded-xl border p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Won Value</span>
-              <DollarSign className="w-4 h-4 text-emerald-500" />
+          <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                <DollarSign className="w-5 h-5" />
+              </div>
             </div>
-            <p className="text-2xl font-bold text-emerald-600 mt-1">
+            <div className="text-3xl font-bold text-emerald-600 mb-1">
               ${(stats.wonValue / 100).toLocaleString()}
-            </p>
+            </div>
+            <p className="text-sm text-gray-500">Won Value</p>
           </div>
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-white rounded-xl border">
+        <Card className="card-elevated p-0 overflow-hidden">
           <div className="p-4 flex flex-wrap items-center gap-4">
             {/* Search */}
             <div className="relative flex-1 min-w-[200px] max-w-md">
@@ -348,7 +377,7 @@ export default function QuotesPage() {
                   setCurrentPage(1)
                 }}
                 placeholder="Search by customer, service, phone..."
-                className="pl-10"
+                className="pl-10 rounded-xl"
               />
             </div>
 
@@ -359,7 +388,7 @@ export default function QuotesPage() {
                 setStatusFilter(e.target.value)
                 setCurrentPage(1)
               }}
-              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#5500FF]"
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
@@ -376,10 +405,10 @@ export default function QuotesPage() {
             <select
               value={dateFilter}
               onChange={(e) => {
-                setDateFilter(e.target.value as any)
+                setDateFilter(e.target.value as 'all' | '7days' | '30days' | '90days')
                 setCurrentPage(1)
               }}
-              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#5500FF]"
+              className="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Time</option>
               <option value="7days">Last 7 days</option>
@@ -390,9 +419,10 @@ export default function QuotesPage() {
             {/* Refresh */}
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => refetch()}
               disabled={loading}
+              className="rounded-xl"
             >
               <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
             </Button>
@@ -400,15 +430,15 @@ export default function QuotesPage() {
 
           {/* Bulk Actions */}
           {selectedIds.length > 0 && (
-            <div className="px-4 py-3 border-t bg-[#5500FF]/5 flex items-center gap-4">
-              <span className="text-sm font-medium text-[#5500FF]">
+            <div className="px-4 py-3 border-t bg-primary/5 flex items-center gap-4">
+              <span className="text-sm font-medium text-primary">
                 {selectedIds.length} selected
               </span>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handleBulkAction('send')}
-                className="text-[#5500FF] border-[#5500FF]/30"
+                className="text-primary border-primary/30 rounded-xl"
               >
                 <Send className="w-3 h-3 mr-1" />
                 Send All
@@ -417,7 +447,7 @@ export default function QuotesPage() {
                 size="sm"
                 variant="outline"
                 onClick={() => handleBulkAction('delete')}
-                className="text-red-600 border-red-200"
+                className="text-red-600 border-red-200 rounded-xl"
               >
                 <Trash2 className="w-3 h-3 mr-1" />
                 Delete
@@ -430,21 +460,21 @@ export default function QuotesPage() {
               </button>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border overflow-hidden">
+        <Card className="card-elevated p-0 overflow-hidden">
           {loading && quotes.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-[#5500FF] animate-spin" />
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
           ) : filteredQuotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FileText className="w-8 h-8 text-gray-400" />
+              <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
+                <FileText className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">No quotes found</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="font-semibold text-gray-900 mb-2">No quotes found</h3>
+              <p className="text-sm text-gray-500 mb-6">
                 {search || statusFilter !== 'all' 
                   ? 'Try adjusting your filters' 
                   : 'Create your first quote to get started'}
@@ -452,7 +482,7 @@ export default function QuotesPage() {
               {!search && statusFilter === 'all' && (
                 <Button
                   onClick={() => router.push('/quotes/new')}
-                  className="bg-[#5500FF] hover:bg-[#4400CC] text-white"
+                  className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   New Quote
@@ -464,13 +494,13 @@ export default function QuotesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b bg-gray-50">
+                    <tr className="border-b bg-gray-50/50">
                       <th className="w-12 px-4 py-3">
                         <input
                           type="checkbox"
                           checked={selectedIds.length === paginatedQuotes.length && paginatedQuotes.length > 0}
                           onChange={handleSelectAll}
-                          className="w-4 h-4 rounded border-gray-300 text-[#5500FF] focus:ring-[#5500FF]"
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                         />
                       </th>
                       <th className="px-4 py-3 text-left">
@@ -531,7 +561,7 @@ export default function QuotesPage() {
                           key={quote.id} 
                           className={cn(
                             "hover:bg-gray-50 transition-colors",
-                            selectedIds.includes(quote.id) && "bg-[#5500FF]/5"
+                            selectedIds.includes(quote.id) && "bg-primary/5"
                           )}
                         >
                           <td className="px-4 py-3">
@@ -539,12 +569,12 @@ export default function QuotesPage() {
                               type="checkbox"
                               checked={selectedIds.includes(quote.id)}
                               onChange={() => handleSelect(quote.id)}
-                              className="w-4 h-4 rounded border-gray-300 text-[#5500FF] focus:ring-[#5500FF]"
+                              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                             />
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 bg-[#5500FF]/10 rounded-full flex items-center justify-center text-[#5500FF] font-medium text-sm">
+                              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-semibold text-sm">
                                 {quote.customer_name?.charAt(0) || '?'}
                               </div>
                               <div>
@@ -565,9 +595,9 @@ export default function QuotesPage() {
                               ${((quote.quote_amount || 0) / 100).toFixed(2)}
                             </span>
                             {quote.payment_status === 'paid' && (
-                              <span className="ml-2 px-1.5 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded">
+                              <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-0 text-xs">
                                 Paid
-                              </span>
+                              </Badge>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -595,7 +625,7 @@ export default function QuotesPage() {
                               {/* Quick Actions */}
                               <button
                                 onClick={() => router.push(`/quotes/${quote.id}`)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 title="View"
                               >
                                 <Eye className="w-4 h-4" />
@@ -604,7 +634,7 @@ export default function QuotesPage() {
                               {quote.customer_phone && (
                                 <button
                                   onClick={() => handleSendQuote(quote)}
-                                  className="p-2 text-gray-400 hover:text-[#5500FF] hover:bg-[#5500FF]/10 rounded-lg"
+                                  className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
                                   title="Send SMS"
                                 >
                                   <Send className="w-4 h-4" />
@@ -615,7 +645,7 @@ export default function QuotesPage() {
                               <div className="relative">
                                 <button
                                   onClick={() => setOpenDropdown(openDropdown === quote.id ? null : quote.id)}
-                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 >
                                   <MoreHorizontal className="w-4 h-4" />
                                 </button>
@@ -626,7 +656,7 @@ export default function QuotesPage() {
                                       className="fixed inset-0 z-10"
                                       onClick={() => setOpenDropdown(null)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border z-20 py-1">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border z-20 py-1">
                                       <button
                                         onClick={() => {
                                           router.push(`/quotes/${quote.id}`)
@@ -712,7 +742,7 @@ export default function QuotesPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t bg-gray-50 gap-4">
+              <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t bg-gray-50/50 gap-4">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>Showing</span>
                   <select
@@ -721,7 +751,7 @@ export default function QuotesPage() {
                       setPageSize(Number(e.target.value))
                       setCurrentPage(1)
                     }}
-                    className="px-2 py-1 bg-white border border-gray-200 rounded text-sm"
+                    className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-sm"
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -739,6 +769,7 @@ export default function QuotesPage() {
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    className="rounded-xl"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -761,9 +792,9 @@ export default function QuotesPage() {
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
                           className={cn(
-                            "w-8 h-8 rounded text-sm font-medium",
+                            "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
                             currentPage === pageNum
-                              ? "bg-[#5500FF] text-white"
+                              ? "bg-primary text-white"
                               : "text-gray-600 hover:bg-gray-100"
                           )}
                         >
@@ -778,6 +809,7 @@ export default function QuotesPage() {
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages || totalPages === 0}
+                    className="rounded-xl"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -785,7 +817,7 @@ export default function QuotesPage() {
               </div>
             </>
           )}
-        </div>
+        </Card>
       </div>
     </Layout>
   )
