@@ -9,23 +9,7 @@ import QuickAddQuote from '@/components/quotes/QuickAddQuote';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedCounter } from '@/components/ui/text-effects';
-import { 
-  FileText, 
-  TrendingUp, 
-  Target, 
-  DollarSign, 
-  Sparkles, 
-  Plus, 
-  ArrowRight,
-  Zap,
-  Users,
-  MessageSquare,
-  BarChart3,
-  Clock,
-  CheckCircle2,
-  Send,
-  ChevronDown,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { FeaturesBento } from '@/components/ui/features-bento';
 import { formatCurrency } from '@/lib/formatters';
 import { useBusiness } from '@/providers';
@@ -112,7 +96,7 @@ export default function DashboardPage() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-5 w-5 animate-pulse" />
+                  <Icon name="sparkles" size="lg" className="animate-pulse" />
                   <span className="text-sm font-medium text-white/80">{getGreeting()}</span>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold mb-2">
@@ -130,7 +114,7 @@ export default function DashboardPage() {
                   onClick={() => setShowQuickAdd(true)}
                   className="bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/10 rounded-xl"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
+                  <Icon name="plus" size="lg" className="mr-2" />
                   New Quote
                 </Button>
                 <Button 
@@ -139,7 +123,7 @@ export default function DashboardPage() {
                   onClick={() => router.push('/inbox')}
                   className="text-white border border-white/20 hover:bg-white/10 rounded-xl"
                 >
-                  <MessageSquare className="h-5 w-5 mr-2" />
+                  <Icon name="message" size="lg" className="mr-2" />
                   Inbox
                 </Button>
               </div>
@@ -156,9 +140,9 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                <FileText className="h-5 w-5" />
+                <Icon name="fileText" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.activeQuotes} />
@@ -170,7 +154,7 @@ export default function DashboardPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <TrendingUp className="h-5 w-5" />
+                <Icon name="trendUp" size="lg" />
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
                 +5%
@@ -189,9 +173,9 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <Target className="h-5 w-5" />
+                <Icon name="target" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.wonCount} />
@@ -206,9 +190,9 @@ export default function DashboardPage() {
           <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                <DollarSign className="h-5 w-5" />
+                <Icon name="dollar" size="lg" />
               </div>
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <Icon name="sparkles" size="sm" className="text-primary animate-pulse" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               {formatCurrency(stats.revenueRecovered)}
@@ -228,7 +212,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                <Plus className="h-5 w-5" />
+                <Icon name="plus" size="lg" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Add Quote</p>
@@ -243,7 +227,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                <Zap className="h-5 w-5" />
+                <Icon name="bolt" size="lg" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Sequences</p>
@@ -258,7 +242,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                <Users className="h-5 w-5" />
+                <Icon name="users" size="lg" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Customers</p>
@@ -273,7 +257,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <BarChart3 className="h-5 w-5" />
+                <Icon name="chart" size="lg" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Analytics</p>
@@ -301,7 +285,7 @@ export default function DashboardPage() {
                 className="text-primary hover:text-primary/80"
               >
                 View all
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <Icon name="arrowRight" size="sm" className="ml-1" />
               </Button>
             </div>
             
@@ -316,7 +300,7 @@ export default function DashboardPage() {
             <div className="card-feature p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-[#9D96FF]">
-                  <Sparkles className="h-5 w-5 text-white" />
+                  <Icon name="sparkles" size="lg" className="text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">AI Insights</h3>
@@ -326,7 +310,7 @@ export default function DashboardPage() {
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100">
-                  <Clock className="h-4 w-4 text-amber-600 mt-0.5" />
+                  <Icon name="clock" size="sm" className="text-amber-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-amber-900">3 quotes need follow-up</p>
                     <p className="text-xs text-amber-700">No response in 48+ hours</p>
@@ -334,7 +318,7 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5" />
+                  <Icon name="checkCircle" size="sm" className="text-emerald-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-emerald-900">High win probability</p>
                     <p className="text-xs text-emerald-700">2 quotes likely to convert</p>
@@ -342,7 +326,7 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
-                  <Send className="h-4 w-4 text-blue-600 mt-0.5" />
+                  <Icon name="send" size="sm" className="text-blue-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-blue-900">5 messages sent today</p>
                     <p className="text-xs text-blue-700">Automated follow-ups working</p>
@@ -357,7 +341,7 @@ export default function DashboardPage() {
                 onClick={() => router.push('/analytics')}
               >
                 View detailed insights
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <Icon name="arrowRight" size="sm" className="ml-1" />
               </Button>
             </div>
             
@@ -379,14 +363,14 @@ export default function DashboardPage() {
             <summary className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5 rounded-xl cursor-pointer hover:from-primary/10 hover:to-[#9D96FF]/10 transition-all duration-300 border border-primary/10">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Icon name="sparkles" size="lg" className="text-primary" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Explore Selestial Features</h3>
                   <p className="text-sm text-gray-500">See what else you can do with your account</p>
                 </div>
               </div>
-              <ChevronDown className="h-5 w-5 text-gray-400 group-open:rotate-180 transition-transform" />
+              <Icon name="chevronDown" size="lg" className="text-gray-400 group-open:rotate-180 transition-transform" />
             </summary>
             <div className="mt-4">
               <FeaturesBento />

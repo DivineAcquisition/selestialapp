@@ -10,89 +10,66 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AnimatedCounter } from '@/components/ui/text-effects'
+import { Icon, IconName } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
-import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  FileText,
-  Send,
-  Link2,
-  Eye,
-  Trash2,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  DollarSign,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUpDown,
-  RefreshCw,
-  Loader2,
-  Copy,
-  MessageSquare,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow, format } from 'date-fns'
 
 type SortField = 'created_at' | 'amount' | 'customer_name' | 'status'
 type SortOrder = 'asc' | 'desc'
 
-const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string; bg: string }> = {
+const statusConfig: Record<string, { label: string; icon: IconName; color: string; bg: string }> = {
   pending: { 
     label: 'Pending', 
-    icon: Clock, 
+    icon: 'clock', 
     color: 'text-amber-600', 
     bg: 'bg-amber-50 border-amber-200' 
   },
   new: { 
     label: 'New', 
-    icon: Sparkles, 
+    icon: 'sparkles', 
     color: 'text-blue-600', 
     bg: 'bg-blue-50 border-blue-200' 
   },
   active: { 
     label: 'Active', 
-    icon: Clock, 
+    icon: 'clock', 
     color: 'text-amber-600', 
     bg: 'bg-amber-50 border-amber-200' 
   },
   sent: { 
     label: 'Sent', 
-    icon: Send, 
+    icon: 'send', 
     color: 'text-blue-600', 
     bg: 'bg-blue-50 border-blue-200' 
   },
   viewed: { 
     label: 'Viewed', 
-    icon: Eye, 
+    icon: 'eye', 
     color: 'text-purple-600', 
     bg: 'bg-purple-50 border-purple-200' 
   },
   won: { 
     label: 'Won', 
-    icon: CheckCircle, 
+    icon: 'checkCircle', 
     color: 'text-emerald-600', 
     bg: 'bg-emerald-50 border-emerald-200' 
   },
   lost: { 
     label: 'Lost', 
-    icon: XCircle, 
+    icon: 'xCircle', 
     color: 'text-red-600', 
     bg: 'bg-red-50 border-red-200' 
   },
   paused: { 
     label: 'Paused', 
-    icon: AlertCircle, 
+    icon: 'alertCircle', 
     color: 'text-gray-600', 
     bg: 'bg-gray-50 border-gray-200' 
   },
   expired: { 
     label: 'Expired', 
-    icon: AlertCircle, 
+    icon: 'alertCircle', 
     color: 'text-gray-600', 
     bg: 'bg-gray-50 border-gray-200' 
   },
@@ -289,7 +266,7 @@ export default function QuotesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <FileText className="h-6 w-6 text-white" />
+              <Icon name="fileText" size="xl" className="text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Quotes</h1>
@@ -303,7 +280,7 @@ export default function QuotesPage() {
             onClick={() => router.push('/quotes/new')}
             className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Icon name="plus" size="sm" className="mr-2" />
             New Quote
           </Button>
         </div>
@@ -313,9 +290,9 @@ export default function QuotesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                <FileText className="w-5 h-5" />
+                <Icon name="fileText" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.total} />
@@ -326,7 +303,7 @@ export default function QuotesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <Clock className="w-5 h-5" />
+                <Icon name="clock" size="lg" />
               </div>
               <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
                 Active
@@ -341,9 +318,9 @@ export default function QuotesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <CheckCircle className="w-5 h-5" />
+                <Icon name="checkCircle" size="lg" />
               </div>
-              <Sparkles className="h-4 w-4 text-emerald-500" />
+              <Icon name="sparkles" size="sm" className="text-emerald-500" />
             </div>
             <div className="text-3xl font-bold text-emerald-600 mb-1">
               <AnimatedCounter value={stats.won} />
@@ -354,7 +331,7 @@ export default function QuotesPage() {
           <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <DollarSign className="w-5 h-5" />
+                <Icon name="dollar" size="lg" />
               </div>
             </div>
             <div className="text-3xl font-bold text-emerald-600 mb-1">
@@ -369,7 +346,7 @@ export default function QuotesPage() {
           <div className="p-4 flex flex-wrap items-center gap-4">
             {/* Search */}
             <div className="relative flex-1 min-w-[200px] max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Icon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 value={search}
                 onChange={(e) => {
@@ -424,7 +401,7 @@ export default function QuotesPage() {
               disabled={loading}
               className="rounded-xl"
             >
-              <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+              <Icon name="refresh" size="sm" className={cn(loading && "animate-spin")} />
             </Button>
           </div>
 
@@ -440,7 +417,7 @@ export default function QuotesPage() {
                 onClick={() => handleBulkAction('send')}
                 className="text-primary border-primary/30 rounded-xl"
               >
-                <Send className="w-3 h-3 mr-1" />
+                <Icon name="send" size="xs" className="mr-1" />
                 Send All
               </Button>
               <Button
@@ -449,7 +426,7 @@ export default function QuotesPage() {
                 onClick={() => handleBulkAction('delete')}
                 className="text-red-600 border-red-200 rounded-xl"
               >
-                <Trash2 className="w-3 h-3 mr-1" />
+                <Icon name="trash" size="xs" className="mr-1" />
                 Delete
               </Button>
               <button
@@ -466,12 +443,12 @@ export default function QuotesPage() {
         <Card className="card-elevated p-0 overflow-hidden">
           {loading && quotes.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <Icon name="spinner" size="2xl" className="text-primary animate-spin" />
             </div>
           ) : filteredQuotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-                <FileText className="w-10 h-10 text-gray-400" />
+                <Icon name="fileText" size="3xl" className="text-gray-400" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">No quotes found</h3>
               <p className="text-sm text-gray-500 mb-6">
@@ -484,7 +461,7 @@ export default function QuotesPage() {
                   onClick={() => router.push('/quotes/new')}
                   className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Icon name="plus" size="sm" className="mr-2" />
                   New Quote
                 </Button>
               )}
@@ -509,7 +486,7 @@ export default function QuotesPage() {
                           className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-900"
                         >
                           Customer
-                          <ArrowUpDown className="w-3 h-3" />
+                          <Icon name="arrowUpDown" size="xs" />
                         </button>
                       </th>
                       <th className="px-4 py-3 text-left">
@@ -523,7 +500,7 @@ export default function QuotesPage() {
                           className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-900"
                         >
                           Amount
-                          <ArrowUpDown className="w-3 h-3" />
+                          <Icon name="arrowUpDown" size="xs" />
                         </button>
                       </th>
                       <th className="px-4 py-3 text-left">
@@ -532,7 +509,7 @@ export default function QuotesPage() {
                           className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-900"
                         >
                           Status
-                          <ArrowUpDown className="w-3 h-3" />
+                          <Icon name="arrowUpDown" size="xs" />
                         </button>
                       </th>
                       <th className="px-4 py-3 text-left">
@@ -541,7 +518,7 @@ export default function QuotesPage() {
                           className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-900"
                         >
                           Created
-                          <ArrowUpDown className="w-3 h-3" />
+                          <Icon name="arrowUpDown" size="xs" />
                         </button>
                       </th>
                       <th className="px-4 py-3 text-right">
@@ -554,7 +531,6 @@ export default function QuotesPage() {
                   <tbody className="divide-y">
                     {paginatedQuotes.map((quote) => {
                       const status = statusConfig[quote.status as string] || statusConfig.pending
-                      const StatusIcon = status.icon
 
                       return (
                         <tr 
@@ -606,7 +582,7 @@ export default function QuotesPage() {
                               status.bg,
                               status.color
                             )}>
-                              <StatusIcon className="w-3 h-3" />
+                              <Icon name={status.icon} size="xs" />
                               {status.label}
                             </span>
                           </td>
@@ -628,7 +604,7 @@ export default function QuotesPage() {
                                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 title="View"
                               >
-                                <Eye className="w-4 h-4" />
+                                <Icon name="eye" size="sm" />
                               </button>
                               
                               {quote.customer_phone && (
@@ -637,7 +613,7 @@ export default function QuotesPage() {
                                   className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
                                   title="Send SMS"
                                 >
-                                  <Send className="w-4 h-4" />
+                                  <Icon name="send" size="sm" />
                                 </button>
                               )}
 
@@ -647,7 +623,7 @@ export default function QuotesPage() {
                                   onClick={() => setOpenDropdown(openDropdown === quote.id ? null : quote.id)}
                                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 >
-                                  <MoreHorizontal className="w-4 h-4" />
+                                  <Icon name="more" size="sm" />
                                 </button>
 
                                 {openDropdown === quote.id && (
@@ -664,7 +640,7 @@ export default function QuotesPage() {
                                         }}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                       >
-                                        <Eye className="w-4 h-4" />
+                                        <Icon name="eye" size="sm" />
                                         View Details
                                       </button>
                                       
@@ -675,7 +651,7 @@ export default function QuotesPage() {
                                         }}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                       >
-                                        <FileText className="w-4 h-4" />
+                                        <Icon name="fileText" size="sm" />
                                         Edit Quote
                                       </button>
 
@@ -687,7 +663,7 @@ export default function QuotesPage() {
                                         disabled={paymentLoading}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                       >
-                                        <Link2 className="w-4 h-4" />
+                                        <Icon name="link" size="sm" />
                                         Copy Payment Link
                                       </button>
 
@@ -700,7 +676,7 @@ export default function QuotesPage() {
                                           }}
                                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                         >
-                                          <Copy className="w-4 h-4" />
+                                          <Icon name="copy" size="sm" />
                                           Copy Existing Link
                                         </button>
                                       )}
@@ -712,7 +688,7 @@ export default function QuotesPage() {
                                         }}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                       >
-                                        <MessageSquare className="w-4 h-4" />
+                                        <Icon name="message" size="sm" />
                                         Open Conversation
                                       </button>
 
@@ -725,7 +701,7 @@ export default function QuotesPage() {
                                         }}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                                       >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Icon name="trash" size="sm" />
                                         Delete Quote
                                       </button>
                                     </div>
@@ -771,7 +747,7 @@ export default function QuotesPage() {
                     disabled={currentPage === 1}
                     className="rounded-xl"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <Icon name="chevronLeft" size="sm" />
                   </Button>
                   
                   <div className="flex items-center gap-1">
@@ -811,7 +787,7 @@ export default function QuotesPage() {
                     disabled={currentPage === totalPages || totalPages === 0}
                     className="rounded-xl"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <Icon name="chevronRight" size="sm" />
                   </Button>
                 </div>
               </div>

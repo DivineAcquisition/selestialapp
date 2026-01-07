@@ -11,12 +11,12 @@ import SmartReplySuggestions from '@/components/inbox/SmartReplySuggestions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Icon } from '@/components/ui/icon';
 import { useConversations, type Conversation } from '@/hooks/useConversations';
 import { useMessageThread } from '@/hooks/useMessageThread';
 import { useQuotes } from '@/hooks/useQuotes';
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
 import { useSmartReplies } from '@/hooks/useSmartReplies';
-import { Loader2, MessageSquare, Phone, Bot, Inbox, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function InboxPage() {
@@ -128,7 +128,7 @@ export default function InboxPage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <Card className="card-elevated p-12 text-center max-w-md">
             <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Phone className="w-10 h-10 text-amber-600" />
+              <Icon name="phone" size="3xl" className="text-amber-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               Set up your phone number
@@ -142,7 +142,7 @@ export default function InboxPage() {
               className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90"
             >
               Go to Settings
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <Icon name="arrowRight" size="sm" className="ml-2" />
             </Button>
           </Card>
         </div>
@@ -156,13 +156,13 @@ export default function InboxPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-            <Inbox className="h-6 w-6 text-white" />
+            <Icon name="inbox" size="xl" className="text-white" />
           </div>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
               <Badge className="bg-primary/10 text-primary border-0">
-                <Bot className="h-3 w-3 mr-1" />
+                <Icon name="robot" size="xs" className="mr-1" />
                 AI-Powered
               </Badge>
             </div>
@@ -189,7 +189,7 @@ export default function InboxPage() {
             <div className="flex-1 overflow-y-auto scrollbar-thin">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <Icon name="spinner" size="xl" className="animate-spin text-primary" />
                 </div>
               ) : (
                 <ConversationList
@@ -251,7 +251,7 @@ export default function InboxPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-                  <MessageSquare className="w-10 h-10 text-gray-400" />
+                  <Icon name="message" size="3xl" className="text-gray-400" />
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">
                   Select a conversation

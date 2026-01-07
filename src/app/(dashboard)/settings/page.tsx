@@ -15,24 +15,9 @@ import AISettings from '@/components/settings/AISettings';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Icon } from '@/components/ui/icon';
 import { useBusiness, useAuth } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Bell, 
-  Clock, 
-  Phone, 
-  Loader2, 
-  CreditCard, 
-  Sparkles,
-  Building2,
-  Settings2,
-  Shield,
-  Globe,
-  Zap,
-  Mail,
-  MessageSquare,
-  BarChart3,
-} from 'lucide-react';
 import { NavigationCard } from '@/components/ui/interactive-card';
 import type { Business } from '@/types';
 
@@ -141,7 +126,7 @@ function SettingsContent() {
     return (
       <Layout title="Settings">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -153,7 +138,7 @@ function SettingsContent() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-            <Settings2 className="h-6 w-6 text-white" />
+            <Icon name="settings" size="xl" className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
@@ -167,26 +152,26 @@ function SettingsContent() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-gray-100/80 p-1 h-auto flex-wrap rounded-xl">
             <TabsTrigger value="general" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Building2 className="h-4 w-4" />
+              <Icon name="building" size="sm" />
               General
             </TabsTrigger>
             <TabsTrigger value="ai" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Sparkles className="h-4 w-4" />
+              <Icon name="sparkles" size="sm" />
               AI Assistant
               <Badge className="text-[10px] ml-1 bg-primary/10 text-primary border-0">
                 New
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="communications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <MessageSquare className="h-4 w-4" />
+              <Icon name="message" size="sm" />
               Communications
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <CreditCard className="h-4 w-4" />
+              <Icon name="creditCard" size="sm" />
               Payments
             </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Bell className="h-4 w-4" />
+              <Icon name="bell" size="sm" />
               Notifications
             </TabsTrigger>
           </TabsList>
@@ -203,7 +188,7 @@ function SettingsContent() {
               <Card className="card-elevated p-6 rounded-2xl">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-3 bg-blue-100 rounded-xl">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                    <Icon name="clock" size="lg" className="text-blue-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
@@ -217,7 +202,7 @@ function SettingsContent() {
               <Card className="card-elevated p-6 rounded-2xl">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-3 bg-red-100 rounded-xl">
-                    <Shield className="h-5 w-5 text-red-600" />
+                    <Icon name="shield" size="lg" className="text-red-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Account</h3>
@@ -242,7 +227,7 @@ function SettingsContent() {
                 <div className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b border-gray-100">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl">
-                      <Phone className="h-5 w-5 text-primary" />
+                      <Icon name="phone" size="lg" className="text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Phone & SMS Setup</h3>
@@ -273,7 +258,7 @@ function SettingsContent() {
             <Card className="card-elevated p-6 rounded-2xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-amber-100 rounded-xl">
-                  <Bell className="h-5 w-5 text-amber-600" />
+                  <Icon name="bell" size="lg" className="text-amber-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Notification Preferences</h3>
@@ -290,26 +275,26 @@ function SettingsContent() {
           <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <NavigationCard 
-              icon={<CreditCard className="h-5 w-5" />}
+              icon={<Icon name="creditCard" size="lg" />}
               title="Billing"
               description="Manage subscription"
               onClick={() => router.push('/billing')}
             />
             <NavigationCard 
-              icon={<Globe className="h-5 w-5" />}
+              icon={<Icon name="globe" size="lg" />}
               title="Integrations"
               description="Connect your tools"
               badge="3 connected"
               onClick={() => router.push('/connections')}
             />
             <NavigationCard 
-              icon={<Zap className="h-5 w-5" />}
+              icon={<Icon name="bolt" size="lg" />}
               title="Sequences"
               description="Manage automations"
               onClick={() => router.push('/sequences')}
             />
             <NavigationCard 
-              icon={<BarChart3 className="h-5 w-5" />}
+              icon={<Icon name="chart" size="lg" />}
               title="Analytics"
               description="View performance"
               onClick={() => router.push('/analytics')}
@@ -326,7 +311,7 @@ export default function SettingsPage() {
     <Suspense fallback={
       <Layout title="Settings">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     }>

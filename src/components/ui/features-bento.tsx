@@ -4,16 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Globe } from "./globe";
-import {
-  MessageSquare,
-  Zap,
-  TrendingUp,
-  Clock,
-  Bot,
-  CreditCard,
-  BarChart3,
-  Users,
-} from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 
 interface FeatureCardProps {
   children?: React.ReactNode;
@@ -93,7 +84,7 @@ const SkeletonAIReplies = () => {
   return (
     <div className="relative flex flex-col items-start p-4 gap-3 h-full overflow-hidden">
       <div className="flex items-center gap-2 mb-2">
-        <Bot className="h-5 w-5 text-primary" />
+        <Icon name="robot" size="lg" className="text-primary" />
         <span className="text-sm font-medium text-gray-700">AI Suggestions</span>
       </div>
       {replies.map((reply, idx) => (
@@ -162,7 +153,7 @@ export function FeaturesBento() {
       description:
         "Track every quote from creation to conversion with our visual pipeline. Never lose a lead again.",
       skeleton: <SkeletonQuotePipeline />,
-      icon: TrendingUp,
+      icon: "trendUp" as const,
       className: "col-span-1 lg:col-span-4 border-b lg:border-r border-gray-200",
     },
     {
@@ -170,7 +161,7 @@ export function FeaturesBento() {
       description:
         "Get intelligent response suggestions based on conversation context and your business style.",
       skeleton: <SkeletonAIReplies />,
-      icon: Bot,
+      icon: "robot" as const,
       className: "border-b col-span-1 lg:col-span-2 border-gray-200",
     },
     {
@@ -178,7 +169,7 @@ export function FeaturesBento() {
       description:
         "Monitor your win rates, response times, and revenue trends with beautiful visualizations.",
       skeleton: <SkeletonAnalytics />,
-      icon: BarChart3,
+      icon: "chart" as const,
       className: "col-span-1 lg:col-span-3 lg:border-r border-gray-200",
     },
     {
@@ -186,7 +177,7 @@ export function FeaturesBento() {
       description:
         "Join 500+ home service businesses across the country winning more jobs with Selestial.",
       skeleton: <SkeletonGlobe />,
-      icon: Users,
+      icon: "users" as const,
       className: "col-span-1 lg:col-span-3 border-b lg:border-none",
     },
   ];
@@ -208,7 +199,7 @@ export function FeaturesBento() {
             <FeatureCard key={feature.title} className={feature.className}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-1.5 rounded-lg bg-primary/10">
-                  <feature.icon className="h-4 w-4 text-primary" />
+                  <Icon name={feature.icon} size="sm" className="text-primary" />
                 </div>
                 <FeatureTitle>{feature.title}</FeatureTitle>
               </div>

@@ -10,38 +10,30 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Icon, IconName } from '@/components/ui/icon';
 import { useAuth, useBusiness } from '@/providers';
 import { useConversations } from '@/hooks/useConversations';
 import { cn } from '@/lib/utils';
-import { 
-  Menu, 
-  LayoutDashboard, 
-  FileText, 
-  Zap, 
-  Settings, 
-  LogOut,
-  MessageSquare,
-  Users,
-  Link2,
-  CreditCard,
-  RefreshCw,
-  Megaphone,
-  BarChart3,
-  ChevronRight,
-} from 'lucide-react';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Inbox', href: '/inbox', icon: MessageSquare, showBadge: true },
-  { name: 'Quotes', href: '/quotes', icon: FileText },
-  { name: 'Customers', href: '/customers', icon: Users },
-  { name: 'Sequences', href: '/sequences', icon: Zap },
-  { name: 'Retention', href: '/retention', icon: RefreshCw },
-  { name: 'Campaigns', href: '/campaigns', icon: Megaphone },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Connections', href: '/connections', icon: Link2 },
-  { name: 'Billing', href: '/billing', icon: CreditCard },
-  { name: 'Settings', href: '/settings', icon: Settings },
+interface NavItem {
+  name: string;
+  href: string;
+  icon: IconName;
+  showBadge?: boolean;
+}
+
+const navigation: NavItem[] = [
+  { name: 'Dashboard', href: '/', icon: 'home' },
+  { name: 'Inbox', href: '/inbox', icon: 'inbox', showBadge: true },
+  { name: 'Quotes', href: '/quotes', icon: 'quote' },
+  { name: 'Customers', href: '/customers', icon: 'users' },
+  { name: 'Sequences', href: '/sequences', icon: 'bolt' },
+  { name: 'Retention', href: '/retention', icon: 'repeat' },
+  { name: 'Campaigns', href: '/campaigns', icon: 'megaphone' },
+  { name: 'Analytics', href: '/analytics', icon: 'chart' },
+  { name: 'Connections', href: '/connections', icon: 'link' },
+  { name: 'Billing', href: '/billing', icon: 'creditCard' },
+  { name: 'Settings', href: '/settings', icon: 'settings' },
 ];
 
 export default function MobileSidebar() {
@@ -65,7 +57,7 @@ export default function MobileSidebar() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden hover:bg-secondary">
-          <Menu className="h-5 w-5" />
+          <Icon name="menu" size="lg" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 bg-sidebar-background border-sidebar-border/50">
@@ -109,7 +101,7 @@ export default function MobileSidebar() {
                         ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" 
                         : "bg-sidebar-accent"
                     )}>
-                      <item.icon className="h-4 w-4" />
+                      <Icon name={item.icon} size="sm" />
                     </div>
                     {item.name}
                   </div>
@@ -120,7 +112,7 @@ export default function MobileSidebar() {
                       </span>
                     )}
                     {isActive && (
-                      <ChevronRight className="h-4 w-4 text-primary opacity-50" />
+                      <Icon name="chevronRight" size="sm" className="text-primary opacity-50" />
                     )}
                   </div>
                 </Link>
@@ -153,7 +145,7 @@ export default function MobileSidebar() {
                 onClick={handleSignOut}
                 className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <Icon name="logout" size="sm" className="mr-2" />
                 Sign out
               </Button>
             </div>
