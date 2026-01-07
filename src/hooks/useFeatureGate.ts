@@ -12,7 +12,7 @@ export function useFeatureGate() {
   
   // Determine effective plan
   let planId: PlanId = 'free'
-  if (subscriptionPlan === 'growth' || subscriptionPlan === 'starter') {
+  if (subscriptionPlan === 'enterprise' || subscriptionPlan === 'growth' || subscriptionPlan === 'starter') {
     planId = subscriptionPlan
   } else if (subscriptionStatus === 'trialing') {
     planId = 'starter' // Trial users get starter features
