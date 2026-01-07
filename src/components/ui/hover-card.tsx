@@ -1,58 +1,139 @@
 "use client";
 
 import * as React from "react";
-import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-
 import { cn } from "@/lib/utils";
 
-const HoverCard = PreviewCardPrimitive.Root;
-
-interface HoverCardTriggerProps extends React.HTMLAttributes<HTMLElement> {
-  asChild?: boolean;
-  children?: React.ReactNode;
+interface HoverCardContextValue {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function HoverCardTrigger({ asChild, children, ...props }: HoverCardTriggerProps) {
-  if (asChild && React.isValidElement(children)) {
-    return (
-      <PreviewCardPrimitive.Trigger
-        data-slot="hover-card-trigger"
-        render={children}
-        {...props}
-      />
-    );
+const HoverCardContext = React.createContext<HoverCardContextValue | null>(null);
+
+const useHoverCard = () => {
+  const context = React.useContext(HoverCardContext);
+  if (!context) {
+    throw new Error("HoverCard components must be used within a HoverCard");
   }
+  return context;
+};
+
+export interface HoverCardProps {
+  children: React.ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  openDelay?: number;
+  closeDelay?: number;
+}
+
+function HoverCard({
+  children,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  openDelay = 700,
+  closeDelay = 300,
+}: HoverCardProps) {
+  const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
+  const openTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+
+    const delay = newOpen ? openDelay : closeDelay;
+    const timeoutRef = newOpen ? openTimeoutRef : closeTimeoutRef;
+
+    timeoutRef.current = setTimeout(() => {
+      if (!isControlled) {
+        setInternalOpen(newOpen);
+      }
+      onOpenChange?.(newOpen);
+    }, delay);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
   return (
-    <PreviewCardPrimitive.Trigger data-slot="hover-card-trigger" {...props}>
-      {children}
-    </PreviewCardPrimitive.Trigger>
+    <HoverCardContext.Provider value={{ open: isOpen, onOpenChange: handleOpenChange }}>
+      <div className="relative inline-block">{children}</div>
+    </HoverCardContext.Provider>
   );
 }
 
-interface HoverCardContentProps extends React.HTMLAttributes<HTMLDivElement> {
-  align?: "start" | "center" | "end";
-  sideOffset?: number;
-  side?: "top" | "bottom" | "left" | "right";
-  children?: React.ReactNode;
+export interface HoverCardTriggerProps extends React.HTMLAttributes<HTMLDivElement> {
+  asChild?: boolean;
 }
 
-const HoverCardContent = React.forwardRef<HTMLDivElement, HoverCardContentProps>(
-  ({ className, align = "center", sideOffset = 4, side = "bottom", ...props }, ref) => (
-    <PreviewCardPrimitive.Portal>
-      <PreviewCardPrimitive.Positioner align={align} sideOffset={sideOffset} side={side}>
-        <PreviewCardPrimitive.Popup
-          ref={ref}
-          className={cn(
-            "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none transition-[opacity,transform] data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:scale-95 data-starting-style:scale-95",
-            className
-          )}
-          data-slot="hover-card-content"
-          {...props}
-        />
-      </PreviewCardPrimitive.Positioner>
-    </PreviewCardPrimitive.Portal>
-  )
+const HoverCardTrigger = React.forwardRef<HTMLDivElement, HoverCardTriggerProps>(
+  ({ children, asChild, ...props }, ref) => {
+    const { onOpenChange } = useHoverCard();
+
+    const handleMouseEnter = () => onOpenChange(true);
+    const handleMouseLeave = () => onOpenChange(false);
+
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement<{
+        onMouseEnter?: () => void;
+        onMouseLeave?: () => void;
+      }>, {
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave,
+      });
+    }
+
+    return (
+      <div
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
 );
+HoverCardTrigger.displayName = "HoverCardTrigger";
+
+const HoverCardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    align?: "start" | "center" | "end";
+    sideOffset?: number;
+  }
+>(({ className, align = "center", sideOffset = 4, ...props }, ref) => {
+  const { open, onOpenChange } = useHoverCard();
+
+  if (!open) return null;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "absolute z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+        "animate-scale-in",
+        align === "start" && "left-0",
+        align === "center" && "left-1/2 -translate-x-1/2",
+        align === "end" && "right-0",
+        className
+      )}
+      style={{ top: `calc(100% + ${sideOffset}px)` }}
+      onMouseEnter={() => onOpenChange(true)}
+      onMouseLeave={() => onOpenChange(false)}
+      {...props}
+    />
+  );
+});
 HoverCardContent.displayName = "HoverCardContent";
 
 export { HoverCard, HoverCardTrigger, HoverCardContent };

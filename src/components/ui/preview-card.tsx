@@ -1,55 +1,139 @@
 "use client";
 
-import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const PreviewCard = PreviewCardPrimitive.Root;
-
-function PreviewCardTrigger({ ...props }: PreviewCardPrimitive.Trigger.Props) {
-  return (
-    <PreviewCardPrimitive.Trigger data-slot="preview-card-trigger" {...props} />
-  );
+interface PreviewCardContextValue {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function PreviewCardPopup({
-  className,
-  children,
-  align = "center",
-  sideOffset = 4,
-  ...props
-}: PreviewCardPrimitive.Popup.Props & {
-  align?: PreviewCardPrimitive.Positioner.Props["align"];
-  sideOffset?: PreviewCardPrimitive.Positioner.Props["sideOffset"];
-}) {
-  return (
-    <PreviewCardPrimitive.Portal>
-      <PreviewCardPrimitive.Positioner
-        align={align}
-        className="z-50"
-        data-slot="preview-card-positioner"
-        sideOffset={sideOffset}
-      >
-        <PreviewCardPrimitive.Popup
-          className={cn(
-            "relative flex w-64 origin-(--transform-origin) text-balance rounded-lg border bg-popover bg-clip-padding p-4 text-popover-foreground text-sm shadow-lg transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:scale-98 data-starting-style:scale-98 data-ending-style:opacity-0 data-starting-style:opacity-0 dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
-            className,
-          )}
-          data-slot="preview-card-content"
-          {...props}
-        >
-          {children}
-        </PreviewCardPrimitive.Popup>
-      </PreviewCardPrimitive.Positioner>
-    </PreviewCardPrimitive.Portal>
-  );
-}
+const PreviewCardContext = React.createContext<PreviewCardContextValue | null>(null);
 
-export {
-  PreviewCard,
-  PreviewCard as HoverCard,
-  PreviewCardTrigger,
-  PreviewCardTrigger as HoverCardTrigger,
-  PreviewCardPopup,
-  PreviewCardPopup as HoverCardContent,
+const usePreviewCard = () => {
+  const context = React.useContext(PreviewCardContext);
+  if (!context) {
+    throw new Error("PreviewCard components must be used within a PreviewCard");
+  }
+  return context;
 };
+
+export interface PreviewCardProps {
+  children: React.ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  openDelay?: number;
+  closeDelay?: number;
+}
+
+function PreviewCard({
+  children,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  openDelay = 700,
+  closeDelay = 300,
+}: PreviewCardProps) {
+  const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
+  const openTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+
+    const delay = newOpen ? openDelay : closeDelay;
+    const timeoutRef = newOpen ? openTimeoutRef : closeTimeoutRef;
+
+    timeoutRef.current = setTimeout(() => {
+      if (!isControlled) {
+        setInternalOpen(newOpen);
+      }
+      onOpenChange?.(newOpen);
+    }, delay);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
+
+  return (
+    <PreviewCardContext.Provider value={{ open: isOpen, onOpenChange: handleOpenChange }}>
+      <div className="relative inline-block">{children}</div>
+    </PreviewCardContext.Provider>
+  );
+}
+
+export interface PreviewCardTriggerProps extends React.HTMLAttributes<HTMLDivElement> {
+  asChild?: boolean;
+}
+
+const PreviewCardTrigger = React.forwardRef<HTMLDivElement, PreviewCardTriggerProps>(
+  ({ children, asChild, ...props }, ref) => {
+    const { onOpenChange } = usePreviewCard();
+
+    const handleMouseEnter = () => onOpenChange(true);
+    const handleMouseLeave = () => onOpenChange(false);
+
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement<{
+        onMouseEnter?: () => void;
+        onMouseLeave?: () => void;
+      }>, {
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave,
+      });
+    }
+
+    return (
+      <div
+        ref={ref}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+PreviewCardTrigger.displayName = "PreviewCardTrigger";
+
+const PreviewCardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    align?: "start" | "center" | "end";
+    sideOffset?: number;
+  }
+>(({ className, align = "center", sideOffset = 4, ...props }, ref) => {
+  const { open, onOpenChange } = usePreviewCard();
+
+  if (!open) return null;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "absolute z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+        "animate-scale-in",
+        align === "start" && "left-0",
+        align === "center" && "left-1/2 -translate-x-1/2",
+        align === "end" && "right-0",
+        className
+      )}
+      style={{ top: `calc(100% + ${sideOffset}px)` }}
+      onMouseEnter={() => onOpenChange(true)}
+      onMouseLeave={() => onOpenChange(false)}
+      {...props}
+    />
+  );
+});
+PreviewCardContent.displayName = "PreviewCardContent";
+
+export { PreviewCard, PreviewCardTrigger, PreviewCardContent };

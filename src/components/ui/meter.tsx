@@ -1,67 +1,66 @@
 "use client";
 
-import { Meter as MeterPrimitive } from "@base-ui/react/meter";
-
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
-function Meter({ className, children, ...props }: MeterPrimitive.Root.Props) {
-  return (
-    <MeterPrimitive.Root
-      className={cn("flex w-full flex-col gap-2", className)}
-      {...props}
-    >
-      {children ? (
-        children
-      ) : (
-        <MeterTrack>
-          <MeterIndicator />
-        </MeterTrack>
-      )}
-    </MeterPrimitive.Root>
-  );
+export interface MeterProps extends React.HTMLAttributes<HTMLDivElement> {
+  value?: number;
+  min?: number;
+  max?: number;
+  low?: number;
+  high?: number;
+  optimum?: number;
 }
 
-function MeterLabel({ className, ...props }: MeterPrimitive.Label.Props) {
-  return (
-    <MeterPrimitive.Label
-      className={cn("font-medium text-sm", className)}
-      data-slot="meter-label"
-      {...props}
-    />
-  );
-}
+const Meter = React.forwardRef<HTMLDivElement, MeterProps>(
+  (
+    {
+      className,
+      value = 0,
+      min = 0,
+      max = 100,
+      low,
+      high,
+      optimum,
+      ...props
+    },
+    ref
+  ) => {
+    const percentage = Math.min(Math.max(((value - min) / (max - min)) * 100, 0), 100);
 
-function MeterTrack({ className, ...props }: MeterPrimitive.Track.Props) {
-  return (
-    <MeterPrimitive.Track
-      className={cn("block h-2 w-full overflow-hidden bg-input", className)}
-      data-slot="meter-track"
-      {...props}
-    />
-  );
-}
+    // Determine color based on value ranges
+    let color = "bg-primary";
+    if (low !== undefined && high !== undefined) {
+      if (value < low) {
+        color = optimum !== undefined && optimum < low ? "bg-green-500" : "bg-red-500";
+      } else if (value > high) {
+        color = optimum !== undefined && optimum > high ? "bg-green-500" : "bg-red-500";
+      } else {
+        color = "bg-yellow-500";
+      }
+    }
 
-function MeterIndicator({
-  className,
-  ...props
-}: MeterPrimitive.Indicator.Props) {
-  return (
-    <MeterPrimitive.Indicator
-      className={cn("bg-primary transition-all duration-500", className)}
-      data-slot="meter-indicator"
-      {...props}
-    />
-  );
-}
+    return (
+      <div
+        ref={ref}
+        role="meter"
+        aria-valuenow={value}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        className={cn(
+          "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+          className
+        )}
+        {...props}
+      >
+        <div
+          className={cn("h-full transition-all", color)}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    );
+  }
+);
+Meter.displayName = "Meter";
 
-function MeterValue({ className, ...props }: MeterPrimitive.Value.Props) {
-  return (
-    <MeterPrimitive.Value
-      className={cn("text-sm tabular-nums", className)}
-      data-slot="meter-value"
-      {...props}
-    />
-  );
-}
-
-export { Meter, MeterLabel, MeterTrack, MeterIndicator, MeterValue };
+export { Meter };

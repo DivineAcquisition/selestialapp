@@ -1,83 +1,94 @@
 "use client";
 
-import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
-
+import * as React from "react";
 import { cn } from "@/lib/utils";
+import { toggleVariants, type ToggleProps } from "@/components/ui/toggle";
+import { Separator } from "@/components/ui/separator";
 
-function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
-  return (
-    <ToolbarPrimitive.Root
-      className={cn(
-        "relative flex gap-2 rounded-xl border bg-card bg-clip-padding p-1 text-card-foreground",
-        className,
-      )}
-      data-slot="toolbar"
+const Toolbar = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    role="toolbar"
+    className={cn(
+      "flex items-center gap-1 rounded-md border bg-background p-1",
+      className
+    )}
+    {...props}
+  />
+));
+Toolbar.displayName = "Toolbar";
+
+const ToolbarButton = React.forwardRef<HTMLButtonElement, ToggleProps>(
+  ({ className, variant, size, ...props }, ref) => (
+    <button
+      ref={ref}
+      className={cn(toggleVariants({ variant, size }), className)}
       {...props}
     />
-  );
-}
+  )
+);
+ToolbarButton.displayName = "ToolbarButton";
 
-function ToolbarButton({ className, ...props }: ToolbarPrimitive.Button.Props) {
-  return (
-    <ToolbarPrimitive.Button
-      className={cn(className)}
-      data-slot="toolbar-button"
+const ToolbarSeparator = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <Separator
+    ref={ref}
+    orientation="vertical"
+    className={cn("mx-1 h-6", className)}
+    {...props}
+  />
+));
+ToolbarSeparator.displayName = "ToolbarSeparator";
+
+const ToolbarToggleGroup = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    role="group"
+    className={cn("flex items-center gap-1", className)}
+    {...props}
+  />
+));
+ToolbarToggleGroup.displayName = "ToolbarToggleGroup";
+
+const ToolbarToggleItem = React.forwardRef<HTMLButtonElement, ToggleProps>(
+  ({ className, variant, size, ...props }, ref) => (
+    <button
+      ref={ref}
+      className={cn(toggleVariants({ variant, size }), className)}
       {...props}
     />
-  );
-}
+  )
+);
+ToolbarToggleItem.displayName = "ToolbarToggleItem";
 
-function ToolbarLink({ className, ...props }: ToolbarPrimitive.Link.Props) {
-  return (
-    <ToolbarPrimitive.Link
-      className={cn(className)}
-      data-slot="toolbar-link"
-      {...props}
-    />
-  );
-}
-
-function ToolbarInput({ className, ...props }: ToolbarPrimitive.Input.Props) {
-  return (
-    <ToolbarPrimitive.Input
-      className={cn(className)}
-      data-slot="toolbar-input"
-      {...props}
-    />
-  );
-}
-
-function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
-  return (
-    <ToolbarPrimitive.Group
-      className={cn("flex items-center gap-1", className)}
-      data-slot="toolbar-group"
-      {...props}
-    />
-  );
-}
-
-function ToolbarSeparator({
-  className,
-  ...props
-}: ToolbarPrimitive.Separator.Props) {
-  return (
-    <ToolbarPrimitive.Separator
-      className={cn(
-        "shrink-0 bg-border data-[orientation=horizontal]:my-0.5 data-[orientation=vertical]:my-1.5 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:not-[[class^='h-']]:not-[[class*='_h-']]:self-stretch",
-        className,
-      )}
-      data-slot="toolbar-separator"
-      {...props}
-    />
-  );
-}
+const ToolbarLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.AnchorHTMLAttributes<HTMLAnchorElement>
+>(({ className, ...props }, ref) => (
+  <a
+    ref={ref}
+    className={cn(
+      toggleVariants({ variant: "default", size: "default" }),
+      className
+    )}
+    {...props}
+  />
+));
+ToolbarLink.displayName = "ToolbarLink";
 
 export {
   Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
   ToolbarButton,
+  ToolbarSeparator,
+  ToolbarToggleGroup,
+  ToolbarToggleItem,
   ToolbarLink,
-  ToolbarInput,
 };

@@ -1,95 +1,137 @@
 "use client";
 
-import type { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
-import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
-import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
-
+import { type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import {
-  Toggle as ToggleComponent,
-  type toggleVariants,
-} from "@/components/ui/toggle";
+import { toggleVariants } from "@/components/ui/toggle";
 
-const ToggleGroupContext = React.createContext<
-  VariantProps<typeof toggleVariants>
->({
-  size: "default",
-  variant: "default",
-});
-
-function ToggleGroup({
-  className,
-  variant = "default",
-  size = "default",
-  orientation = "horizontal",
-  children,
-  ...props
-}: ToggleGroupPrimitive.Props & VariantProps<typeof toggleVariants>) {
-  return (
-    <ToggleGroupPrimitive
-      className={cn(
-        "flex w-fit *:focus-visible:z-10",
-        orientation === "horizontal"
-          ? "*:pointer-coarse:after:min-w-auto"
-          : "*:pointer-coarse:after:min-h-auto",
-        variant === "default"
-          ? "gap-0.5"
-          : orientation === "horizontal"
-            ? "*:not-first:before:-start-[0.5px] *:not-last:before:-end-[0.5px] *:not-first:rounded-s-none *:not-last:rounded-e-none *:not-first:border-s-0 *:not-last:border-e-0 *:not-first:before:rounded-s-none *:not-last:before:rounded-e-none"
-            : "*:not-first:before:-top-[0.5px] *:not-last:before:-bottom-[0.5px] flex-col *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-first:border-t-0 *:not-last:border-b-0 *:not-last:before:hidden *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none dark:*:last:before:hidden dark:*:first:before:block",
-        className,
-      )}
-      data-size={size}
-      data-slot="toggle-group"
-      data-variant={variant}
-      orientation={orientation}
-      {...props}
-    >
-      <ToggleGroupContext.Provider value={{ size, variant }}>
-        {children}
-      </ToggleGroupContext.Provider>
-    </ToggleGroupPrimitive>
-  );
+interface ToggleGroupContextValue {
+  type: "single" | "multiple";
+  value: string[];
+  onValueChange: (value: string) => void;
+  variant?: VariantProps<typeof toggleVariants>["variant"];
+  size?: VariantProps<typeof toggleVariants>["size"];
 }
 
-function Toggle({
-  className,
-  children,
-  variant,
-  size,
-  ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+const ToggleGroupContext = React.createContext<ToggleGroupContextValue | null>(null);
+
+const useToggleGroup = () => {
   const context = React.useContext(ToggleGroupContext);
+  if (!context) {
+    throw new Error("ToggleGroupItem must be used within a ToggleGroup");
+  }
+  return context;
+};
 
-  const resolvedVariant = context.variant || variant;
-  const resolvedSize = context.size || size;
-
-  return (
-    <ToggleComponent
-      className={className}
-      data-size={resolvedSize}
-      data-variant={resolvedVariant}
-      size={resolvedSize}
-      variant={resolvedVariant}
-      {...props}
-    >
-      {children}
-    </ToggleComponent>
-  );
+export interface ToggleGroupProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof toggleVariants> {
+  type?: "single" | "multiple";
+  value?: string | string[];
+  defaultValue?: string | string[];
+  onValueChange?: (value: string | string[]) => void;
 }
 
-function ToggleGroupSeparator({
-  className,
-  orientation = "vertical",
-  ...props
-}: {
-  className?: string;
-} & React.ComponentProps<typeof Separator>) {
-  return (
-    <Separator className={className} orientation={orientation} {...props} />
-  );
+const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      type = "single",
+      value,
+      defaultValue,
+      onValueChange,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const normalizeValue = (v: string | string[] | undefined): string[] => {
+      if (v === undefined) return [];
+      return Array.isArray(v) ? v : [v];
+    };
+
+    const [internalValue, setInternalValue] = React.useState<string[]>(
+      normalizeValue(defaultValue)
+    );
+    const isControlled = value !== undefined;
+    const currentValue = isControlled ? normalizeValue(value) : internalValue;
+
+    const handleValueChange = (itemValue: string) => {
+      let newValue: string[];
+
+      if (type === "single") {
+        newValue = currentValue.includes(itemValue) ? [] : [itemValue];
+      } else {
+        if (currentValue.includes(itemValue)) {
+          newValue = currentValue.filter((v) => v !== itemValue);
+        } else {
+          newValue = [...currentValue, itemValue];
+        }
+      }
+
+      if (!isControlled) {
+        setInternalValue(newValue);
+      }
+
+      if (type === "single") {
+        onValueChange?.(newValue[0] || "");
+      } else {
+        onValueChange?.(newValue);
+      }
+    };
+
+    return (
+      <ToggleGroupContext.Provider
+        value={{ type, value: currentValue, onValueChange: handleValueChange, variant, size }}
+      >
+        <div
+          ref={ref}
+          role="group"
+          className={cn("flex items-center justify-center gap-1", className)}
+          {...props}
+        >
+          {children}
+        </div>
+      </ToggleGroupContext.Provider>
+    );
+  }
+);
+ToggleGroup.displayName = "ToggleGroup";
+
+export interface ToggleGroupItemProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof toggleVariants> {
+  value: string;
 }
 
-export { ToggleGroup, Toggle, Toggle as ToggleGroupItem, ToggleGroupSeparator };
+const ToggleGroupItem = React.forwardRef<HTMLButtonElement, ToggleGroupItemProps>(
+  ({ className, children, variant, size, value, ...props }, ref) => {
+    const context = useToggleGroup();
+    const isPressed = context.value.includes(value);
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        aria-pressed={isPressed}
+        data-state={isPressed ? "on" : "off"}
+        className={cn(
+          toggleVariants({
+            variant: variant || context.variant,
+            size: size || context.size,
+          }),
+          className
+        )}
+        onClick={() => context.onValueChange(value)}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+ToggleGroupItem.displayName = "ToggleGroupItem";
+
+export { ToggleGroup, ToggleGroupItem };

@@ -1,99 +1,108 @@
 "use client";
 
-import { Field as FieldPrimitive } from "@base-ui/react/field";
-
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
-function Field({ className, ...props }: FieldPrimitive.Root.Props) {
-  return (
-    <FieldPrimitive.Root
-      className={cn("flex flex-col items-start gap-2", className)}
-      data-slot="field"
-      {...props}
-    />
-  );
+interface FieldContextValue {
+  name?: string;
+  error?: string;
 }
 
-interface FieldLabelProps extends FieldPrimitive.Label.Props {
+const FieldContext = React.createContext<FieldContextValue>({});
+
+export const useField = () => React.useContext(FieldContext);
+
+export interface FieldProps extends React.HTMLAttributes<HTMLDivElement> {
+  name?: string;
+  error?: string;
+}
+
+const Field = React.forwardRef<HTMLDivElement, FieldProps>(
+  ({ className, name, error, children, ...props }, ref) => (
+    <FieldContext.Provider value={{ name, error }}>
+      <div
+        ref={ref}
+        className={cn("space-y-2", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    </FieldContext.Provider>
+  )
+);
+Field.displayName = "Field";
+
+const FieldGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("space-y-4", className)}
+      {...props}
+    />
+  )
+);
+FieldGroup.displayName = "FieldGroup";
+
+export interface FieldLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   required?: boolean;
 }
 
-function FieldLabel({ className, required, children, ...props }: FieldLabelProps) {
-  return (
-    <FieldPrimitive.Label
-      className={cn(
-        "inline-flex items-center gap-2 font-medium text-base/4.5 sm:text-sm/4",
-        className,
-      )}
-      data-slot="field-label"
-      {...props}
-    >
-      {children}
-      {required && <span className="text-destructive">*</span>}
-    </FieldPrimitive.Label>
-  );
-}
-
-function FieldDescription({
-  className,
-  ...props
-}: FieldPrimitive.Description.Props) {
-  return (
-    <FieldPrimitive.Description
-      className={cn("text-muted-foreground text-xs", className)}
-      data-slot="field-description"
-      {...props}
-    />
-  );
-}
-
-// Extended FieldError with show prop for backward compatibility
-interface FieldErrorProps extends Omit<FieldPrimitive.Error.Props, 'children'> {
-  show?: boolean;
-  children?: React.ReactNode;
-  className?: string;
-}
-
-function FieldError({ className, show, children, ...props }: FieldErrorProps) {
-  // If show is explicitly false, don't render
-  if (show === false) {
-    return null;
+const FieldLabel = React.forwardRef<HTMLLabelElement, FieldLabelProps>(
+  ({ className, children, required, ...props }, ref) => {
+    const { name } = useField();
+    return (
+      <label
+        ref={ref}
+        htmlFor={name}
+        className={cn(
+          "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {required && <span className="text-destructive ml-1">*</span>}
+      </label>
+    );
   }
-  
-  return (
-    <FieldPrimitive.Error
-      className={cn("text-destructive text-xs", className)}
-      data-slot="field-error"
-      {...props}
-    >
-      {children}
-    </FieldPrimitive.Error>
-  );
-}
+);
+FieldLabel.displayName = "FieldLabel";
 
-const FieldControl = FieldPrimitive.Control;
-const FieldValidity = FieldPrimitive.Validity;
+export interface FieldDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
 
-// Backward compatibility: FieldGroup is a styled container for grouping fields
-function FieldGroup({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("space-y-4", className)}
-      data-slot="field-group"
+const FieldDescription = React.forwardRef<HTMLParagraphElement, FieldDescriptionProps>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
-  );
+  )
+);
+FieldDescription.displayName = "FieldDescription";
+
+export interface FieldErrorProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  show?: boolean;
 }
 
-export {
-  Field,
-  FieldLabel,
-  FieldDescription,
-  FieldError,
-  FieldControl,
-  FieldValidity,
-  FieldGroup,
-};
+const FieldError = React.forwardRef<HTMLParagraphElement, FieldErrorProps>(
+  ({ className, children, show = true, ...props }, ref) => {
+    const { error } = useField();
+    const errorMessage = children || error;
+    
+    if (!errorMessage || !show) return null;
+    
+    return (
+      <p
+        ref={ref}
+        className={cn("text-sm font-medium text-destructive", className)}
+        {...props}
+      >
+        {errorMessage}
+      </p>
+    );
+  }
+);
+FieldError.displayName = "FieldError";
+
+export { Field, FieldGroup, FieldLabel, FieldDescription, FieldError };
