@@ -19,11 +19,11 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm transition-all duration-200",
+      "flex h-12 w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm transition-all duration-200",
       "placeholder:text-gray-400",
-      "focus:outline-none focus:border-primary/50 focus:shadow-[0_0_0_3px_rgba(85,0,255,0.1)]",
-      "hover:border-gray-300",
-      "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50",
+      "focus:outline-none focus:bg-white focus:border-primary/50 focus:shadow-[0_0_0_3px_rgba(85,0,255,0.1)]",
+      "hover:border-gray-300 hover:bg-white",
+      "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100",
       "[&>span]:line-clamp-1",
       className
     )}
@@ -124,15 +124,16 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm outline-none transition-colors",
+      "relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 pl-9 pr-3 text-sm outline-none transition-all duration-150",
       "focus:bg-primary/5 focus:text-gray-900",
-      "hover:bg-gray-50",
+      "hover:bg-gray-100",
+      "data-[state=checked]:bg-primary/5 data-[state=checked]:font-medium",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2.5 flex h-4 w-4 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
         <Check className="h-4 w-4 text-primary" />
       </SelectPrimitive.ItemIndicator>
