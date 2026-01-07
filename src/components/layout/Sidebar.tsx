@@ -28,6 +28,7 @@ const mainNavigation: NavItem[] = [
 
 const manageNavigation: NavItem[] = [
   { name: 'Quotes', href: '/quotes', icon: 'quote' },
+  { name: 'Payment Links', href: '/payments', icon: 'link' },
   { name: 'Customers', href: '/customers', icon: 'users' },
 ];
 
