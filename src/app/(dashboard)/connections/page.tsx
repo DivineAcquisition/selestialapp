@@ -19,63 +19,129 @@ import {
   Copy, 
   RefreshCw, 
   Check, 
-  X, 
-  ExternalLink, 
   Loader2,
   Webhook,
   Clock,
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Link2,
   Zap,
   MessageSquare,
   CreditCard,
-  Calendar,
-  Phone,
-  Mail,
-  Settings,
   ArrowRight,
   Sparkles,
   Building2,
+  Globe,
 } from 'lucide-react';
 import { format } from 'date-fns';
+
+// Company Logo Components
+const ServiceTitanLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#FF6B35"/>
+    <path d="M12 12h16v4H12zM12 20h12v4H12zM12 28h8v4H12z" fill="white"/>
+  </svg>
+);
+
+const HousecallProLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#00A651"/>
+    <path d="M20 8L8 18v14h8v-8h8v8h8V18L20 8z" fill="white"/>
+  </svg>
+);
+
+const JobberLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#7C3AED"/>
+    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold">J</text>
+  </svg>
+);
+
+const ServiceM8Logo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#00B4D8"/>
+    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">M8</text>
+  </svg>
+);
+
+const TwilioLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#F22F46"/>
+    <circle cx="14" cy="14" r="4" fill="white"/>
+    <circle cx="26" cy="14" r="4" fill="white"/>
+    <circle cx="14" cy="26" r="4" fill="white"/>
+    <circle cx="26" cy="26" r="4" fill="white"/>
+  </svg>
+);
+
+const GoogleBusinessLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#4285F4"/>
+    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold">G</text>
+  </svg>
+);
+
+const StripeLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#635BFF"/>
+    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold">S</text>
+  </svg>
+);
+
+const QuickBooksLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#2CA01C"/>
+    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">QB</text>
+  </svg>
+);
+
+const ZapierLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#FF4A00"/>
+    <path d="M20 8l4 8h-8l4-8zM20 32l-4-8h8l-4 8zM8 20l8-4v8l-8-4zM32 20l-8 4v-8l8 4z" fill="white"/>
+  </svg>
+);
+
+const MakeLogo = () => (
+  <svg viewBox="0 0 40 40" className="w-8 h-8">
+    <rect width="40" height="40" rx="8" fill="#6D00CC"/>
+    <circle cx="20" cy="20" r="10" fill="none" stroke="white" strokeWidth="3"/>
+    <circle cx="20" cy="20" r="4" fill="white"/>
+  </svg>
+);
 
 const integrationCategories = [
   {
     id: 'field-service',
-    name: 'Field Service',
+    name: 'Field Service Management',
     icon: Building2,
     integrations: [
       { 
-        id: 'jobber', 
-        name: 'Jobber', 
-        description: 'Sync customers, jobs, and invoices',
-        logo: '🔧',
-        color: 'bg-blue-500',
+        id: 'servicetitan', 
+        name: 'ServiceTitan', 
+        description: 'Enterprise field management with advanced scheduling',
+        logo: ServiceTitanLogo,
         popular: true,
       },
       { 
         id: 'housecall_pro', 
         name: 'Housecall Pro', 
-        description: 'Connect your HCP account',
-        logo: '🏠',
-        color: 'bg-orange-500',
+        description: 'All-in-one home service business solution',
+        logo: HousecallProLogo,
         popular: true,
       },
       { 
-        id: 'servicetitan', 
-        name: 'ServiceTitan', 
-        description: 'Enterprise field management',
-        logo: '⚡',
-        color: 'bg-purple-500',
+        id: 'jobber', 
+        name: 'Jobber', 
+        description: 'Sync customers, jobs, and invoices automatically',
+        logo: JobberLogo,
+        popular: true,
       },
       { 
         id: 'servicem8', 
         name: 'ServiceM8', 
-        description: 'Job management platform',
-        logo: '📱',
-        color: 'bg-green-500',
+        description: 'Job management for trades and service businesses',
+        logo: ServiceM8Logo,
       },
     ],
   },
@@ -87,38 +153,34 @@ const integrationCategories = [
       { 
         id: 'twilio', 
         name: 'Twilio', 
-        description: 'SMS and voice calls',
-        logo: '📞',
-        color: 'bg-red-500',
+        description: 'SMS messaging and voice calls',
+        logo: TwilioLogo,
         connected: true,
       },
       { 
         id: 'google_business', 
         name: 'Google Business', 
-        description: 'Reviews and messages',
-        logo: '🔍',
-        color: 'bg-blue-400',
+        description: 'Manage reviews and messages',
+        logo: GoogleBusinessLogo,
       },
     ],
   },
   {
     id: 'payments',
-    name: 'Payments',
+    name: 'Payments & Accounting',
     icon: CreditCard,
     integrations: [
       { 
         id: 'stripe', 
         name: 'Stripe', 
-        description: 'Accept payments',
-        logo: '💳',
-        color: 'bg-indigo-500',
+        description: 'Accept payments via payment links',
+        logo: StripeLogo,
       },
       { 
         id: 'quickbooks', 
         name: 'QuickBooks', 
-        description: 'Accounting sync',
-        logo: '📊',
-        color: 'bg-green-600',
+        description: 'Sync invoices and payments',
+        logo: QuickBooksLogo,
       },
     ],
   },
@@ -130,17 +192,15 @@ const integrationCategories = [
       { 
         id: 'zapier', 
         name: 'Zapier', 
-        description: 'Connect 5000+ apps',
-        logo: '⚡',
-        color: 'bg-orange-400',
+        description: 'Connect to 5000+ apps and automate workflows',
+        logo: ZapierLogo,
         popular: true,
       },
       { 
         id: 'make', 
-        name: 'Make (Integromat)', 
-        description: 'Advanced automation',
-        logo: '🔄',
-        color: 'bg-purple-400',
+        name: 'Make', 
+        description: 'Advanced automation scenarios',
+        logo: MakeLogo,
       },
     ],
   },
@@ -159,7 +219,7 @@ export default function ConnectionsPage() {
     getWebhookUrl,
     refetch 
   } = useWebhookConfig();
-  const { integrations, getIntegration, markAsConnected, disconnectIntegration } = useIntegrations();
+  const { getIntegration, markAsConnected, disconnectIntegration } = useIntegrations();
   
   const [activeTab, setActiveTab] = useState('integrations');
   const [copied, setCopied] = useState(false);
@@ -222,7 +282,7 @@ export default function ConnectionsPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
-            <Link2 className="h-6 w-6 text-white" />
+            <Globe className="h-6 w-6 text-white" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Integrations & Connections</h2>
@@ -269,6 +329,7 @@ export default function ConnectionsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {category.integrations.map((integration) => {
                     const isConnected = getIntegration(integration.id)?.status === 'connected' || ('connected' in integration && integration.connected);
+                    const LogoComponent = integration.logo;
                     
                     return (
                       <Card 
@@ -280,17 +341,16 @@ export default function ConnectionsPage() {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
-                              integration.color
-                            )}>
-                              {integration.logo}
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white shadow-sm border">
+                              <LogoComponent />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <h4 className="font-semibold">{integration.name}</h4>
                                 {'popular' in integration && integration.popular && (
-                                  <Badge variant="secondary" className="text-[10px]">Popular</Badge>
+                                  <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700 border-0">
+                                    Popular
+                                  </Badge>
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground">

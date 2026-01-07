@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import SequenceList from '@/components/sequences/SequenceList';
 import SequenceEditor from '@/components/sequences/SequenceEditor';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useSequences } from '@/hooks/useSequences';
-import { useRetentionSequences } from '@/hooks/useRetentionSequences';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import UpgradePrompt from '@/components/shared/UpgradePrompt';
 import { 
@@ -27,72 +26,88 @@ import {
   Sparkles, 
   MessageSquare, 
   Clock, 
-  Target,
   Heart,
   RefreshCw,
   TrendingUp,
   Gift,
-  Mail,
   Bot,
   Wand2,
+  Search,
+  Filter,
+  LayoutGrid,
+  List,
+  Play,
+  Pause,
+  Crown,
+  Copy,
+  MoreHorizontal,
 } from 'lucide-react';
-import type { Tables, TablesInsert } from '@/integrations/supabase/types';
-import type { Sequence } from '@/types';
+import type { TablesInsert } from '@/integrations/supabase/types';
+import type { Sequence, SequenceStep } from '@/types';
 import { cn } from '@/lib/utils';
 
-type SequenceRow = Tables<'sequences'>;
 
 const sequenceTemplates = [
   {
     id: 'quick-follow-up',
-    name: '⚡ Quick Follow-Up',
+    name: 'Quick Follow-Up',
+    emoji: '⚡',
     description: '3 messages over 5 days to convert quotes fast',
     type: 'quote',
     steps: 3,
     duration: '5 days',
     popular: true,
-    icon: Zap,
-    color: 'text-amber-600 bg-amber-50',
+    color: 'bg-amber-500',
   },
   {
     id: 'gentle-nurture',
-    name: '🌱 Gentle Nurture',
+    name: 'Gentle Nurture',
+    emoji: '🌱',
     description: 'Soft touch sequence over 2 weeks',
     type: 'quote',
     steps: 5,
     duration: '14 days',
-    icon: Heart,
-    color: 'text-emerald-600 bg-emerald-50',
+    color: 'bg-emerald-500',
   },
   {
     id: 'urgency-builder',
-    name: '🔥 Urgency Builder',
+    name: 'Urgency Builder',
+    emoji: '🔥',
     description: 'Create FOMO with limited availability',
     type: 'quote',
     steps: 4,
     duration: '4 days',
-    icon: TrendingUp,
-    color: 'text-red-600 bg-red-50',
+    color: 'bg-red-500',
   },
   {
     id: 'retention-welcome',
-    name: '👋 Welcome & Thank You',
+    name: 'Welcome & Thank You',
+    emoji: '👋',
     description: 'Post-job follow-up for reviews & referrals',
     type: 'retention',
     steps: 3,
     duration: '30 days',
-    icon: Gift,
-    color: 'text-purple-600 bg-purple-50',
+    color: 'bg-purple-500',
   },
   {
     id: 'retention-reactivation',
-    name: '🔄 Customer Reactivation',
+    name: 'Customer Reactivation',
+    emoji: '🔄',
     description: 'Win back past customers',
     type: 'retention',
     steps: 4,
     duration: '90 days',
-    icon: RefreshCw,
-    color: 'text-blue-600 bg-blue-50',
+    color: 'bg-blue-500',
+  },
+  {
+    id: 'seasonal-promo',
+    name: 'Seasonal Promo',
+    emoji: '🎁',
+    description: 'Holiday and seasonal offers',
+    type: 'retention',
+    steps: 3,
+    duration: '7 days',
+    color: 'bg-pink-500',
   },
 ];
 
@@ -109,7 +124,9 @@ export default function SequencesPage() {
   const { hasFeature } = useFeatureGate();
   const hasAIBuilder = hasFeature('aiSequenceBuilder');
   
-  const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'quote' | 'retention'>('all');
   const [showEditor, setShowEditor] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [editingSequence, setEditingSequence] = useState<Sequence | null>(null);
@@ -117,8 +134,11 @@ export default function SequencesPage() {
   const [deleting, setDeleting] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
   
+  // Extended sequence type with trigger_type
+  type ExtendedSequence = Sequence & { trigger_type?: string };
+  
   // Transform DB sequences to the Sequence type expected by components
-  const transformedSequences = sequences.map(s => ({
+  const transformedSequences: ExtendedSequence[] = sequences.map(s => ({
     id: s.id,
     created_at: s.created_at,
     updated_at: s.updated_at,
@@ -127,17 +147,39 @@ export default function SequencesPage() {
     description: s.description || undefined,
     is_active: s.is_active,
     is_default: s.is_default,
-    steps: Array.isArray(s.steps) ? s.steps as any : [],
-    trigger_type: ((s as any).trigger_type as string) || 'quote_created',
+    steps: Array.isArray(s.steps) ? (s.steps as unknown as SequenceStep[]) : [],
+    trigger_type: ((s as Record<string, unknown>).trigger_type as string) || 'quote_created',
   }));
   
-  // Filter sequences based on tab
-  const filteredSequences = transformedSequences.filter(s => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'quote') return s.trigger_type === 'quote_created' || s.trigger_type === 'quote_pending';
-    if (activeTab === 'retention') return s.trigger_type === 'job_completed' || s.trigger_type === 'retention';
-    return true;
-  }) as Sequence[];
+  // Filter sequences based on search and type
+  const filteredSequences = useMemo(() => {
+    return transformedSequences.filter(s => {
+      const matchesSearch = !searchQuery || 
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.description && s.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const triggerType = s.trigger_type || 'quote_created';
+      const matchesType = filterType === 'all' ||
+        (filterType === 'quote' && (triggerType === 'quote_created' || triggerType === 'quote_pending')) ||
+        (filterType === 'retention' && (triggerType === 'job_completed' || triggerType === 'retention'));
+      
+      return matchesSearch && matchesType;
+    });
+  }, [transformedSequences, searchQuery, filterType]);
+
+  // Stats
+  const stats = {
+    total: transformedSequences.length,
+    active: transformedSequences.filter(s => s.is_active).length,
+    quoteFollowUp: transformedSequences.filter(s => {
+      const t = s.trigger_type || 'quote_created';
+      return t === 'quote_created' || t === 'quote_pending';
+    }).length,
+    retention: transformedSequences.filter(s => {
+      const t = s.trigger_type || 'quote_created';
+      return t === 'job_completed' || t === 'retention';
+    }).length,
+  };
   
   const handleCreate = () => {
     setShowTemplates(true);
@@ -145,8 +187,6 @@ export default function SequencesPage() {
 
   const handleSelectTemplate = async (templateId: string) => {
     setShowTemplates(false);
-    // For now, just open editor with template data
-    // In future, could pre-fill with template steps
     setEditingSequence(null);
     setShowEditor(true);
   };
@@ -154,7 +194,6 @@ export default function SequencesPage() {
   const handleGenerateWithAI = async () => {
     if (!hasAIBuilder) return;
     setGeneratingAI(true);
-    // Simulated AI generation - would call API
     setTimeout(() => {
       setGeneratingAI(false);
       setShowTemplates(false);
@@ -209,7 +248,7 @@ export default function SequencesPage() {
   
   if (loading) {
     return (
-      <Layout title="AI Sequence Builder">
+      <Layout title="Sequences">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -218,32 +257,137 @@ export default function SequencesPage() {
   }
   
   return (
-    <Layout title="AI Sequence Builder">
+    <Layout title="Sequences">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
-              <Bot className="h-6 w-6 text-white" />
+        {/* Header with Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary rounded-lg">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-sm text-muted-foreground">Total Sequences</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                Automated Sequences
-                <Badge variant="secondary" className="text-xs font-normal">
-                  {transformedSequences.filter(s => s.is_active).length} active
-                </Badge>
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Build smart follow-up workflows with AI assistance
-              </p>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Play className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-emerald-600">{stats.active}</p>
+                <p className="text-sm text-muted-foreground">Active</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <MessageSquare className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-amber-600">{stats.quoteFollowUp}</p>
+                <p className="text-sm text-muted-foreground">Quote Follow-ups</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Heart className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-600">{stats.retention}</p>
+                <p className="text-sm text-muted-foreground">Retention</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* AI Builder Promo */}
+        {!hasAIBuilder && (
+          <UpgradePrompt 
+            feature="AI Sequence Builder"
+            description="Let AI create optimized follow-up sequences tailored to your business"
+            variant="banner"
+          />
+        )}
+
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search sequences..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center border rounded-lg">
+              <button
+                onClick={() => setFilterType('all')}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium transition-colors",
+                  filterType === 'all' ? 'bg-primary text-white rounded-l-lg' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterType('quote')}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium transition-colors",
+                  filterType === 'quote' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Quote
+              </button>
+              <button
+                onClick={() => setFilterType('retention')}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium transition-colors rounded-r-lg",
+                  filterType === 'retention' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Retention
+              </button>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
+            <div className="flex items-center border rounded-lg">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={cn(
+                  "p-2 transition-colors rounded-l-lg",
+                  viewMode === 'grid' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  "p-2 transition-colors rounded-r-lg",
+                  viewMode === 'list' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+            
             {hasAIBuilder && (
               <Button variant="outline" className="gap-2" onClick={handleGenerateWithAI}>
                 <Wand2 className="h-4 w-4" />
-                Generate with AI
+                AI Generate
               </Button>
             )}
             <Button onClick={handleCreate} className="gap-2">
@@ -252,49 +396,115 @@ export default function SequencesPage() {
             </Button>
           </div>
         </div>
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-muted/50">
-            <TabsTrigger value="all" className="gap-2">
-              <Zap className="h-4 w-4" />
-              All Sequences
-            </TabsTrigger>
-            <TabsTrigger value="quote" className="gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Quote Follow-ups
-            </TabsTrigger>
-            <TabsTrigger value="retention" className="gap-2">
-              <Heart className="h-4 w-4" />
-              Retention
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* AI Builder Promo (if not on Growth) */}
-        {!hasAIBuilder && (
-          <UpgradePrompt 
-            feature="AI Sequence Builder"
-            description="Let AI create optimized follow-up sequences tailored to your business"
-            variant="banner"
-          />
-        )}
         
         {filteredSequences.length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">No sequences yet</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              {searchQuery || filterType !== 'all' ? 'No sequences found' : 'No sequences yet'}
+            </h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-md">
-              Create automated follow-up sequences to nurture leads and retain customers without lifting a finger.
+              {searchQuery || filterType !== 'all' 
+                ? 'Try adjusting your search or filters' 
+                : 'Create automated follow-up sequences to nurture leads and retain customers.'}
             </p>
-            <Button onClick={handleCreate} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Your First Sequence
-            </Button>
+            {!searchQuery && filterType === 'all' && (
+              <Button onClick={handleCreate} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Your First Sequence
+              </Button>
+            )}
           </Card>
+        ) : viewMode === 'grid' ? (
+          /* Grid View */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredSequences.map((sequence) => {
+              const smsCount = sequence.steps.filter(s => s.channel === 'sms').length;
+              const emailCount = sequence.steps.filter(s => s.channel === 'email').length;
+              const totalDays = sequence.steps.reduce((max, step) => 
+                Math.max(max, step.delay_days), 0
+              );
+              const triggerType = sequence.trigger_type || 'quote_created';
+              const isQuoteType = triggerType === 'quote_created' || triggerType === 'quote_pending';
+              
+              return (
+                <Card 
+                  key={sequence.id} 
+                  className={cn(
+                    "p-5 hover:shadow-md transition-all cursor-pointer group",
+                    !sequence.is_active && "opacity-60"
+                  )}
+                  onClick={() => handleEdit(sequence)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center text-lg",
+                        isQuoteType ? "bg-amber-100" : "bg-purple-100"
+                      )}>
+                        {isQuoteType ? '💬' : '❤️'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-foreground">{sequence.name}</h3>
+                          {sequence.is_default && (
+                            <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700 border-0 text-[10px]">
+                              <Crown className="h-2.5 w-2.5" />
+                              Default
+                            </Badge>
+                          )}
+                        </div>
+                        <Badge variant="outline" className="text-[10px] mt-1">
+                          {isQuoteType ? 'Quote Follow-up' : 'Retention'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleActive(sequence.id, !sequence.is_active);
+                      }}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-colors",
+                        sequence.is_active 
+                          ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200" 
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      )}
+                    >
+                      {sequence.is_active ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  
+                  {sequence.description && (
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {sequence.description}
+                    </p>
+                  )}
+                  
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground pt-3 border-t">
+                    <span className="flex items-center gap-1">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      {smsCount} SMS
+                    </span>
+                    {emailCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        📧 {emailCount} Email
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {totalDays}d
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
         ) : (
+          /* List View */
           <SequenceList
             sequences={filteredSequences}
             onEdit={handleEdit}
@@ -307,24 +517,24 @@ export default function SequencesPage() {
       
       {/* Template Selector Dialog */}
       <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              Choose a Starting Point
+              Choose a Template
             </DialogTitle>
             <DialogDescription>
-              Select a template or let AI build one for you
+              Select a pre-built template or start from scratch
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             {/* AI Option */}
             {hasAIBuilder && (
               <button
                 onClick={handleGenerateWithAI}
                 disabled={generatingAI}
-                className="w-full p-4 bg-gradient-to-r from-primary/10 to-[#9D96FF]/10 border border-primary/20 rounded-xl hover:border-primary/40 transition-all text-left group"
+                className="w-full p-5 bg-gradient-to-r from-primary/10 to-[#9D96FF]/10 border border-primary/20 rounded-xl hover:border-primary/40 transition-all text-left group"
               >
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl text-white">
@@ -339,7 +549,7 @@ export default function SequencesPage() {
                       ✨ Generate with AI
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Tell us your goal and we'll create the perfect sequence
+                      Describe your goal and let AI create the perfect sequence
                     </p>
                   </div>
                   <Badge className="bg-primary/10 text-primary border-0">
@@ -349,44 +559,86 @@ export default function SequencesPage() {
               </button>
             )}
 
-            {/* Templates Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {sequenceTemplates.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => handleSelectTemplate(template.id)}
-                  className="p-4 bg-background border rounded-xl hover:border-primary/40 hover:shadow-md transition-all text-left group"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={cn("p-2 rounded-lg", template.color)}>
-                      <template.icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-foreground text-sm group-hover:text-primary transition-colors">
-                          {template.name}
-                        </h4>
-                        {template.popular && (
-                          <Badge variant="secondary" className="text-[10px]">Popular</Badge>
-                        )}
+            {/* Quote Follow-up Templates */}
+            <div>
+              <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                QUOTE FOLLOW-UP
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {sequenceTemplates.filter(t => t.type === 'quote').map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => handleSelectTemplate(template.id)}
+                    className="p-4 bg-background border rounded-xl hover:border-primary/40 hover:shadow-sm transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-xl", template.color, "text-white")}>
+                        {template.emoji}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {template.description}
-                      </p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MessageSquare className="h-3 w-3" />
-                          {template.steps} steps
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {template.duration}
-                        </span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h5 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                            {template.name}
+                          </h5>
+                          {template.popular && (
+                            <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700 border-0">Popular</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {template.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+                          <span>{template.steps} steps</span>
+                          <span>•</span>
+                          <span>{template.duration}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Retention Templates */}
+            <div>
+              <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                RETENTION & ENGAGEMENT
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {sequenceTemplates.filter(t => t.type === 'retention').map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => handleSelectTemplate(template.id)}
+                    className="p-4 bg-background border rounded-xl hover:border-primary/40 hover:shadow-sm transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-xl", template.color, "text-white")}>
+                        {template.emoji}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h5 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                            {template.name}
+                          </h5>
+                          {template.popular && (
+                            <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700 border-0">Popular</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {template.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+                          <span>{template.steps} steps</span>
+                          <span>•</span>
+                          <span>{template.duration}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Start Blank */}

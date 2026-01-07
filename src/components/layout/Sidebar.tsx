@@ -15,7 +15,6 @@ import {
   QuoteIcon,
   CustomerIcon,
   SequenceIcon,
-  RetentionIcon,
   CampaignIcon,
   AnalyticsIcon,
   ConnectionIcon,
@@ -29,7 +28,6 @@ const navigation = [
   { name: 'Quotes', href: '/quotes', icon: QuoteIcon },
   { name: 'Customers', href: '/customers', icon: CustomerIcon },
   { name: 'Sequences', href: '/sequences', icon: SequenceIcon },
-  { name: 'Retention', href: '/retention', icon: RetentionIcon },
   { name: 'Campaigns', href: '/campaigns', icon: CampaignIcon },
   { name: 'Analytics', href: '/analytics', icon: AnalyticsIcon },
 ];

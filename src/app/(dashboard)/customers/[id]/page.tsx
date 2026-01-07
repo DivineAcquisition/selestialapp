@@ -48,7 +48,7 @@ import {
   Clock,
   RefreshCw,
   User,
-  Star,
+  ThumbsUp,
 } from 'lucide-react';
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -187,7 +187,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               {sendingReview ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <Star className="h-4 w-4 mr-2" />
+                <ThumbsUp className="h-4 w-4 mr-2" />
               )}
               Request Review
             </Button>

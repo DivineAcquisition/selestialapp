@@ -14,6 +14,8 @@ import PaymentSettings from '@/components/settings/PaymentSettings';
 import AISettings from '@/components/settings/AISettings';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness, useAuth } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -24,67 +26,19 @@ import {
   Phone, 
   Send, 
   Loader2, 
-  Star, 
+  ThumbsUp, 
   CreditCard, 
   Sparkles,
-  ChevronRight,
   Building2,
+  Settings2,
+  Palette,
   Shield,
-  Zap
+  Globe,
+  Zap,
+  Mail,
+  MessageSquare,
 } from 'lucide-react';
 import type { Business } from '@/types';
-
-const settingsSections = [
-  {
-    id: 'profile',
-    label: 'Business Profile',
-    icon: Building2,
-    description: 'Your business information',
-  },
-  {
-    id: 'phone',
-    label: 'Phone Setup',
-    icon: Phone,
-    description: 'SMS & calling configuration',
-  },
-  {
-    id: 'payments',
-    label: 'Payments',
-    icon: CreditCard,
-    description: 'Stripe Connect & billing',
-  },
-  {
-    id: 'ai',
-    label: 'AI Assistant',
-    icon: Sparkles,
-    description: 'Smart replies & automation',
-    highlight: true,
-  },
-  {
-    id: 'quote-alerts',
-    label: 'Quote Notifications',
-    icon: Send,
-    description: 'SMS & email alerts for quotes',
-  },
-  {
-    id: 'reviews',
-    label: 'Review Requests',
-    icon: Star,
-    description: 'Automated review collection',
-  },
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: Bell,
-    description: 'Alert preferences',
-  },
-  {
-    id: 'hours',
-    label: 'Business Hours',
-    icon: Clock,
-    description: 'Operating schedule',
-  },
-];
 
 function SettingsContent() {
   const router = useRouter();
@@ -92,8 +46,8 @@ function SettingsContent() {
   const { signOut } = useAuth();
   const { business, loading, updateBusiness } = useBusiness();
   
-  const defaultTab = searchParams.get('tab') || 'profile';
-  const [activeSection, setActiveSection] = useState(defaultTab);
+  const defaultTab = searchParams.get('tab') || 'general';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   
   const [notificationSettings, setNotificationSettings] = useState({
     emailOnWon: true,
@@ -196,129 +150,187 @@ function SettingsContent() {
       </Layout>
     );
   }
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'profile':
-        return (
-          <div className="space-y-6">
-            <BusinessProfileForm business={transformedBusiness} onSave={handleSaveBusiness} />
-            <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
-          </div>
-        );
-      case 'phone':
-        return <PhoneSetup />;
-      case 'payments':
-        return <PaymentSettings />;
-      case 'ai':
-        return <AISettings />;
-      case 'quote-alerts':
-        return <QuoteNotificationSettings />;
-      case 'reviews':
-        return <ReviewSettings />;
-      case 'notifications':
-        return <NotificationSettings settings={notificationSettings} onChange={handleNotificationChange} />;
-      case 'hours':
-        return <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />;
-      default:
-        return null;
-    }
-  };
-
-  const currentSection = settingsSections.find(s => s.id === activeSection);
   
   return (
     <Layout title="Settings">
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Navigation */}
-        <div className="lg:w-72 flex-shrink-0">
-          <Card className="p-2 sticky top-20">
-            <nav className="space-y-1">
-              {settingsSections.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
-                
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all duration-200",
-                      isActive 
-                        ? "bg-primary text-primary-foreground" 
-                        : "hover:bg-secondary",
-                      section.highlight && !isActive && "feature-card border-0"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                      isActive 
-                        ? "bg-primary-foreground/20" 
-                        : section.highlight 
-                          ? "bg-primary/10" 
-                          : "bg-muted"
-                    )}>
-                      <Icon className={cn(
-                        "w-5 h-5",
-                        isActive 
-                          ? "text-primary-foreground" 
-                          : section.highlight 
-                            ? "text-primary" 
-                            : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={cn(
-                        "font-medium text-sm truncate",
-                        !isActive && "text-foreground"
-                      )}>
-                        {section.label}
-                      </p>
-                      <p className={cn(
-                        "text-xs truncate",
-                        isActive ? "text-primary-foreground/70" : "text-muted-foreground"
-                      )}>
-                        {section.description}
-                      </p>
-                    </div>
-                    <ChevronRight className={cn(
-                      "w-4 h-4 flex-shrink-0 transition-transform",
-                      isActive ? "text-primary-foreground" : "text-muted-foreground",
-                      isActive && "translate-x-0.5"
-                    )} />
-                  </button>
-                );
-              })}
-            </nav>
-          </Card>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
+            <Settings2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold">Settings</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your business preferences and configurations
+            </p>
+          </div>
         </div>
-        
-        {/* Content Area */}
-        <div className="flex-1 min-w-0">
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-1">
-              {currentSection && (
-                <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center",
-                  currentSection.highlight ? "bg-primary/10 glow-sm" : "bg-muted"
-                )}>
-                  <currentSection.icon className={cn(
-                    "w-5 h-5",
-                    currentSection.highlight ? "text-primary" : "text-muted-foreground"
-                  )} />
+
+        {/* Tabs Layout */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-muted/50 p-1 h-auto flex-wrap">
+            <TabsTrigger value="general" className="gap-2 data-[state=active]:bg-white">
+              <Building2 className="h-4 w-4" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-2 data-[state=active]:bg-white">
+              <Sparkles className="h-4 w-4" />
+              AI Assistant
+              <Badge variant="secondary" className="text-[10px] ml-1 bg-primary/10 text-primary border-0">
+                New
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="communications" className="gap-2 data-[state=active]:bg-white">
+              <MessageSquare className="h-4 w-4" />
+              Communications
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2 data-[state=active]:bg-white">
+              <CreditCard className="h-4 w-4" />
+              Payments
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-white">
+              <Bell className="h-4 w-4" />
+              Notifications
+            </TabsTrigger>
+          </TabsList>
+
+          {/* General Tab */}
+          <TabsContent value="general" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Business Profile */}
+              <div className="lg:col-span-2">
+                <BusinessProfileForm business={transformedBusiness} onSave={handleSaveBusiness} />
+              </div>
+              
+              {/* Business Hours */}
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Business Hours</h3>
+                    <p className="text-sm text-muted-foreground">Set when sequences can send messages</p>
+                  </div>
                 </div>
-              )}
-              <div>
-                <h2 className="text-xl font-semibold">{currentSection?.label}</h2>
-                <p className="text-sm text-muted-foreground">{currentSection?.description}</p>
+                <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />
+              </Card>
+
+              {/* Account */}
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Shield className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Account</h3>
+                    <p className="text-sm text-muted-foreground">Manage your account settings</p>
+                  </div>
+                </div>
+                <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* AI Tab */}
+          <TabsContent value="ai" className="mt-6">
+            <AISettings />
+          </TabsContent>
+
+          {/* Communications Tab */}
+          <TabsContent value="communications" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Phone Setup */}
+              <Card className="p-0 overflow-hidden lg:col-span-2">
+                <div className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Phone & SMS Setup</h3>
+                      <p className="text-sm text-muted-foreground">Configure Twilio for SMS messaging</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <PhoneSetup />
+                </div>
+              </Card>
+              
+              {/* Quote Notifications */}
+              <div className="lg:col-span-2">
+                <QuoteNotificationSettings />
+              </div>
+              
+              {/* Review Requests */}
+              <div className="lg:col-span-2">
+                <ReviewSettings />
               </div>
             </div>
+          </TabsContent>
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="mt-6">
+            <PaymentSettings />
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="mt-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <Bell className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Notification Preferences</h3>
+                  <p className="text-sm text-muted-foreground">Choose how you want to be notified</p>
+                </div>
+              </div>
+              <NotificationSettings settings={notificationSettings} onChange={handleNotificationChange} />
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Quick Links */}
+        <Card className="p-6 bg-muted/30">
+          <h3 className="font-semibold mb-4">Quick Links</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button 
+              onClick={() => router.push('/billing')}
+              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+            >
+              <CreditCard className="h-5 w-5 text-primary mb-2" />
+              <p className="font-medium text-sm">Billing</p>
+              <p className="text-xs text-muted-foreground">Manage subscription</p>
+            </button>
+            <button 
+              onClick={() => router.push('/connections')}
+              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+            >
+              <Globe className="h-5 w-5 text-primary mb-2" />
+              <p className="font-medium text-sm">Integrations</p>
+              <p className="text-xs text-muted-foreground">Connect your tools</p>
+            </button>
+            <button 
+              onClick={() => router.push('/sequences')}
+              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+            >
+              <Zap className="h-5 w-5 text-primary mb-2" />
+              <p className="font-medium text-sm">Sequences</p>
+              <p className="text-xs text-muted-foreground">Manage automations</p>
+            </button>
+            <button 
+              onClick={() => router.push('/analytics')}
+              className="p-4 bg-background rounded-xl border hover:border-primary/40 hover:shadow-sm transition-all text-left"
+            >
+              <Mail className="h-5 w-5 text-primary mb-2" />
+              <p className="font-medium text-sm">Analytics</p>
+              <p className="text-xs text-muted-foreground">View performance</p>
+            </button>
           </div>
-          
-          <div className="animate-fade-in">
-            {renderContent()}
-          </div>
-        </div>
+        </Card>
       </div>
     </Layout>
   );
