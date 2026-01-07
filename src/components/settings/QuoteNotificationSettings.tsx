@@ -1,10 +1,12 @@
+"use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -189,14 +191,14 @@ export default function QuoteNotificationSettings() {
   ];
 
   return (
-    <Card className="p-6">
+    <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="p-2.5 bg-primary/10 rounded-xl">
           <Send className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Quote Notifications</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="font-semibold text-gray-900">Quote Notifications</h3>
+          <p className="text-sm text-gray-500">
             Automatically notify customers when you create a quote
           </p>
         </div>
@@ -205,53 +207,57 @@ export default function QuoteNotificationSettings() {
       <div className="space-y-6">
         {/* Toggles */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-muted-foreground" />
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                <Mail className="h-5 w-5 text-gray-500" />
+              </div>
               <div>
-                <p className="font-medium text-foreground">Send Email</p>
-                <p className="text-sm text-muted-foreground">Branded quote email</p>
+                <p className="font-medium text-gray-900">Send Email</p>
+                <p className="text-sm text-gray-500">Branded quote email</p>
               </div>
             </div>
-            <Switch checked={sendEmail} onCheckedChange={setSendEmail} />
+            <Switch checked={sendEmail} onCheckedChange={setSendEmail} className="data-[state=checked]:bg-primary" />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-muted-foreground" />
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                <MessageSquare className="h-5 w-5 text-gray-500" />
+              </div>
               <div>
-                <p className="font-medium text-foreground">Send SMS</p>
-                <p className="text-sm text-muted-foreground">Quick text notification</p>
+                <p className="font-medium text-gray-900">Send SMS</p>
+                <p className="text-sm text-gray-500">Quick text notification</p>
               </div>
             </div>
-            <Switch checked={sendSms} onCheckedChange={setSendSms} />
+            <Switch checked={sendSms} onCheckedChange={setSendSms} className="data-[state=checked]:bg-primary" />
           </div>
         </div>
 
         {/* Company Logo */}
-        <div className="space-y-3">
-          <Label className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
+        <Field name="logo">
+          <FieldLabel className="flex items-center gap-2">
+            <Image className="h-4 w-4 text-gray-400" />
             Company Logo
-          </Label>
+          </FieldLabel>
           <div className="flex items-center gap-4">
             {logoUrl ? (
               <div className="relative">
                 <img
                   src={logoUrl}
                   alt="Company logo"
-                  className="w-16 h-16 rounded-lg object-cover border border-border"
+                  className="w-16 h-16 rounded-xl object-cover border border-gray-200"
                 />
                 <button
                   onClick={handleRemoveLogo}
-                  className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 >
                   <X className="h-3 w-3" />
                 </button>
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
-                <Image className="h-6 w-6 text-muted-foreground" />
+              <div className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                <Image className="h-6 w-6 text-gray-400" />
               </div>
             )}
             <div>
@@ -267,7 +273,7 @@ export default function QuoteNotificationSettings() {
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="gap-2"
+                className="gap-2 rounded-xl"
               >
                 {uploading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -276,96 +282,94 @@ export default function QuoteNotificationSettings() {
                 )}
                 {logoUrl ? 'Change Logo' : 'Upload Logo'}
               </Button>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 PNG or JPG, max 2MB. Appears in quote emails.
               </p>
             </div>
           </div>
-        </div>
+        </Field>
 
         {/* Brand Color */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
+        <Field name="color">
+          <FieldLabel className="flex items-center gap-2">
+            <Palette className="h-4 w-4 text-gray-400" />
             Brand Color
-          </Label>
+          </FieldLabel>
           <div className="flex items-center gap-3">
             <input
               type="color"
               value={companyColor}
               onChange={(e) => setCompanyColor(e.target.value)}
-              className="w-12 h-10 rounded-lg border border-border cursor-pointer"
+              className="w-12 h-10 rounded-xl border border-gray-200 cursor-pointer"
             />
             <Input
               value={companyColor}
               onChange={(e) => setCompanyColor(e.target.value)}
-              className="w-32"
+              className="w-32 rounded-xl"
               placeholder="#4F46E5"
             />
-            <span className="text-sm text-muted-foreground">Used in email template</span>
           </div>
-        </div>
+          <FieldDescription>Used in your email template</FieldDescription>
+        </Field>
 
         {/* Email Subject */}
         {sendEmail && (
-          <div className="space-y-2">
-            <Label htmlFor="emailSubject">Email Subject</Label>
+          <Field name="subject">
+            <FieldLabel>Email Subject</FieldLabel>
             <Input
-              id="emailSubject"
               value={emailSubject}
               onChange={(e) => setEmailSubject(e.target.value)}
               placeholder="Your Quote from {{business_name}}"
+              className="rounded-xl"
             />
-          </div>
+          </Field>
         )}
 
         {/* Email Message */}
         {sendEmail && (
-          <div className="space-y-2">
-            <Label htmlFor="emailMessage">
-              Personal Message in Email (optional)
-            </Label>
+          <Field name="emailMessage">
+            <FieldLabel>Personal Message in Email</FieldLabel>
             <Textarea
-              id="emailMessage"
               value={emailMessage}
               onChange={(e) => setEmailMessage(e.target.value)}
               placeholder="Add a personal touch to your quote emails..."
               rows={3}
+              className="rounded-xl resize-none"
             />
-            <p className="text-xs text-muted-foreground">
-              This appears as a highlighted message in the email
-            </p>
-          </div>
+            <FieldDescription>
+              This appears as a highlighted message in the email (optional)
+            </FieldDescription>
+          </Field>
         )}
 
         {/* SMS Message */}
         {sendSms && (
-          <div className="space-y-2">
-            <Label htmlFor="smsMessage">SMS Message</Label>
+          <Field name="smsMessage">
+            <FieldLabel>SMS Message</FieldLabel>
             <Textarea
-              id="smsMessage"
               value={smsMessage}
               onChange={(e) => setSmsMessage(e.target.value)}
               placeholder="Hi {{customer_first_name}}, thanks for requesting a quote..."
               rows={3}
+              className="rounded-xl resize-none"
             />
-            <p className="text-xs text-muted-foreground">
+            <FieldDescription>
               {smsMessage.length}/160 characters (1 SMS segment)
-            </p>
-          </div>
+            </FieldDescription>
+          </Field>
         )}
 
         {/* Merge Fields Reference */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-100 dark:border-blue-900">
+        <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <Info className="w-4 h-4 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Available Merge Fields</p>
+              <p className="text-sm font-medium text-blue-900 mb-2">Available Merge Fields</p>
               <div className="flex flex-wrap gap-2">
                 {mergeFields.map((mf) => (
                   <span
                     key={mf.field}
-                    className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded font-mono"
+                    className="text-xs px-2.5 py-1.5 bg-white text-blue-700 rounded-lg font-mono border border-blue-100 cursor-help"
                     title={mf.desc}
                   >
                     {mf.field}
@@ -377,8 +381,8 @@ export default function QuoteNotificationSettings() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <div className="flex justify-end pt-4 border-t border-gray-100">
+          <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-xl">
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : saved ? (

@@ -1,8 +1,11 @@
+"use client";
+
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface BusinessHoursSettingsProps {
   settings: {
@@ -33,29 +36,30 @@ export default function BusinessHoursSettings({ settings, onChange }: BusinessHo
   };
   
   return (
-    <Card className="p-6">
+    <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="p-2.5 bg-primary/10 rounded-xl">
           <Clock className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Business Hours</h3>
-          <p className="text-sm text-muted-foreground">Control when follow-up messages are sent</p>
+          <h3 className="font-semibold text-gray-900">Business Hours</h3>
+          <p className="text-sm text-gray-500">Control when follow-up messages are sent</p>
         </div>
       </div>
       
       <div className="space-y-6">
         {/* Enable toggle */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
           <div>
-            <Label className="font-medium">Enable business hours</Label>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-gray-900">Enable business hours</p>
+            <p className="text-sm text-gray-500">
               Only send messages during your business hours
             </p>
           </div>
           <Switch
             checked={settings.enabled}
             onCheckedChange={(checked) => onChange({ ...settings, enabled: checked })}
+            className="data-[state=checked]:bg-primary"
           />
         </div>
         
@@ -63,52 +67,53 @@ export default function BusinessHoursSettings({ settings, onChange }: BusinessHo
           <>
             {/* Hours */}
             <div className="flex items-center gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-sm">Start Time</Label>
+              <Field name="start" className="flex-1">
+                <FieldLabel className="text-sm">Start Time</FieldLabel>
                 <Input
                   type="time"
                   value={settings.start}
                   onChange={(e) => onChange({ ...settings, start: e.target.value })}
-                  className="w-32"
+                  className="rounded-xl"
                 />
-              </div>
+              </Field>
               
-              <span className="text-muted-foreground pt-6">to</span>
+              <span className="text-gray-400 pt-6">to</span>
               
-              <div className="space-y-1.5">
-                <Label className="text-sm">End Time</Label>
+              <Field name="end" className="flex-1">
+                <FieldLabel className="text-sm">End Time</FieldLabel>
                 <Input
                   type="time"
                   value={settings.end}
                   onChange={(e) => onChange({ ...settings, end: e.target.value })}
-                  className="w-32"
+                  className="rounded-xl"
                 />
-              </div>
+              </Field>
             </div>
             
             {/* Days */}
-            <div className="space-y-3">
-              <Label>Active Days</Label>
+            <Field name="days">
+              <FieldLabel>Active Days</FieldLabel>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map((day) => (
                   <button
                     key={day.value}
                     type="button"
                     onClick={() => handleDayToggle(day.value)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={cn(
+                      "px-4 py-2 rounded-xl text-sm font-medium transition-all",
                       settings.days.includes(day.value)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
+                        ? 'bg-primary text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    )}
                   >
                     {day.label}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <FieldDescription>
                 Messages scheduled outside these hours will be sent at the next available time
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
           </>
         )}
       </div>

@@ -1,10 +1,12 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -95,21 +97,25 @@ export default function ReviewSettings() {
   ];
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="card-elevated rounded-2xl">
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-100">
+          <div className="p-2.5 rounded-xl bg-amber-100">
             <ThumbsUp className="h-5 w-5 text-amber-600" />
           </div>
-          <CardTitle>Review Requests</CardTitle>
+          <div>
+            <CardTitle className="text-gray-900">Review Requests</CardTitle>
+            <p className="text-sm text-gray-500">Collect customer reviews automatically</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Automatically ask customers for reviews
+          <span className="text-sm text-gray-500">
+            Auto-request
           </span>
           <Switch
             checked={autoRequest}
             onCheckedChange={setAutoRequest}
+            className="data-[state=checked]:bg-primary"
           />
         </div>
       </CardHeader>
@@ -117,17 +123,18 @@ export default function ReviewSettings() {
       <CardContent className="space-y-6">
         {/* Review Links */}
         <div className="space-y-4">
-          <p className="text-sm font-medium text-muted-foreground">REVIEW PLATFORM LINKS</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Review Platform Links</p>
           
           {/* Google */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+          <Field name="google_link">
+            <FieldLabel className="flex items-center gap-2">
               🔍 Google Review Link
-            </Label>
+            </FieldLabel>
             <Input
               value={googleLink}
               onChange={(e) => setGoogleLink(e.target.value)}
               placeholder="https://g.page/r/YOUR_REVIEW_LINK"
+              className="rounded-xl"
             />
             <a 
               href="https://support.google.com/business/answer/7035772"
@@ -138,38 +145,40 @@ export default function ReviewSettings() {
               How to get your Google review link
               <ExternalLink className="h-3 w-3" />
             </a>
-          </div>
+          </Field>
 
           {/* Yelp */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+          <Field name="yelp_link">
+            <FieldLabel className="flex items-center gap-2">
               ⭐ Yelp Review Link
-            </Label>
+            </FieldLabel>
             <Input
               value={yelpLink}
               onChange={(e) => setYelpLink(e.target.value)}
               placeholder="https://www.yelp.com/writeareview/biz/YOUR_BIZ_ID"
+              className="rounded-xl"
             />
-          </div>
+          </Field>
 
           {/* Facebook */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
+          <Field name="facebook_link">
+            <FieldLabel className="flex items-center gap-2">
               📘 Facebook Review Link
-            </Label>
+            </FieldLabel>
             <Input
               value={facebookLink}
               onChange={(e) => setFacebookLink(e.target.value)}
               placeholder="https://www.facebook.com/YOUR_PAGE/reviews"
+              className="rounded-xl"
             />
-          </div>
+          </Field>
         </div>
 
         {/* Default Platform */}
-        <div className="space-y-2">
-          <Label>Default Platform</Label>
+        <Field name="platform">
+          <FieldLabel>Default Platform</FieldLabel>
           <Select value={defaultPlatform} onValueChange={setDefaultPlatform}>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -178,13 +187,14 @@ export default function ReviewSettings() {
               <SelectItem value="facebook">Facebook</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          <FieldDescription>Primary platform for review requests</FieldDescription>
+        </Field>
 
         {/* Delay */}
-        <div className="space-y-2">
-          <Label>Send request after job completion</Label>
+        <Field name="delay">
+          <FieldLabel>Send request after job completion</FieldLabel>
           <Select value={delayDays} onValueChange={setDelayDays}>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -195,28 +205,30 @@ export default function ReviewSettings() {
               <SelectItem value="7">1 week later</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          <FieldDescription>Gives customers time to experience your service</FieldDescription>
+        </Field>
 
         {/* Message */}
-        <div className="space-y-2">
-          <Label>Review Request Message</Label>
+        <Field name="message">
+          <FieldLabel>Review Request Message</FieldLabel>
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
             placeholder="Hi {{customer_first_name}}, thanks for choosing us..."
+            className="rounded-xl resize-none"
           />
-          <p className="text-xs text-muted-foreground">
+          <FieldDescription>
             {message.length}/160 characters
-          </p>
-        </div>
+          </FieldDescription>
+        </Field>
 
         {/* Merge Fields */}
-        <div className="p-4 bg-muted rounded-xl">
+        <div className="p-4 bg-gray-50 rounded-xl">
           <div className="flex items-start gap-2">
             <Info className="w-4 h-4 text-primary mt-0.5" />
             <div>
-              <p className="text-sm font-medium mb-2">Available Merge Fields</p>
+              <p className="text-sm font-medium text-gray-900 mb-2">Available Merge Fields</p>
               <div className="flex flex-wrap gap-2">
                 {mergeFields.map((field) => (
                   <button
@@ -225,7 +237,7 @@ export default function ReviewSettings() {
                       setMessage(message + field);
                       toast.success('Field added to message');
                     }}
-                    className="text-xs px-2 py-1 bg-background text-foreground rounded font-mono hover:bg-accent transition-colors"
+                    className="text-xs px-2.5 py-1.5 bg-white text-gray-700 rounded-lg font-mono border border-gray-200 hover:border-primary/50 hover:bg-primary/5 transition-colors"
                   >
                     {field}
                   </button>
@@ -236,8 +248,8 @@ export default function ReviewSettings() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <div className="flex justify-end pt-4 border-t border-gray-100">
+          <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-xl">
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : saved ? (

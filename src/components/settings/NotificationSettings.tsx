@@ -1,7 +1,8 @@
+"use client";
+
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Bell, Mail, MessageSquare, Trophy, AlertCircle } from 'lucide-react';
+import { Bell, Mail, MessageSquare } from 'lucide-react';
 
 interface NotificationSettingsProps {
   settings: {
@@ -19,56 +20,59 @@ export default function NotificationSettings({ settings, onChange }: Notificatio
   };
   
   return (
-    <Card className="p-6">
+    <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="p-2.5 bg-primary/10 rounded-xl">
           <Bell className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Notifications</h3>
-          <p className="text-sm text-muted-foreground">Choose how you want to be notified</p>
+          <h3 className="font-semibold text-gray-900">Notifications</h3>
+          <p className="text-sm text-gray-500">Choose how you want to be notified</p>
         </div>
       </div>
       
       <div className="space-y-6">
         {/* Email notifications */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             <Mail className="h-4 w-4" />
             Email Notifications
           </div>
           
-          <div className="space-y-4 pl-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <div>
-                <Label className="font-medium">Quote won</Label>
-                <p className="text-sm text-muted-foreground">Get notified when a quote is marked as won</p>
+                <p className="font-medium text-gray-900">Quote won</p>
+                <p className="text-sm text-gray-500">Get notified when a quote is marked as won</p>
               </div>
               <Switch
                 checked={settings.emailOnWon}
                 onCheckedChange={() => handleToggle('emailOnWon')}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <div>
-                <Label className="font-medium">Quote lost</Label>
-                <p className="text-sm text-muted-foreground">Get notified when a quote is marked as lost</p>
+                <p className="font-medium text-gray-900">Quote lost</p>
+                <p className="text-sm text-gray-500">Get notified when a quote is marked as lost</p>
               </div>
               <Switch
                 checked={settings.emailOnLost}
                 onCheckedChange={() => handleToggle('emailOnLost')}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <div>
-                <Label className="font-medium">Daily digest</Label>
-                <p className="text-sm text-muted-foreground">Receive a daily summary of your quote activity</p>
+                <p className="font-medium text-gray-900">Daily digest</p>
+                <p className="text-sm text-gray-500">Receive a daily summary of your quote activity</p>
               </div>
               <Switch
                 checked={settings.emailDailyDigest}
                 onCheckedChange={() => handleToggle('emailDailyDigest')}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
           </div>
@@ -76,20 +80,21 @@ export default function NotificationSettings({ settings, onChange }: Notificatio
         
         {/* SMS notifications */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             <MessageSquare className="h-4 w-4" />
             SMS Notifications
           </div>
           
-          <div className="space-y-4 pl-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <div>
-                <Label className="font-medium">Customer response</Label>
-                <p className="text-sm text-muted-foreground">Get a text when a customer replies to a follow-up</p>
+                <p className="font-medium text-gray-900">Customer response</p>
+                <p className="text-sm text-gray-500">Get a text when a customer replies to a follow-up</p>
               </div>
               <Switch
                 checked={settings.smsOnResponse}
                 onCheckedChange={() => handleToggle('smsOnResponse')}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
           </div>
