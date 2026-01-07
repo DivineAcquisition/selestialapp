@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Rocket, Zap, Lock, Crown, ArrowRight } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 interface UpgradePromptProps {
@@ -33,7 +33,7 @@ export default function UpgradePrompt({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
-              <Rocket className="w-5 h-5" />
+              <Icon name="rocket" size="lg" />
             </div>
             <div>
               <p className="font-semibold">Upgrade to Growth</p>
@@ -47,7 +47,7 @@ export default function UpgradePrompt({
             className="bg-white text-primary hover:bg-white/90 font-semibold"
           >
             Upgrade Now
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <Icon name="arrowRight" size="sm" className="ml-2" />
           </Button>
         </div>
       </div>
@@ -61,14 +61,14 @@ export default function UpgradePrompt({
         className
       )}>
         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Crown className="w-6 h-6 text-primary" />
+          <Icon name="crown" size="xl" className="text-primary" />
         </div>
         <h3 className="font-semibold text-lg mb-2">Unlock {feature}</h3>
         <p className="text-sm text-muted-foreground mb-4">
           {description || 'This feature is available on the Growth plan'}
         </p>
         <Button onClick={handleUpgrade} className="gap-2">
-          <Zap className="w-4 h-4" />
+          <Icon name="bolt" size="sm" />
           Upgrade to Growth
         </Button>
       </div>
@@ -82,7 +82,7 @@ export default function UpgradePrompt({
       className
     )}>
       <div className="p-1.5 bg-primary/10 rounded-md">
-        <Lock className="w-4 h-4 text-primary" />
+        <Icon name="lock" size="sm" className="text-primary" />
       </div>
       <span className="text-sm text-muted-foreground flex-1">
         {description || `${feature} requires the Growth plan`}
@@ -92,7 +92,7 @@ export default function UpgradePrompt({
         onClick={handleUpgrade}
         className="gap-1.5"
       >
-        <Zap className="w-3.5 h-3.5" />
+        <Icon name="bolt" size="xs" />
         Upgrade
       </Button>
     </div>

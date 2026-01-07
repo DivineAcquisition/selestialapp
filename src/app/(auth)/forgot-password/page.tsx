@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
-import { BottomGradient } from '@/components/ui/bottom-gradient'
-import { Loader2, ArrowLeft, Mail, CheckCircle2, ArrowRight, Shield } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -70,7 +69,7 @@ export default function ForgotPasswordPage() {
         {/* Success state */}
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-full flex items-center justify-center mx-auto animate-scale-fade shadow-lg shadow-emerald-100">
-            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            <Icon name="checkCircle" size="3xl" className="text-emerald-600" />
           </div>
           
           <div className="space-y-2">
@@ -85,7 +84,7 @@ export default function ForgotPasswordPage() {
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200/60 text-sm text-gray-600">
             <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-primary mt-0.5" />
+              <Icon name="shield" size="lg" className="text-primary mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900 mb-1">Didn&apos;t receive the email?</p>
                 <p>Check your spam folder or make sure you entered the correct email address.</p>
@@ -108,7 +107,7 @@ export default function ForgotPasswordPage() {
             href="/login" 
             className="text-primary hover:text-primary/80 text-sm font-medium inline-flex items-center gap-2 transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <Icon name="arrowLeft" size="md" className="group-hover:-translate-x-1 transition-transform" />
             Back to sign in
           </Link>
         </div>
@@ -123,14 +122,14 @@ export default function ForgotPasswordPage() {
         href="/login" 
         className="text-gray-500 hover:text-gray-900 text-sm inline-flex items-center gap-2 transition-colors group"
       >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <Icon name="arrowLeft" size="md" className="group-hover:-translate-x-1 transition-transform" />
         Back to sign in
       </Link>
 
       {/* Header */}
       <div className="space-y-3">
         <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-[#9D96FF]/10 rounded-2xl flex items-center justify-center mb-4">
-          <Shield className="w-7 h-7 text-primary" />
+          <Icon name="shield" size="2xl" className="text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Reset password</h1>
         <p className="text-gray-500">
@@ -143,7 +142,7 @@ export default function ForgotPasswordPage() {
         <Field name="email">
           <FieldLabel>Email address</FieldLabel>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="email" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="email"
               type="email"
@@ -166,11 +165,11 @@ export default function ForgotPasswordPage() {
           )}
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icon name="spinner" size="lg" className="animate-spin" />
           ) : (
             <>
               Send reset link
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="md" className="ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </Button>

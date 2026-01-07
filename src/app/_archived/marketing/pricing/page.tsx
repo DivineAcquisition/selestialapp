@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Check } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 const plans = [
   {
@@ -89,7 +89,7 @@ export default function PricingPage() {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <Icon name="check" size="sm" className="text-green-600 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}

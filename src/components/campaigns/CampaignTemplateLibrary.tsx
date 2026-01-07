@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useCampaigns, CampaignTemplate } from '@/hooks/useCampaigns';
-import { Loader2, Layout, Calendar, Tag, ArrowRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface CampaignTemplateLibraryProps {
@@ -36,13 +36,13 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
     }
   };
 
-  const getSeasonIcon = (season: string | null) => {
+  const getSeasonColor = (season: string | null) => {
     switch (season) {
-      case 'spring': return <Calendar className="w-4 h-4 text-pink-500" />;
-      case 'summer': return <Calendar className="w-4 h-4 text-amber-500" />;
-      case 'fall': return <Calendar className="w-4 h-4 text-orange-500" />;
-      case 'winter': return <Calendar className="w-4 h-4 text-blue-500" />;
-      default: return <Calendar className="w-4 h-4 text-gray-500" />;
+      case 'spring': return 'text-pink-500';
+      case 'summer': return 'text-amber-500';
+      case 'fall': return 'text-orange-500';
+      case 'winter': return 'text-blue-500';
+      default: return 'text-gray-500';
     }
   };
 
@@ -64,7 +64,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Layout className="w-5 h-5 text-primary" />
+            <Icon name="layout" size="lg" className="text-primary" />
             Campaign Templates
           </DialogTitle>
           <DialogDescription>
@@ -74,7 +74,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
 
         {templatesLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
           </div>
         ) : (
           <div className="space-y-8 py-4">
@@ -95,7 +95,9 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="flex items-center justify-center">{getSeasonIcon(template.season)}</span>
+                              <span className="flex items-center justify-center">
+                                <Icon name="calendar" size="sm" className={getSeasonColor(template.season)} />
+                              </span>
                               <h4 className="font-medium text-foreground">{template.name}</h4>
                               <Badge className={cn('text-xs', getTypeColor(template.campaign_type))}>
                                 {template.campaign_type}
@@ -112,13 +114,13 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               {template.month && (
                                 <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
+                                  <Icon name="calendar" size="xs" />
                                   Month {template.month}
                                 </span>
                               )}
                               {template.suggested_promotion_type && (
                                 <span className="flex items-center gap-1">
-                                  <Tag className="w-3 h-3" />
+                                  <Icon name="tag" size="xs" />
                                   {template.suggested_promotion_value}% off suggested
                                 </span>
                               )}
@@ -132,7 +134,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
                             size="icon"
                             className="opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <ArrowRight className="w-4 h-4" />
+                            <Icon name="arrowRight" size="sm" />
                           </Button>
                         </div>
                       </div>

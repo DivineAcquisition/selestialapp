@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Icon } from '@/components/ui/icon';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useSequences } from '@/hooks/useSequences';
@@ -24,24 +25,6 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { useToast } from '@/hooks/use-toast';
 import { toE164 } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import {
-  ArrowLeft,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  DollarSign,
-  FileText,
-  Sparkles,
-  Loader2,
-  Plus,
-  X,
-  Wand2,
-  Calculator,
-  Zap,
-  CheckCircle2,
-  Info,
-} from 'lucide-react';
 import type { TablesInsert } from '@/integrations/supabase/types';
 
 type QuoteInsert = TablesInsert<'quotes'>;
@@ -249,7 +232,7 @@ export default function NewQuotePage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl">
-              <ArrowLeft className="h-5 w-5" />
+              <Icon name="arrowLeft" size="lg" />
             </Button>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Create New Quote</h1>
@@ -257,7 +240,7 @@ export default function NewQuotePage() {
             </div>
           </div>
           <Badge variant="outline" className="text-primary border-primary/30 rounded-lg">
-            <Zap className="h-3 w-3 mr-1" />
+            <Icon name="bolt" size="xs" className="mr-1" />
             Auto-follow-up enabled
           </Badge>
         </div>
@@ -270,7 +253,7 @@ export default function NewQuotePage() {
               <Card className="card-elevated p-6 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
+                    <Icon name="user" size="sm" className="text-primary" />
                     Customer Information
                   </h2>
                   <div className="flex items-center border rounded-xl overflow-hidden">
@@ -321,7 +304,7 @@ export default function NewQuotePage() {
                   <Field name="customerName">
                     <FieldLabel required>Name</FieldLabel>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="user" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customerName"
                         placeholder="John Smith"
@@ -335,7 +318,7 @@ export default function NewQuotePage() {
                   <Field name="customerPhone">
                     <FieldLabel required>Phone</FieldLabel>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="phone" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customerPhone"
                         type="tel"
@@ -355,7 +338,7 @@ export default function NewQuotePage() {
                   <Field name="customerEmail">
                     <FieldLabel>Email</FieldLabel>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="email" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customerEmail"
                         type="email"
@@ -369,7 +352,7 @@ export default function NewQuotePage() {
                   <Field name="customerAddress">
                     <FieldLabel>Address</FieldLabel>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="mapPin" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customerAddress"
                         placeholder="123 Main St, City"
@@ -384,7 +367,7 @@ export default function NewQuotePage() {
               {/* Service Section */}
               <Card className="card-elevated p-6 rounded-2xl">
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                  <FileText className="h-4 w-4 text-primary" />
+                  <Icon name="fileText" size="sm" className="text-primary" />
                   Service Details
                 </h2>
 
@@ -423,7 +406,7 @@ export default function NewQuotePage() {
               <Card className="card-elevated p-6 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <Calculator className="h-4 w-4 text-primary" />
+                    <Icon name="calculator" size="sm" className="text-primary" />
                     Pricing
                   </h2>
                   <Button
@@ -435,9 +418,9 @@ export default function NewQuotePage() {
                     className="gap-2 rounded-xl"
                   >
                     {generatingPrice ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Icon name="spinner" size="xs" className="animate-spin" />
                     ) : (
-                      <Wand2 className="h-3 w-3" />
+                      <Icon name="sparkles" size="xs" />
                     )}
                     AI Suggest Price
                   </Button>
@@ -445,7 +428,7 @@ export default function NewQuotePage() {
 
                 {suggestedPrice && (
                   <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Icon name="sparkles" size="sm" className="text-primary" />
                     <span className="text-sm">
                       AI suggested price: <strong>${(suggestedPrice / 100).toFixed(2)}</strong>
                     </span>
@@ -474,7 +457,7 @@ export default function NewQuotePage() {
                         />
                       </div>
                       <div className="w-28 relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Icon name="dollarSign" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <Input
                           type="number"
                           min="0"
@@ -496,7 +479,7 @@ export default function NewQuotePage() {
                           onClick={() => handleRemoveLineItem(item.id)}
                           className="text-gray-400 hover:text-red-500 rounded-xl"
                         >
-                          <X className="h-4 w-4" />
+                          <Icon name="close" size="sm" />
                         </Button>
                       )}
                     </div>
@@ -510,7 +493,7 @@ export default function NewQuotePage() {
                   onClick={handleAddLineItem}
                   className="mt-3 gap-2 rounded-xl"
                 >
-                  <Plus className="h-3 w-3" />
+                  <Icon name="plus" size="xs" />
                   Add Line Item
                 </Button>
 
@@ -536,7 +519,7 @@ export default function NewQuotePage() {
               {/* Sequence Selection */}
               <Card className="card-elevated p-6 rounded-2xl">
                 <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                  <Zap className="h-4 w-4 text-primary" />
+                  <Icon name="bolt" size="sm" className="text-primary" />
                   Follow-up Sequence
                 </h3>
                 
@@ -563,20 +546,20 @@ export default function NewQuotePage() {
               {/* Quick Tips */}
               <Card className="card-elevated p-6 rounded-2xl bg-gray-50/50">
                 <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                  <Info className="h-4 w-4 text-primary" />
+                  <Icon name="info" size="sm" className="text-primary" />
                   Tips
                 </h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <Icon name="checkCircle" size="sm" className="text-emerald-500 mt-0.5 flex-shrink-0" />
                     <span>Add accurate phone numbers for SMS follow-ups</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <Icon name="checkCircle" size="sm" className="text-emerald-500 mt-0.5 flex-shrink-0" />
                     <span>Use AI to suggest competitive pricing</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <Icon name="checkCircle" size="sm" className="text-emerald-500 mt-0.5 flex-shrink-0" />
                     <span>Detailed descriptions help AI personalize messages</span>
                   </li>
                 </ul>
@@ -591,9 +574,9 @@ export default function NewQuotePage() {
                   disabled={quoteLoading}
                 >
                   {quoteLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Icon name="spinner" size="sm" className="animate-spin" />
                   ) : (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <Icon name="checkCircle" size="sm" />
                   )}
                   Create Quote
                 </Button>

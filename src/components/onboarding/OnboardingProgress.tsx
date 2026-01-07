@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface OnboardingProgressProps {
   currentStep: number;
@@ -43,7 +43,7 @@ export default function OnboardingProgress({ currentStep, totalSteps }: Onboardi
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="h-5 w-5" />
+                    <Icon name="check" size="lg" />
                   ) : (
                     index + 1
                   )}

@@ -1,18 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Sparkles,
-  Send,
-  Edit2,
-  ThumbsUp,
-  ThumbsDown,
-  Loader2,
-  X,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface SmartReplySuggestionsProps {
@@ -59,7 +48,7 @@ export default function SmartReplySuggestions({
       <div className="border-t border-border p-4 bg-primary/5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+            <Icon name="spinner" size="md" className="text-primary animate-spin" />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">AI is thinking...</p>
@@ -83,7 +72,7 @@ export default function SmartReplySuggestions({
       >
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <Icon name="sparkles" size="sm" className="text-primary" />
           </div>
           <span className="text-sm font-medium text-foreground">
             AI Suggested Replies
@@ -102,7 +91,7 @@ export default function SmartReplySuggestions({
             className="p-1 text-primary hover:text-primary/80 hover:bg-primary/10 rounded"
             title="Regenerate suggestions"
           >
-            <RefreshCw className="w-4 h-4" />
+            <Icon name="refresh" size="md" />
           </button>
           <button
             onClick={(e) => {
@@ -112,13 +101,9 @@ export default function SmartReplySuggestions({
             className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded"
             title="Dismiss"
           >
-            <X className="w-4 h-4" />
+            <Icon name="close" size="md" />
           </button>
-          {collapsed ? (
-            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          )}
+          <Icon name={collapsed ? "chevronUp" : "chevronDown"} size="md" className="text-muted-foreground" />
         </div>
       </button>
 
@@ -153,7 +138,7 @@ export default function SmartReplySuggestions({
                         onClick={handleSendEdited}
                         disabled={!editedText.trim()}
                       >
-                        <Send className="w-3 h-3 mr-1" />
+                        <Icon name="send" size="xs" className="mr-1" />
                         Send
                       </Button>
                     </div>
@@ -181,14 +166,14 @@ export default function SmartReplySuggestions({
                       className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded"
                       title="Edit"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Icon name="edit" size="sm" />
                     </button>
                     <Button
                       size="sm"
                       className="h-7"
                       onClick={() => onSelectSuggestion(suggestion, index, false)}
                     >
-                      <Send className="w-3 h-3 mr-1" />
+                      <Icon name="send" size="xs" className="mr-1" />
                       Send
                     </Button>
                   </div>
@@ -206,14 +191,14 @@ export default function SmartReplySuggestions({
                 className="p-1.5 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded"
                 title="Helpful"
               >
-                <ThumbsUp className="w-4 h-4" />
+                <Icon name="thumbsUp" size="md" />
               </button>
               <button
                 onClick={() => onFeedback('not_helpful')}
                 className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded"
                 title="Not helpful"
               >
-                <ThumbsDown className="w-4 h-4" />
+                <Icon name="thumbsDown" size="md" />
               </button>
             </div>
           </div>

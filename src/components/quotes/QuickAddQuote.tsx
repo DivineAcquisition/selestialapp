@@ -15,19 +15,7 @@ import {
 import { useQuotes } from '@/hooks/useQuotes';
 import { useSequences } from '@/hooks/useSequences';
 import { toE164, parseCurrencyToCents } from '@/lib/formatters';
-import { 
-  Plus, 
-  Loader2, 
-  Check, 
-  Zap,
-  ChevronDown,
-  ChevronUp,
-  User,
-  Phone,
-  DollarSign,
-  Mail,
-  FileText,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface QuickAddQuoteProps {
@@ -173,7 +161,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-[#9D96FF]/20">
-              <Zap className="w-5 h-5 text-primary" />
+              <Icon name="bolt" size="lg" className="text-primary" />
             </div>
             Quick Add Quote
           </DialogTitle>
@@ -183,7 +171,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
         {success && (
           <div className="flex flex-col items-center justify-center py-8 animate-scale-fade">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center mb-4">
-              <Check className="w-8 h-8 text-emerald-600" />
+              <Icon name="check" size="2xl" className="text-emerald-600" />
             </div>
             <p className="text-lg font-semibold text-gray-900">Quote Added!</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -209,7 +197,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             <Field name="name">
               <FieldLabel required>Customer Name</FieldLabel>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon name="user" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   ref={nameInputRef}
                   name="name"
@@ -226,7 +214,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             <Field name="phone">
               <FieldLabel required>Phone</FieldLabel>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon name="phone" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   name="phone"
                   placeholder="(555) 123-4567"
@@ -246,7 +234,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
             <Field name="amount">
               <FieldLabel required>Quote Amount</FieldLabel>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon name="dollar" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   name="amount"
                   placeholder="250.00"
@@ -271,11 +259,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               )}
             >
-              {showMore ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
+              <Icon name={showMore ? "chevronUp" : "chevronDown"} size="sm" />
               {showMore ? 'Less options' : 'More options'}
             </button>
             
@@ -286,7 +270,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                   <FieldLabel>Email</FieldLabel>
                   <FieldDescription>Optional - for email notifications</FieldDescription>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Icon name="email" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input
                       name="email"
                       type="email"
@@ -301,7 +285,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
                 <Field name="serviceType">
                   <FieldLabel>Service Type</FieldLabel>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Icon name="fileText" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input
                       name="serviceType"
                       placeholder="Deep Clean"
@@ -354,12 +338,12 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
               >
                 {saving ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <Icon name="spinner" size="sm" className="animate-spin mr-2" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Icon name="plus" size="sm" className="mr-2" />
                     Add Quote
                   </>
                 )}

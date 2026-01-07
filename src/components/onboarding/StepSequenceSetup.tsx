@@ -4,7 +4,7 @@ import OnboardingLayout from './OnboardingLayout';
 import { Card } from '@/components/ui/card';
 import { DEFAULT_SEQUENCE_STEPS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { Check, Clock, MessageSquare, Star } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function StepSequenceSetup() {
   const { data, updateData, setCanGoNext } = useOnboarding();
@@ -52,13 +52,13 @@ export default function StepSequenceSetup() {
                     : 'border-muted-foreground'
                 )}
               >
-                {data.useDefaultSequence && <Check className="h-3 w-3 text-primary-foreground" />}
+                {data.useDefaultSequence && <Icon name="check" size="xs" className="text-primary-foreground" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-foreground">Standard Follow-Up</h3>
                   <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full flex items-center gap-1">
-                    <Star className="h-3 w-3" />
+                    <Icon name="star" size="xs" />
                     Recommended
                   </span>
                 </div>
@@ -88,7 +88,7 @@ export default function StepSequenceSetup() {
                     : 'border-muted-foreground'
                 )}
               >
-                {!data.useDefaultSequence && <Check className="h-3 w-3 text-primary-foreground" />}
+                {!data.useDefaultSequence && <Icon name="check" size="xs" className="text-primary-foreground" />}
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground">Start from Scratch</h3>
@@ -111,7 +111,7 @@ export default function StepSequenceSetup() {
                   {/* Timeline dot */}
                   <div className="flex flex-col items-center">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-primary" />
+                      <Icon name="message" size="md" className="text-primary" />
                     </div>
                     {index < DEFAULT_SEQUENCE_STEPS.length - 1 && (
                       <div className="w-0.5 h-full bg-border mt-2" />
@@ -125,7 +125,7 @@ export default function StepSequenceSetup() {
                         Step {index + 1}
                       </span>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                        <Icon name="clock" size="xs" />
                         {step.delay_days === 0 
                           ? 'Immediate' 
                           : `Day ${step.delay_days}`}

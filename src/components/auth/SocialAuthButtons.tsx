@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 function GoogleIcon() {
   return (
@@ -45,7 +45,7 @@ export default function SocialAuthButtons() {
         disabled={loading === 'google'}
       >
         {loading === 'google' ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Icon name="spinner" size="lg" className="animate-spin" />
         ) : (
           <GoogleIcon />
         )}

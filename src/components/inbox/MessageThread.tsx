@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { ThreadMessage } from '@/hooks/useMessageThread';
-import { Check, CheckCheck, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 
 interface MessageThreadProps {
   messages: ThreadMessage[];
@@ -20,7 +20,7 @@ export default function MessageThread({ messages, loading }: MessageThreadProps)
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -49,18 +49,18 @@ export default function MessageThread({ messages, loading }: MessageThreadProps)
     groupedMessages[groupedMessages.length - 1].messages.push(message);
   });
 
-  const getStatusIcon = (message: ThreadMessage) => {
+  const getStatusIcon = (message: ThreadMessage): { name: IconName; className: string } | null => {
     if (message.direction === 'inbound') return null;
     
     switch (message.status) {
       case 'delivered':
-        return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
+        return { name: 'checkCircle', className: 'text-blue-500' };
       case 'sent':
-        return <Check className="w-3.5 h-3.5 text-muted-foreground" />;
+        return { name: 'check', className: 'text-muted-foreground' };
       case 'failed':
-        return <AlertCircle className="w-3.5 h-3.5 text-destructive" />;
+        return { name: 'alertCircle', className: 'text-destructive' };
       default:
-        return <Clock className="w-3.5 h-3.5 text-muted-foreground/50" />;
+        return { name: 'clock', className: 'text-muted-foreground/50' };
     }
   };
 
@@ -77,37 +77,42 @@ export default function MessageThread({ messages, loading }: MessageThreadProps)
 
           {/* Messages */}
           <div className="space-y-3">
-            {group.messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  'flex',
-                  message.direction === 'outbound' ? 'justify-end' : 'justify-start'
-                )}
-              >
+            {group.messages.map((message) => {
+              const statusIcon = getStatusIcon(message);
+              return (
                 <div
+                  key={message.id}
                   className={cn(
-                    'max-w-[80%] rounded-2xl px-4 py-2.5',
-                    message.direction === 'outbound'
-                      ? 'bg-primary text-primary-foreground rounded-br-md'
-                      : 'bg-muted text-foreground rounded-bl-md'
+                    'flex',
+                    message.direction === 'outbound' ? 'justify-end' : 'justify-start'
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {message.content}
-                  </p>
-                  <div className={cn(
-                    'flex items-center justify-end gap-1 mt-1',
-                    message.direction === 'outbound' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                  )}>
-                    <span className="text-xs">
-                      {format(new Date(message.createdAt), 'h:mm a')}
-                    </span>
-                    {getStatusIcon(message)}
+                  <div
+                    className={cn(
+                      'max-w-[80%] rounded-2xl px-4 py-2.5',
+                      message.direction === 'outbound'
+                        ? 'bg-primary text-primary-foreground rounded-br-md'
+                        : 'bg-muted text-foreground rounded-bl-md'
+                    )}
+                  >
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {message.content}
+                    </p>
+                    <div className={cn(
+                      'flex items-center justify-end gap-1 mt-1',
+                      message.direction === 'outbound' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    )}>
+                      <span className="text-xs">
+                        {format(new Date(message.createdAt), 'h:mm a')}
+                      </span>
+                      {statusIcon && (
+                        <Icon name={statusIcon.name} size="xs" className={statusIcon.className} />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}

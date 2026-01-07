@@ -3,16 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
-  Sparkles, 
-  X, 
-  Send, 
-  Loader2,
-  FileText,
-  MessageSquare,
-  Users,
-  CheckCircle,
-} from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 interface Message {
@@ -153,7 +144,7 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
         <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-primary to-[#9D96FF]">
           <div className="flex items-center gap-2 text-primary-foreground">
             <div className="p-1.5 bg-white/20 rounded-lg">
-              <Sparkles className="w-4 h-4" />
+              <Icon name="sparkles" size="sm" />
             </div>
             <div>
               <h3 className="font-medium text-sm">Selestial AI</h3>
@@ -164,7 +155,7 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
             onClick={() => onOpenChange(false)}
             className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <Icon name="close" size="lg" />
           </button>
         </div>
 
@@ -197,9 +188,9 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
                         onClick={() => handleAction(action.action, action.data)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-background text-primary text-xs font-medium rounded-full hover:bg-muted transition-colors border border-primary/20"
                       >
-                        {action.action === 'view_quote' && <FileText className="w-3 h-3" />}
-                        {action.action === 'send_message' && <Send className="w-3 h-3" />}
-                        {action.action === 'view_customer' && <Users className="w-3 h-3" />}
+                        {action.action === 'view_quote' && <Icon name="fileText" size="xs" />}
+                        {action.action === 'send_message' && <Icon name="send" size="xs" />}
+                        {action.action === 'view_customer' && <Icon name="users" size="xs" />}
                         {action.label}
                       </button>
                     ))}
@@ -208,7 +199,7 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
 
                 {message.status === 'complete' && (
                   <div className="flex items-center gap-1.5 mt-2 text-emerald-600 text-xs">
-                    <CheckCircle className="w-3.5 h-3.5" />
+                    <Icon name="checkCircle" size="xs" />
                     Action completed
                   </div>
                 )}
@@ -220,7 +211,7 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
             <div className="flex justify-start">
               <div className="bg-muted rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Icon name="spinner" size="sm" className="animate-spin" />
                   <span className="text-sm">Thinking...</span>
                 </div>
               </div>
@@ -272,9 +263,9 @@ export default function AIAssistant({ open, onOpenChange }: AIAssistantProps) {
               className="h-10 w-10 rounded-xl"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Icon name="spinner" size="sm" className="animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <Icon name="send" size="sm" />
               )}
             </Button>
           </div>

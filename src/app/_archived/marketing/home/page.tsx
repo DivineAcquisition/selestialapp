@@ -1,34 +1,32 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { 
-  Zap, 
-  MessageSquare, 
-  BarChart3, 
-  Brain, 
-  CheckCircle2,
-  ArrowRight,
-  Star,
-} from 'lucide-react'
+import { Icon, IconName } from '@/components/ui/icon'
 
-const features = [
+interface Feature {
+  icon: IconName;
+  title: string;
+  description: string;
+}
+
+const features: Feature[] = [
   {
-    icon: Zap,
+    icon: 'bolt',
     title: 'Automated Follow-ups',
     description: 'Set up sequences that automatically follow up with leads at the perfect time.',
   },
   {
-    icon: Brain,
+    icon: 'robot',
     title: 'AI Smart Replies',
     description: 'Get intelligent response suggestions powered by Claude AI to reply faster.',
   },
   {
-    icon: MessageSquare,
+    icon: 'message',
     title: 'Unified Inbox',
     description: 'Manage all your customer conversations from SMS and email in one place.',
   },
   {
-    icon: BarChart3,
+    icon: 'chart',
     title: 'Revenue Analytics',
     description: 'Track your win rate, response times, and revenue with detailed insights.',
   },
@@ -50,7 +48,7 @@ export default function LandingPage() {
         <div className="container relative">
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <Star className="w-4 h-4 fill-primary" />
+              <Icon name="star" size="sm" className="text-primary" />
               Trusted by 500+ home service businesses
             </div>
             
@@ -68,7 +66,7 @@ export default function LandingPage() {
               <Link href="/signup">
                 <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 glow">
                   Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Icon name="arrowRight" size="lg" className="ml-2" />
                 </Button>
               </Link>
               <Link href="/features">
@@ -91,7 +89,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-8">
             {benefits.map((benefit, i) => (
               <div key={i} className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <Icon name="checkCircle" size="lg" className="text-green-600" />
                 <span className="font-medium">{benefit}</span>
               </div>
             ))}
@@ -115,7 +113,7 @@ export default function LandingPage() {
             {features.map((feature, i) => (
               <Card key={i} className="p-6 feature-card">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                  <Icon name={feature.icon} size="xl" className="text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
@@ -137,7 +135,7 @@ export default function LandingPage() {
           <Link href="/signup">
             <Button size="lg" variant="secondary" className="text-lg h-14 px-8">
               Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <Icon name="arrowRight" size="lg" className="ml-2" />
             </Button>
           </Link>
         </div>

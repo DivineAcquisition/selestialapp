@@ -22,7 +22,7 @@ import { SERVICE_TYPES } from '@/lib/constants';
 import { formatPhone, toE164, parseCurrencyToCents } from '@/lib/formatters';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useSequences } from '@/hooks/useSequences';
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Quote = Tables<'quotes'>;
@@ -320,7 +320,7 @@ export default function QuoteForm({ open, onClose, onSave, editQuote }: QuoteFor
           <Button onClick={handleSubmit} disabled={saving}>
             {saving ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Icon name="spinner" size="md" className="mr-2 animate-spin" />
                 Saving...
               </>
             ) : (

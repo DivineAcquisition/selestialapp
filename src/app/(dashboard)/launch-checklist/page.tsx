@@ -8,30 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Icon, IconName } from '@/components/ui/icon';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  CheckCircle2,
-  Circle,
-  AlertTriangle,
-  Shield,
-  Database,
-  Key,
-  Mail,
-  CreditCard,
-  MessageSquare,
-  Users,
-  Zap,
-  Settings,
-  FileText,
-  Rocket,
-  RefreshCw,
-  ExternalLink,
-} from 'lucide-react';
 
 interface ChecklistItem {
   id: string;
@@ -43,7 +26,7 @@ interface ChecklistItem {
 interface ChecklistSection {
   id: string;
   title: string;
-  icon: React.ReactNode;
+  icon: IconName;
   items: ChecklistItem[];
 }
 
@@ -51,7 +34,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'auth',
     title: 'Authentication & Onboarding',
-    icon: <Key className="h-4 w-4" />,
+    icon: 'key',
     items: [
       { id: 'auth-signup', label: 'Email/password signup works', critical: true },
       { id: 'auth-verify-send', label: 'Verification email sends', critical: true },
@@ -65,7 +48,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'quotes',
     title: 'Quotes',
-    icon: <FileText className="h-4 w-4" />,
+    icon: 'fileText',
     items: [
       { id: 'quote-list', label: 'Quote list loads', critical: true },
       { id: 'quote-create', label: 'Create quote works', critical: true },
@@ -75,7 +58,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'sequences',
     title: 'Sequences',
-    icon: <Zap className="h-4 w-4" />,
+    icon: 'bolt',
     items: [
       { id: 'seq-list', label: 'Sequence list loads' },
       { id: 'seq-create', label: 'Create sequence works' },
@@ -85,7 +68,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'inbox',
     title: 'Inbox',
-    icon: <MessageSquare className="h-4 w-4" />,
+    icon: 'message',
     items: [
       { id: 'inbox-list', label: 'Conversation list loads', critical: true },
       { id: 'inbox-reply', label: 'Reply sends successfully', critical: true },
@@ -94,7 +77,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'security',
     title: 'Security',
-    icon: <Shield className="h-4 w-4" />,
+    icon: 'shield',
     items: [
       { id: 'sec-rls', label: 'RLS enabled on all tables', critical: true },
       { id: 'sec-isolation', label: 'User A cannot see User B data', critical: true },
@@ -104,7 +87,7 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
   {
     id: 'go-live',
     title: 'Go-Live',
-    icon: <Rocket className="h-4 w-4" />,
+    icon: 'rocket',
     items: [
       { id: 'live-backup', label: 'Final database backup created', critical: true },
       { id: 'live-ssl', label: 'SSL certificate active', critical: true },
@@ -178,7 +161,7 @@ export default function LaunchChecklistPage() {
           <Card className="p-6 border-primary/20">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <Icon name="warning" size="sm" className="text-destructive" />
                 <h3 className="font-semibold">Critical Items</h3>
               </div>
               <Badge variant={criticalProgress === 100 ? 'default' : 'destructive'}>
@@ -200,7 +183,7 @@ export default function LaunchChecklistPage() {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" size="sm" onClick={resetChecklist} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
+            <Icon name="refresh" size="sm" />
             Reset Checklist
           </Button>
         </div>
@@ -225,7 +208,7 @@ export default function LaunchChecklistPage() {
                                 : 'bg-muted text-muted-foreground'
                             }`}
                           >
-                            {section.icon}
+                            <Icon name={section.icon} size="sm" />
                           </div>
                           <span className="font-medium">{section.title}</span>
                         </div>
@@ -268,9 +251,9 @@ export default function LaunchChecklistPage() {
                               </div>
                             </div>
                             {checkedItems[item.id] ? (
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                              <Icon name="checkCircle" size="sm" className="text-primary shrink-0" />
                             ) : (
-                              <Circle className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                              <Icon name="circle" size="sm" className="text-muted-foreground/50 shrink-0" />
                             )}
                           </div>
                         ))}

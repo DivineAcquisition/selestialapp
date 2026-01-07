@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Form } from '@/components/ui/form';
-import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
+import { Field, FieldLabel, FieldError } from '@/components/ui/field';
+import { Icon, IconName } from '@/components/ui/icon';
 import {
   Select,
   SelectContent,
@@ -36,33 +37,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince, toE164 } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import {
-  ArrowLeft,
-  Phone,
-  Mail,
-  Calendar,
-  Clock,
-  Edit2,
-  Trophy,
-  XCircle,
-  Pause,
-  Play,
-  Loader2,
-  CheckCircle,
-  Send,
-  AlertCircle,
-  User,
-  RefreshCw,
-  CreditCard,
-  Copy,
-  ExternalLink,
-  FileText,
-  DollarSign,
-  Save,
-  X,
-  MessageSquare,
-  Sparkles,
-} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function QuoteDetailPage() {
@@ -98,7 +72,7 @@ export default function QuoteDetailPage() {
     return (
       <Layout title="Quote Details">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -282,6 +256,38 @@ export default function QuoteDetailPage() {
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
+
+  const getMessageIcon = (message: typeof messages[0]): { name: IconName; className: string } => {
+    if (message.direction === 'inbound') {
+      return { name: 'user', className: 'text-primary' };
+    }
+    if (message.status === 'delivered') {
+      return { name: 'checkCircle', className: 'text-emerald-600' };
+    }
+    if (message.status === 'sent') {
+      return { name: 'send', className: 'text-blue-600' };
+    }
+    if (message.status === 'failed') {
+      return { name: 'alertCircle', className: 'text-red-600' };
+    }
+    return { name: 'clock', className: 'text-gray-500' };
+  };
+
+  const getMessageIconBg = (message: typeof messages[0]): string => {
+    if (message.direction === 'inbound') {
+      return 'bg-primary/10';
+    }
+    if (message.status === 'delivered') {
+      return 'bg-emerald-100';
+    }
+    if (message.status === 'sent') {
+      return 'bg-blue-100';
+    }
+    if (message.status === 'failed') {
+      return 'bg-red-100';
+    }
+    return 'bg-gray-100';
+  };
   
   return (
     <Layout title="Quote Details">
@@ -290,7 +296,7 @@ export default function QuoteDetailPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.push('/quotes')} className="rounded-xl">
-              <ArrowLeft className="h-5 w-5" />
+              <Icon name="arrowLeft" size="lg" />
             </Button>
             <div>
               <div className="flex items-center gap-3">
@@ -308,7 +314,7 @@ export default function QuoteDetailPage() {
               onClick={() => setIsEditing(!isEditing)}
               className="rounded-xl"
             >
-              {isEditing ? <X className="h-4 w-4 mr-2" /> : <Edit2 className="h-4 w-4 mr-2" />}
+              {isEditing ? <Icon name="close" size="sm" className="mr-2" /> : <Icon name="edit" size="sm" className="mr-2" />}
               {isEditing ? 'Cancel' : 'Edit'}
             </Button>
           </div>
@@ -327,7 +333,7 @@ export default function QuoteDetailPage() {
                   </p>
                 </div>
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-[#9D96FF]/10">
-                  <DollarSign className="h-8 w-8 text-primary" />
+                  <Icon name="dollarSign" size="2xl" className="text-primary" />
                 </div>
               </div>
               {quote.final_job_amount && quote.final_job_amount !== quote.quote_amount && (
@@ -341,14 +347,14 @@ export default function QuoteDetailPage() {
             {isEditing ? (
               <Card className="card-elevated p-6 rounded-2xl">
                 <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Edit2 className="h-4 w-4 text-primary" />
+                  <Icon name="edit" size="sm" className="text-primary" />
                   Edit Quote
                 </h2>
                 <Form onSubmit={handleEditSubmit}>
                   <Field name="customer_name">
                     <FieldLabel>Customer Name</FieldLabel>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="user" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customer_name"
                         defaultValue={quote.customer_name}
@@ -363,7 +369,7 @@ export default function QuoteDetailPage() {
                   <Field name="customer_phone">
                     <FieldLabel>Phone</FieldLabel>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="phone" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customer_phone"
                         type="tel"
@@ -379,7 +385,7 @@ export default function QuoteDetailPage() {
                   <Field name="customer_email">
                     <FieldLabel>Email (optional)</FieldLabel>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="email" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="customer_email"
                         type="email"
@@ -394,7 +400,7 @@ export default function QuoteDetailPage() {
                   <Field name="service_type">
                     <FieldLabel>Service Type</FieldLabel>
                     <div className="relative">
-                      <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="fileText" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="service_type"
                         defaultValue={quote.service_type}
@@ -409,7 +415,7 @@ export default function QuoteDetailPage() {
                   <Field name="quote_amount">
                     <FieldLabel>Quote Amount ($)</FieldLabel>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="dollarSign" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="quote_amount"
                         type="number"
@@ -441,9 +447,9 @@ export default function QuoteDetailPage() {
                     className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
                   >
                     {updating ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <Icon name="spinner" size="sm" className="animate-spin mr-2" />
                     ) : (
-                      <Save className="h-4 w-4 mr-2" />
+                      <Icon name="save" size="sm" className="mr-2" />
                     )}
                     Save Changes
                   </Button>
@@ -454,7 +460,7 @@ export default function QuoteDetailPage() {
                 {/* Contact Info */}
                 <Card className="card-elevated p-6 rounded-2xl">
                   <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
+                    <Icon name="user" size="sm" className="text-primary" />
                     Contact Information
                   </h2>
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -463,7 +469,7 @@ export default function QuoteDetailPage() {
                       className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       <div className="p-2 rounded-lg bg-primary/10">
-                        <Phone className="h-4 w-4 text-primary" />
+                        <Icon name="phone" size="sm" className="text-primary" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Phone</p>
@@ -476,7 +482,7 @@ export default function QuoteDetailPage() {
                         className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                       >
                         <div className="p-2 rounded-lg bg-primary/10">
-                          <Mail className="h-4 w-4 text-primary" />
+                          <Icon name="email" size="sm" className="text-primary" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Email</p>
@@ -490,29 +496,29 @@ export default function QuoteDetailPage() {
                 {/* Quote Details */}
                 <Card className="card-elevated p-6 rounded-2xl">
                   <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-primary" />
+                    <Icon name="fileText" size="sm" className="text-primary" />
                     Quote Details
                   </h2>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-gray-400" />
+                      <Icon name="calendar" size="sm" className="text-gray-400" />
                       <span className="text-gray-600">Created {formatDate(quote.created_at)} ({daysSince} days ago)</span>
                     </div>
                     {quote.next_message_at && quote.status === 'active' && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <Icon name="clock" size="sm" className="text-gray-400" />
                         <span className="text-gray-600">Next message: {formatDateTime(quote.next_message_at)}</span>
                       </div>
                     )}
                     {quote.won_at && (
                       <div className="flex items-center gap-2 text-sm text-emerald-600">
-                        <Trophy className="h-4 w-4" />
+                        <Icon name="trophy" size="sm" />
                         <span>Won on {formatDate(quote.won_at)}</span>
                       </div>
                     )}
                     {quote.lost_at && (
                       <div className="flex items-center gap-2 text-sm text-red-600">
-                        <XCircle className="h-4 w-4" />
+                        <Icon name="xCircle" size="sm" />
                         <span>Lost on {formatDate(quote.lost_at)}{lostReasonLabel && ` - ${lostReasonLabel}`}</span>
                       </div>
                     )}
@@ -531,55 +537,41 @@ export default function QuoteDetailPage() {
                 {/* Message History */}
                 <Card className="card-elevated p-6 rounded-2xl">
                   <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-primary" />
+                    <Icon name="message" size="sm" className="text-primary" />
                     Message History
                   </h2>
                   
                   {messagesLoading ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      <Icon name="spinner" size="lg" className="animate-spin text-gray-400" />
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                      <MessageSquare className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <Icon name="message" size="2xl" className="mx-auto mb-2 text-gray-300" />
                       <p>No messages yet</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-64">
                       <div className="space-y-3">
-                        {messages.map((message) => (
-                          <div key={message.id} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
-                            <div className="shrink-0 mt-0.5">
-                              {message.direction === 'inbound' ? (
-                                <div className="p-1.5 rounded-lg bg-primary/10">
-                                  <User className="h-3 w-3 text-primary" />
+                        {messages.map((message) => {
+                          const iconInfo = getMessageIcon(message);
+                          const iconBg = getMessageIconBg(message);
+                          return (
+                            <div key={message.id} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                              <div className="shrink-0 mt-0.5">
+                                <div className={cn("p-1.5 rounded-lg", iconBg)}>
+                                  <Icon name={iconInfo.name} size="xs" className={iconInfo.className} />
                                 </div>
-                              ) : message.status === 'delivered' ? (
-                                <div className="p-1.5 rounded-lg bg-emerald-100">
-                                  <CheckCircle className="h-3 w-3 text-emerald-600" />
-                                </div>
-                              ) : message.status === 'sent' ? (
-                                <div className="p-1.5 rounded-lg bg-blue-100">
-                                  <Send className="h-3 w-3 text-blue-600" />
-                                </div>
-                              ) : message.status === 'failed' ? (
-                                <div className="p-1.5 rounded-lg bg-red-100">
-                                  <AlertCircle className="h-3 w-3 text-red-600" />
-                                </div>
-                              ) : (
-                                <div className="p-1.5 rounded-lg bg-gray-100">
-                                  <Clock className="h-3 w-3 text-gray-500" />
-                                </div>
-                              )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-900">{message.content}</p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {formatDateTime(message.created_at)}
+                                </p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-900">{message.content}</p>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {formatDateTime(message.created_at)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </ScrollArea>
                   )}
@@ -602,9 +594,9 @@ export default function QuoteDetailPage() {
                     disabled={updating}
                   >
                     {updating ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Icon name="spinner" size="sm" className="mr-2 animate-spin" />
                     ) : (
-                      <Trophy className="h-4 w-4 mr-2" />
+                      <Icon name="trophy" size="sm" className="mr-2" />
                     )}
                     Mark as Won
                   </Button>
@@ -614,7 +606,7 @@ export default function QuoteDetailPage() {
                     onClick={handleMarkLost}
                     disabled={updating}
                   >
-                    <XCircle className="h-4 w-4 mr-2" />
+                    <Icon name="xCircle" size="sm" className="mr-2" />
                     Mark as Lost
                   </Button>
                   {(quote.status === 'active' || quote.status === 'paused') && (
@@ -626,12 +618,12 @@ export default function QuoteDetailPage() {
                     >
                       {quote.status === 'paused' ? (
                         <>
-                          <Play className="h-4 w-4 mr-2" />
+                          <Icon name="play" size="sm" className="mr-2" />
                           Resume Sequence
                         </>
                       ) : (
                         <>
-                          <Pause className="h-4 w-4 mr-2" />
+                          <Icon name="pause" size="sm" className="mr-2" />
                           Pause Sequence
                         </>
                       )}
@@ -653,16 +645,16 @@ export default function QuoteDetailPage() {
                   className="h-8 rounded-lg"
                 >
                   {resending ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Icon name="spinner" size="xs" className="animate-spin" />
                   ) : (
-                    <RefreshCw className="h-3 w-3" />
+                    <Icon name="refresh" size="xs" />
                   )}
                 </Button>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
+                    <Icon name="email" size="sm" className="text-gray-400" />
                     <span>Email</span>
                   </div>
                   {quote.email_sent_at ? (
@@ -675,7 +667,7 @@ export default function QuoteDetailPage() {
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
                   <div className="flex items-center gap-2">
-                    <Send className="h-4 w-4 text-gray-400" />
+                    <Icon name="send" size="sm" className="text-gray-400" />
                     <span>SMS</span>
                   </div>
                   {quote.sms_sent_at ? (
@@ -693,7 +685,7 @@ export default function QuoteDetailPage() {
             {stripeStatus.connected && stripeStatus.chargesEnabled && (
               <Card className="card-elevated p-6 rounded-2xl">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-primary" />
+                  <Icon name="creditCard" size="sm" className="text-primary" />
                   Payment
                 </h3>
                 <div className="space-y-3">
@@ -716,7 +708,7 @@ export default function QuoteDetailPage() {
                         className="flex-1 rounded-lg"
                         onClick={handleCopyPaymentLink}
                       >
-                        <Copy className="h-3 w-3 mr-1" />
+                        <Icon name="copy" size="xs" className="mr-1" />
                         Copy Link
                       </Button>
                       <Button
@@ -725,7 +717,7 @@ export default function QuoteDetailPage() {
                         className="rounded-lg"
                         onClick={() => window.open(quote.payment_link_url!, '_blank')}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <Icon name="externalLink" size="xs" />
                       </Button>
                     </div>
                   ) : quote.status !== 'won' && quote.status !== 'lost' && (
@@ -737,9 +729,9 @@ export default function QuoteDetailPage() {
                       disabled={generatingPaymentLink}
                     >
                       {generatingPaymentLink ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        <Icon name="spinner" size="xs" className="animate-spin mr-1" />
                       ) : (
-                        <Sparkles className="h-3 w-3 mr-1" />
+                        <Icon name="sparkles" size="xs" className="mr-1" />
                       )}
                       Generate Payment Link
                     </Button>
@@ -784,7 +776,7 @@ export default function QuoteDetailPage() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmMarkLost} disabled={updating} className="rounded-xl">
-              {updating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {updating && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
               Mark as Lost
             </Button>
           </DialogFooter>

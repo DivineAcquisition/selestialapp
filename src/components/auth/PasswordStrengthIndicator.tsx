@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, X } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface PasswordStrengthIndicatorProps {
   password: string;
@@ -69,9 +69,9 @@ export default function PasswordStrengthIndicator({ password }: PasswordStrength
         {results.map((req, i) => (
           <div key={i} className="flex items-center gap-1.5 text-xs">
             {req.passed ? (
-              <Check className="w-3 h-3 text-emerald-500" />
+              <Icon name="check" size="xs" className="text-emerald-500" />
             ) : (
-              <X className="w-3 h-3 text-muted-foreground" />
+              <Icon name="close" size="xs" className="text-muted-foreground" />
             )}
             <span className={req.passed ? 'text-foreground' : 'text-muted-foreground'}>
               {req.label}

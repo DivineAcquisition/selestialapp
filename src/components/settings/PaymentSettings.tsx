@@ -8,17 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useStripeConnect } from '@/hooks/useStripeConnect';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useToast } from '@/hooks/use-toast';
-import {
-  CreditCard,
-  ExternalLink,
-  Loader2,
-  Check,
-  AlertCircle,
-  DollarSign,
-  ArrowRight,
-  Building2,
-  RefreshCw,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -102,7 +92,7 @@ export default function PaymentSettings() {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
         </div>
       </Card>
     );
@@ -116,7 +106,7 @@ export default function PaymentSettings() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-sm">
-                <CreditCard className="h-6 w-6 text-primary" />
+                <Icon name="creditCard" size="xl" className="text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Payment Processing</h3>
@@ -127,7 +117,7 @@ export default function PaymentSettings() {
             </div>
             {status.connected && status.chargesEnabled && (
               <Badge variant="default" className="gap-1.5 px-3 py-1">
-                <Check className="h-3.5 w-3.5" />
+                <Icon name="check" size="xs" />
                 Connected
               </Badge>
             )}
@@ -139,7 +129,7 @@ export default function PaymentSettings() {
             /* Not Connected State */
             <div className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
-                <Building2 className="h-10 w-10 text-muted-foreground" />
+                <Icon name="building" size="3xl" className="text-muted-foreground" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Connect Your Stripe Account</h4>
               <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
@@ -147,9 +137,9 @@ export default function PaymentSettings() {
               </p>
               <Button onClick={handleConnect} disabled={connecting} className="gap-2 glow-sm">
                 {connecting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Icon name="spinner" size="md" className="animate-spin" />
                 ) : (
-                  <ArrowRight className="h-4 w-4" />
+                  <Icon name="arrowRight" size="md" />
                 )}
                 Connect with Stripe
               </Button>
@@ -161,7 +151,7 @@ export default function PaymentSettings() {
             /* Onboarding Incomplete */
             <div className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <AlertCircle className="h-10 w-10 text-amber-600" />
+                <Icon name="alertCircle" size="3xl" className="text-amber-600" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Complete Your Setup</h4>
               <p className="text-sm text-muted-foreground mb-6">
@@ -170,14 +160,14 @@ export default function PaymentSettings() {
               <div className="flex gap-3 justify-center">
                 <Button onClick={handleResume} disabled={connecting} className="gap-2">
                   {connecting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Icon name="spinner" size="md" className="animate-spin" />
                   ) : (
-                    <ArrowRight className="h-4 w-4" />
+                    <Icon name="arrowRight" size="md" />
                   )}
                   Continue Setup
                 </Button>
                 <Button variant="outline" onClick={() => refetch()} className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
+                  <Icon name="refresh" size="md" />
                   Refresh
                 </Button>
               </div>
@@ -188,7 +178,7 @@ export default function PaymentSettings() {
               {/* Connected Successfully Message */}
               <div className="text-center py-6">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <Check className="h-8 w-8 text-emerald-600" />
+                  <Icon name="check" size="2xl" className="text-emerald-600" />
                 </div>
                 <h4 className="text-lg font-semibold mb-2">Payments Enabled</h4>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -199,7 +189,7 @@ export default function PaymentSettings() {
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t border-border">
                 <Button variant="outline" onClick={() => openDashboard()} className="gap-2">
-                  <ExternalLink className="h-4 w-4" />
+                  <Icon name="externalLink" size="md" />
                   Stripe Dashboard
                 </Button>
                 <AlertDialog>
@@ -224,7 +214,7 @@ export default function PaymentSettings() {
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         {disconnecting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Icon name="spinner" size="md" className="animate-spin" />
                         ) : (
                           'Disconnect'
                         )}
@@ -243,7 +233,7 @@ export default function PaymentSettings() {
         <Card className="p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-muted-foreground" />
+              <Icon name="dollar" size="xl" className="text-muted-foreground" />
             </div>
             <div>
               <h3 className="font-semibold">Payment Options</h3>

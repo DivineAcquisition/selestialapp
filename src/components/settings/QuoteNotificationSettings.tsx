@@ -10,18 +10,7 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Send, 
-  Mail, 
-  MessageSquare, 
-  Loader2, 
-  Check,
-  Palette,
-  Info,
-  Upload,
-  Image,
-  X
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function QuoteNotificationSettings() {
   const { business, refetch } = useBusiness();
@@ -194,7 +183,7 @@ export default function QuoteNotificationSettings() {
     <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2.5 bg-primary/10 rounded-xl">
-          <Send className="h-5 w-5 text-primary" />
+          <Icon name="send" size="lg" className="text-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Quote Notifications</h3>
@@ -210,7 +199,7 @@ export default function QuoteNotificationSettings() {
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                <Mail className="h-5 w-5 text-gray-500" />
+                <Icon name="email" size="lg" className="text-gray-500" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Send Email</p>
@@ -223,7 +212,7 @@ export default function QuoteNotificationSettings() {
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                <MessageSquare className="h-5 w-5 text-gray-500" />
+                <Icon name="message" size="lg" className="text-gray-500" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Send SMS</p>
@@ -237,7 +226,7 @@ export default function QuoteNotificationSettings() {
         {/* Company Logo */}
         <Field name="logo">
           <FieldLabel className="flex items-center gap-2">
-            <Image className="h-4 w-4 text-gray-400" />
+            <Icon name="image" size="md" className="text-gray-400" />
             Company Logo
           </FieldLabel>
           <div className="flex items-center gap-4">
@@ -252,12 +241,12 @@ export default function QuoteNotificationSettings() {
                   onClick={handleRemoveLogo}
                   className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <Icon name="close" size="xs" />
                 </button>
               </div>
             ) : (
               <div className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
-                <Image className="h-6 w-6 text-gray-400" />
+                <Icon name="image" size="xl" className="text-gray-400" />
               </div>
             )}
             <div>
@@ -276,9 +265,9 @@ export default function QuoteNotificationSettings() {
                 className="gap-2 rounded-xl"
               >
                 {uploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Icon name="spinner" size="md" className="animate-spin" />
                 ) : (
-                  <Upload className="h-4 w-4" />
+                  <Icon name="upload" size="md" />
                 )}
                 {logoUrl ? 'Change Logo' : 'Upload Logo'}
               </Button>
@@ -292,7 +281,7 @@ export default function QuoteNotificationSettings() {
         {/* Brand Color */}
         <Field name="color">
           <FieldLabel className="flex items-center gap-2">
-            <Palette className="h-4 w-4 text-gray-400" />
+            <Icon name="palette" size="md" className="text-gray-400" />
             Brand Color
           </FieldLabel>
           <div className="flex items-center gap-3">
@@ -362,7 +351,7 @@ export default function QuoteNotificationSettings() {
         {/* Merge Fields Reference */}
         <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-600 mt-0.5" />
+            <Icon name="info" size="md" className="text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-900 mb-2">Available Merge Fields</p>
               <div className="flex flex-wrap gap-2">
@@ -384,9 +373,9 @@ export default function QuoteNotificationSettings() {
         <div className="flex justify-end pt-4 border-t border-gray-100">
           <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-xl">
             {saving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Icon name="spinner" size="md" className="animate-spin" />
             ) : saved ? (
-              <Check className="w-4 h-4" />
+              <Icon name="check" size="md" />
             ) : null}
             {saved ? 'Saved!' : 'Save Settings'}
           </Button>

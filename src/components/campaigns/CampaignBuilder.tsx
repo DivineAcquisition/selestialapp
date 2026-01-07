@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useCampaigns, Campaign, CampaignFormData } from '@/hooks/useCampaigns';
 import { useBusiness } from '@/contexts/BusinessContext';
-import { Loader2, Calendar, Users, MessageSquare, Percent, Tag } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface CampaignBuilderProps {
   open: boolean;
@@ -215,7 +215,7 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
           {/* Schedule */}
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <Icon name="calendar" size="sm" />
               Schedule
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -241,7 +241,7 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
           {/* Targeting */}
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
-              <Users className="w-4 h-4" />
+              <Icon name="users" size="sm" />
               Targeting Filters
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -275,7 +275,7 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
           {/* Message */}
           <div className="space-y-4">
             <h3 className="font-medium flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
+              <Icon name="message" size="sm" />
               Message
             </h3>
             <div>
@@ -311,7 +311,7 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-medium flex items-center gap-2">
-                <Percent className="w-4 h-4" />
+                <Icon name="percent" size="sm" />
                 Promotion
               </h3>
               <Switch
@@ -368,7 +368,7 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={saving || !formData.name || !formData.sms_message}>
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {saving && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
             {campaign?.id ? 'Save Changes' : 'Create Campaign'}
           </Button>
         </DialogFooter>

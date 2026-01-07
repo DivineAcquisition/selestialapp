@@ -1,15 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { formatPhone, formatCurrency } from '@/lib/formatters';
 import type { Conversation } from '@/hooks/useConversations';
-import { 
-  ArrowLeft, 
-  Phone, 
-  ExternalLink, 
-  MoreVertical,
-  Pause,
-  Play,
-  Trophy
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +34,7 @@ export default function ConversationHeader({
         onClick={onBack}
         className="lg:hidden flex-shrink-0"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <Icon name="arrowLeft" size="lg" />
       </Button>
 
       {/* Avatar */}
@@ -70,19 +62,19 @@ export default function ConversationHeader({
           asChild
         >
           <a href={`tel:${conversation.customerPhone}`}>
-            <Phone className="w-5 h-5" />
+            <Icon name="phone" size="lg" />
           </a>
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
-              <MoreVertical className="w-5 h-5" />
+              <Icon name="moreVertical" size="lg" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onViewQuote}>
-              <ExternalLink className="w-4 h-4 mr-2" />
+              <Icon name="externalLink" size="sm" className="mr-2" />
               View Quote
             </DropdownMenuItem>
             
@@ -90,21 +82,21 @@ export default function ConversationHeader({
             
             {conversation.status === 'active' && onPauseResume && (
               <DropdownMenuItem onClick={onPauseResume}>
-                <Pause className="w-4 h-4 mr-2" />
+                <Icon name="pause" size="sm" className="mr-2" />
                 Pause Follow-up
               </DropdownMenuItem>
             )}
             
             {conversation.status === 'paused' && onPauseResume && (
               <DropdownMenuItem onClick={onPauseResume}>
-                <Play className="w-4 h-4 mr-2" />
+                <Icon name="play" size="sm" className="mr-2" />
                 Resume Follow-up
               </DropdownMenuItem>
             )}
             
             {!['won', 'lost'].includes(conversation.status) && onMarkWon && (
               <DropdownMenuItem onClick={onMarkWon} className="text-emerald-600">
-                <Trophy className="w-4 h-4 mr-2" />
+                <Icon name="trophy" size="sm" className="mr-2" />
                 Mark as Won
               </DropdownMenuItem>
             )}

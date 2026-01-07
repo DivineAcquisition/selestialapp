@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Icon } from '@/components/ui/icon';
 import { 
   Select,
   SelectContent,
@@ -30,24 +31,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AnimatedCounter } from '@/components/ui/text-effects';
 import { useCustomers } from '@/hooks/useCustomers';
-import { 
-  Search, 
-  Users, 
-  UserCheck, 
-  AlertTriangle, 
-  Clock,
-  MoreHorizontal,
-  MessageSquare,
-  Phone,
-  Mail,
-  RefreshCw,
-  Loader2,
-  Heart,
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone, formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -70,9 +53,9 @@ export default function CustomersPage() {
   };
 
   const getHealthIcon = (score: number) => {
-    if (score >= 70) return <TrendingUp className="h-3 w-3" />;
-    if (score >= 40) return <Heart className="h-3 w-3" />;
-    return <TrendingDown className="h-3 w-3" />;
+    if (score >= 70) return <Icon name="trendUp" size="xs" />;
+    if (score >= 40) return <Icon name="heart" size="xs" />;
+    return <Icon name="trendDown" size="xs" />;
   };
 
   const getTypeBadge = (type: string) => {
@@ -96,7 +79,7 @@ export default function CustomersPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-            <Users className="h-6 w-6 text-white" />
+            <Icon name="users" size="xl" className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
@@ -109,9 +92,9 @@ export default function CustomersPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                <Users className="h-5 w-5" />
+                <Icon name="users" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.total} />
@@ -122,7 +105,7 @@ export default function CustomersPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                <UserCheck className="h-5 w-5" />
+                <Icon name="userCheck" size="lg" />
               </div>
               <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">
                 Active
@@ -137,9 +120,9 @@ export default function CustomersPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-orange-100 text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                <AlertTriangle className="h-5 w-5" />
+                <Icon name="warning" size="lg" />
               </div>
-              <Sparkles className="h-4 w-4 text-orange-500" />
+              <Icon name="sparkles" size="sm" className="text-orange-500" />
             </div>
             <div className="text-3xl font-bold text-orange-600 mb-1">
               <AnimatedCounter value={stats.atRisk} />
@@ -150,7 +133,7 @@ export default function CustomersPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-gray-100 text-gray-600 group-hover:bg-gray-500 group-hover:text-white transition-colors">
-                <Clock className="h-5 w-5" />
+                <Icon name="clock" size="lg" />
               </div>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
@@ -166,7 +149,7 @@ export default function CustomersPage() {
             <h2 className="font-semibold text-gray-900">Customer List</h2>
             <div className="flex gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Search customers..."
                   value={search}
@@ -188,7 +171,7 @@ export default function CustomersPage() {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={refetch} className="rounded-xl">
-                <RefreshCw className="h-4 w-4" />
+                <Icon name="refresh" size="sm" />
               </Button>
             </div>
           </div>
@@ -196,12 +179,12 @@ export default function CustomersPage() {
           <div className="p-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
               </div>
             ) : customers.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-gray-400" />
+                  <Icon name="users" size="2xl" className="text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No customers yet</h3>
                 <p className="text-gray-500 max-w-md mx-auto">
@@ -272,21 +255,21 @@ export default function CustomersPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="rounded-lg">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <Icon name="more" size="sm" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="rounded-xl">
                             <DropdownMenuItem className="rounded-lg">
-                              <MessageSquare className="h-4 w-4 mr-2" />
+                              <Icon name="message" size="sm" className="mr-2" />
                               Send Message
                             </DropdownMenuItem>
                             <DropdownMenuItem className="rounded-lg">
-                              <Phone className="h-4 w-4 mr-2" />
+                              <Icon name="phone" size="sm" className="mr-2" />
                               Call
                             </DropdownMenuItem>
                             {customer.email && (
                               <DropdownMenuItem className="rounded-lg">
-                                <Mail className="h-4 w-4 mr-2" />
+                                <Icon name="email" size="sm" className="mr-2" />
                                 Email
                               </DropdownMenuItem>
                             )}

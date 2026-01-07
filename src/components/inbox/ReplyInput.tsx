@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface ReplyInputProps {
   onSend: (content: string) => Promise<{ error: string | null }>;
@@ -70,9 +70,9 @@ export default function ReplyInput({ onSend, sending, disabled }: ReplyInputProp
           className="flex-shrink-0 h-11 w-11"
         >
           {sending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icon name="spinner" size="lg" className="animate-spin" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Icon name="send" size="lg" />
           )}
         </Button>
       </div>

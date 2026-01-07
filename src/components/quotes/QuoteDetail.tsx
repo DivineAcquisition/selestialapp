@@ -28,27 +28,7 @@ import { usePayments } from '@/hooks/usePayments';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
-import { 
-  Phone, 
-  Mail, 
-  Calendar, 
-  Clock, 
-  Edit2, 
-  Trophy, 
-  XCircle, 
-  Pause, 
-  Play,
-  X,
-  Loader2,
-  CheckCircle,
-  Send,
-  AlertCircle,
-  User,
-  RefreshCw,
-  CreditCard,
-  Copy,
-  ExternalLink
-} from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Quote = Tables<'quotes'>;
@@ -178,7 +158,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               <p className="text-muted-foreground">{quote.service_type}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
+              <Icon name="close" size="md" />
             </Button>
           </div>
           
@@ -200,7 +180,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 href={`tel:${quote.customer_phone}`}
                 className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
               >
-                <Phone className="h-4 w-4 text-muted-foreground" />
+                <Icon name="phone" size="md" className="text-muted-foreground" />
                 {formatPhone(quote.customer_phone)}
               </a>
               {quote.customer_email && (
@@ -208,7 +188,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                   href={`mailto:${quote.customer_email}`}
                   className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
                 >
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="email" size="md" className="text-muted-foreground" />
                   {quote.customer_email}
                 </a>
               )}
@@ -220,24 +200,24 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Details</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-foreground">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Icon name="calendar" size="md" className="text-muted-foreground" />
                 Created {formatDate(quote.created_at)} ({daysSince} days ago)
               </div>
               {quote.next_message_at && quote.status === 'active' && (
                 <div className="flex items-center gap-2 text-foreground">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="clock" size="md" className="text-muted-foreground" />
                   Next message: {formatDateTime(quote.next_message_at)}
                 </div>
               )}
               {quote.won_at && (
                 <div className="flex items-center gap-2 text-emerald-600">
-                  <Trophy className="h-4 w-4" />
+                  <Icon name="trophy" size="md" />
                   Won on {formatDate(quote.won_at)}
                 </div>
               )}
               {quote.lost_at && (
                 <div className="flex items-center gap-2 text-destructive">
-                  <XCircle className="h-4 w-4" />
+                  <Icon name="xCircle" size="md" />
                   Lost on {formatDate(quote.lost_at)}
                   {lostReasonLabel && ` - ${lostReasonLabel}`}
                 </div>
@@ -265,20 +245,20 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 className="h-7 text-xs"
               >
                 {resending ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  <Icon name="spinner" size="xs" className="animate-spin mr-1" />
                 ) : (
-                  <RefreshCw className="h-3 w-3 mr-1" />
+                  <Icon name="refresh" size="xs" className="mr-1" />
                 )}
                 Resend
               </Button>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-foreground">
-                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Icon name="email" size="md" className="text-muted-foreground" />
                 Email:
                 {quote.email_sent_at ? (
                   <span className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
+                    <Icon name="checkCircle" size="xs" />
                     Sent {formatDistanceToNow(new Date(quote.email_sent_at), { addSuffix: true })}
                   </span>
                 ) : quote.email_status === 'failed' ? (
@@ -288,11 +268,11 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 )}
               </div>
               <div className="flex items-center gap-2 text-foreground">
-                <Send className="h-4 w-4 text-muted-foreground" />
+                <Icon name="send" size="md" className="text-muted-foreground" />
                 SMS:
                 {quote.sms_sent_at ? (
                   <span className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle className="h-3 w-3" />
+                    <Icon name="checkCircle" size="xs" />
                     Sent {formatDistanceToNow(new Date(quote.sms_sent_at), { addSuffix: true })}
                   </span>
                 ) : quote.sms_status === 'failed' ? (
@@ -311,10 +291,10 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               <div className="space-y-3">
                 {/* Payment Status */}
                 <div className="flex items-center gap-2 text-sm">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="creditCard" size="md" className="text-muted-foreground" />
                   {quote.payment_status === 'paid' ? (
                     <span className="flex items-center gap-1 text-emerald-600">
-                      <CheckCircle className="h-3 w-3" />
+                      <Icon name="checkCircle" size="xs" />
                       Paid {quote.paid_at && formatDistanceToNow(new Date(quote.paid_at), { addSuffix: true })}
                       {quote.paid_amount && ` - ${formatCurrency(quote.paid_amount / 100)}`}
                     </span>
@@ -336,7 +316,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                       className="flex-1 h-8 text-xs"
                       onClick={handleCopyPaymentLink}
                     >
-                      <Copy className="h-3 w-3 mr-1" />
+                      <Icon name="copy" size="xs" className="mr-1" />
                       Copy Payment Link
                     </Button>
                     <Button
@@ -345,7 +325,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                       className="h-8"
                       onClick={() => window.open(quote.payment_link_url!, '_blank')}
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      <Icon name="externalLink" size="xs" />
                     </Button>
                   </div>
                 ) : quote.status !== 'won' && quote.status !== 'lost' && (
@@ -357,9 +337,9 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                     disabled={generatingPaymentLink}
                   >
                     {generatingPaymentLink ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      <Icon name="spinner" size="xs" className="animate-spin mr-1" />
                     ) : (
-                      <CreditCard className="h-3 w-3 mr-1" />
+                      <Icon name="creditCard" size="xs" className="mr-1" />
                     )}
                     Generate Payment Link
                   </Button>
@@ -378,7 +358,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             
             {messagesLoading ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <Icon name="spinner" size="lg" className="animate-spin text-muted-foreground" />
               </div>
             ) : messages.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
@@ -387,32 +367,41 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             ) : (
               <ScrollArea className="h-48">
                 <div className="space-y-3">
-                  {messages.map((message) => (
-                    <div key={message.id} className="flex items-start gap-2">
-                      <div className="shrink-0 mt-0.5">
-                        {message.direction === 'inbound' ? (
-                          <User className="h-4 w-4 text-primary" />
-                        ) : message.status === 'delivered' ? (
-                          <CheckCircle className="h-4 w-4 text-emerald-600" />
-                        ) : message.status === 'sent' ? (
-                          <Send className="h-4 w-4 text-blue-600" />
-                        ) : message.status === 'failed' ? (
-                          <AlertCircle className="h-4 w-4 text-destructive" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                        )}
+                  {messages.map((message) => {
+                    let iconName: IconName = 'clock';
+                    let iconClass = 'text-muted-foreground';
+                    
+                    if (message.direction === 'inbound') {
+                      iconName = 'user';
+                      iconClass = 'text-primary';
+                    } else if (message.status === 'delivered') {
+                      iconName = 'checkCircle';
+                      iconClass = 'text-emerald-600';
+                    } else if (message.status === 'sent') {
+                      iconName = 'send';
+                      iconClass = 'text-blue-600';
+                    } else if (message.status === 'failed') {
+                      iconName = 'alertCircle';
+                      iconClass = 'text-destructive';
+                    }
+                    
+                    return (
+                      <div key={message.id} className="flex items-start gap-2">
+                        <div className="shrink-0 mt-0.5">
+                          <Icon name={iconName} size="md" className={iconClass} />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground break-words">
+                            {message.content}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatDateTime(message.created_at)}
+                          </p>
+                        </div>
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground break-words">
-                          {message.content}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {formatDateTime(message.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </ScrollArea>
             )}
@@ -431,9 +420,9 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 disabled={updating}
               >
                 {updating ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Icon name="spinner" size="md" className="mr-2 animate-spin" />
                 ) : (
-                  <Trophy className="h-4 w-4 mr-2" />
+                  <Icon name="trophy" size="md" className="mr-2" />
                 )}
                 Mark Won
               </Button>
@@ -443,7 +432,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 onClick={handleMarkLost}
                 disabled={updating}
               >
-                <XCircle className="h-4 w-4 mr-2" />
+                <Icon name="xCircle" size="md" className="mr-2" />
                 Mark Lost
               </Button>
             </div>
@@ -458,15 +447,15 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               disabled={updating}
             >
               {updating ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon name="spinner" size="md" className="mr-2 animate-spin" />
               ) : quote.status === 'paused' ? (
                 <>
-                  <Play className="h-4 w-4 mr-2" />
+                  <Icon name="play" size="md" className="mr-2" />
                   Resume Sequence
                 </>
               ) : (
                 <>
-                  <Pause className="h-4 w-4 mr-2" />
+                  <Icon name="pause" size="md" className="mr-2" />
                   Pause Sequence
                 </>
               )}
@@ -475,7 +464,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
           
           {/* Edit button */}
           <Button variant="ghost" className="w-full" onClick={onEdit}>
-            <Edit2 className="h-4 w-4 mr-2" />
+            <Icon name="edit" size="md" className="mr-2" />
             Edit Quote
           </Button>
         </div>
@@ -512,7 +501,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmMarkLost} disabled={updating}>
-              {updating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {updating && <Icon name="spinner" size="md" className="mr-2 animate-spin" />}
               Mark as Lost
             </Button>
           </DialogFooter>

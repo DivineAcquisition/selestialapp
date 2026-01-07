@@ -1,51 +1,48 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { 
-  Zap, 
-  MessageSquare, 
-  BarChart3, 
-  Brain, 
-  Bell,
-  Clock,
-  Shield,
-  Smartphone,
-  ArrowRight,
-} from 'lucide-react'
+import { Icon, IconName } from '@/components/ui/icon'
 
-const features = [
+interface Feature {
+  icon: IconName;
+  title: string;
+  description: string;
+  benefits: string[];
+}
+
+const features: Feature[] = [
   {
-    icon: Zap,
+    icon: 'bolt',
     title: 'Automated Sequences',
     description: 'Create custom follow-up sequences that run automatically. Set delays, conditions, and personalization rules.',
     benefits: ['Multi-channel sequences', 'Smart timing optimization', 'A/B testing'],
   },
   {
-    icon: Brain,
+    icon: 'robot',
     title: 'AI Smart Replies',
     description: 'Get intelligent response suggestions powered by Claude AI. Reply to customers in seconds with professional messages.',
     benefits: ['Context-aware suggestions', 'Tone customization', 'Learn from your style'],
   },
   {
-    icon: MessageSquare,
+    icon: 'message',
     title: 'Unified Inbox',
     description: 'Manage all customer conversations in one place. SMS, email, and more - all in a single view.',
     benefits: ['Real-time sync', 'Conversation history', 'Team collaboration'],
   },
   {
-    icon: BarChart3,
+    icon: 'chart',
     title: 'Analytics Dashboard',
     description: 'Track your win rate, response times, and revenue. Make data-driven decisions to grow your business.',
     benefits: ['Revenue tracking', 'Performance insights', 'Custom reports'],
   },
   {
-    icon: Bell,
+    icon: 'bell',
     title: 'Smart Notifications',
     description: 'Never miss an important lead. Get alerts when customers respond or when action is needed.',
     benefits: ['Push notifications', 'Email alerts', 'Custom triggers'],
   },
   {
-    icon: Clock,
+    icon: 'clock',
     title: 'Business Hours',
     description: 'Respect your customers\' time and yours. Schedule messages to send during business hours only.',
     benefits: ['Time zone support', 'Holiday scheduling', 'Custom schedules'],
@@ -69,7 +66,7 @@ export default function FeaturesPage() {
           {features.map((feature) => (
             <Card key={feature.title} className="p-6 feature-card">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <feature.icon className="h-6 w-6 text-primary" />
+                <Icon name={feature.icon} size="xl" className="text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
               <p className="text-muted-foreground mb-4">{feature.description}</p>
@@ -89,7 +86,7 @@ export default function FeaturesPage() {
           <Link href="/signup">
             <Button size="lg" className="text-lg h-14 px-8 glow">
               Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <Icon name="arrowRight" size="lg" className="ml-2" />
             </Button>
           </Link>
         </div>

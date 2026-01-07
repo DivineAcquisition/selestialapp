@@ -10,24 +10,7 @@ import { format } from 'date-fns';
 import Layout from '@/components/layout/Layout';
 import CampaignBuilder from '@/components/campaigns/CampaignBuilder';
 import CampaignTemplateLibrary from '@/components/campaigns/CampaignTemplateLibrary';
-import {
-  Megaphone,
-  Plus,
-  Calendar,
-  Users,
-  TrendingUp,
-  Play,
-  Pause,
-  Trash2,
-  Edit,
-  Loader2,
-  Sparkles,
-  Send,
-  Target,
-  MessageSquare,
-  MoreVertical,
-  ArrowRight,
-} from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -64,14 +47,14 @@ export default function CampaignsPage() {
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): { name: IconName; color: string } => {
     switch (type) {
-      case 'seasonal': return <Sparkles className="w-5 h-5 text-pink-500" />;
-      case 'holiday': return <Calendar className="w-5 h-5 text-purple-500" />;
-      case 'weather': return <TrendingUp className="w-5 h-5 text-blue-500" />;
-      case 'slow_season': return <Target className="w-5 h-5 text-amber-500" />;
-      case 'custom': return <Edit className="w-5 h-5 text-gray-500" />;
-      default: return <Megaphone className="w-5 h-5 text-primary" />;
+      case 'seasonal': return { name: 'sparkles', color: 'text-pink-500' };
+      case 'holiday': return { name: 'calendar', color: 'text-purple-500' };
+      case 'weather': return { name: 'trendUp', color: 'text-blue-500' };
+      case 'slow_season': return { name: 'target', color: 'text-amber-500' };
+      case 'custom': return { name: 'edit', color: 'text-gray-500' };
+      default: return { name: 'megaphone', color: 'text-primary' };
     }
   };
 
@@ -117,7 +100,7 @@ export default function CampaignsPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <Megaphone className="h-6 w-6 text-white" />
+              <Icon name="megaphone" size="xl" className="text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Campaigns</h1>
@@ -126,14 +109,14 @@ export default function CampaignsPage() {
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setShowTemplates(true)} className="rounded-xl">
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Icon name="sparkles" size="sm" className="mr-2" />
               Templates
             </Button>
             <Button 
               onClick={() => { setEditingCampaign(null); setShowBuilder(true); }}
               className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Icon name="plus" size="sm" className="mr-2" />
               New Campaign
             </Button>
           </div>
@@ -144,9 +127,9 @@ export default function CampaignsPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                <Megaphone className="w-5 h-5" />
+                <Icon name="megaphone" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.total} />
@@ -157,7 +140,7 @@ export default function CampaignsPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <Send className="w-5 h-5" />
+                <Icon name="send" size="lg" />
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">Active</Badge>
             </div>
@@ -170,7 +153,7 @@ export default function CampaignsPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                <MessageSquare className="w-5 h-5" />
+                <Icon name="message" size="lg" />
               </div>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
@@ -182,9 +165,9 @@ export default function CampaignsPage() {
           <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <Target className="w-5 h-5" />
+                <Icon name="target" size="lg" />
               </div>
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <Icon name="sparkles" size="sm" className="text-primary animate-pulse" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.totalBookings} />
@@ -196,12 +179,12 @@ export default function CampaignsPage() {
         {/* Campaign List */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
           </div>
         ) : campaigns.length === 0 ? (
           <Card className="card-elevated p-12 text-center">
             <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-6">
-              <Megaphone className="w-10 h-10 text-primary" />
+              <Icon name="megaphone" size="3xl" className="text-primary" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No campaigns yet</h3>
             <p className="text-gray-500 mb-8 max-w-md mx-auto">
@@ -221,85 +204,90 @@ export default function CampaignsPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {campaigns.map((campaign) => (
-              <Card key={campaign.id} className="card-elevated p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">{getTypeIcon(campaign.campaign_type)}</div>
-                      <h3 className="font-semibold text-gray-900 text-lg">{campaign.name}</h3>
-                      <Badge className={cn('text-xs', getStatusColor(campaign.status))}>
-                        {campaign.status}
-                      </Badge>
-                      {campaign.has_promotion && (
-                        <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                          {campaign.promotion_type === 'percentage' 
-                            ? `${campaign.promotion_value}% off`
-                            : `$${campaign.promotion_value} off`}
+            {campaigns.map((campaign) => {
+              const typeIcon = getTypeIcon(campaign.campaign_type);
+              return (
+                <Card key={campaign.id} className="card-elevated p-6 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                          <Icon name={typeIcon.name} size="lg" className={typeIcon.color} />
+                        </div>
+                        <h3 className="font-semibold text-gray-900 text-lg">{campaign.name}</h3>
+                        <Badge className={cn('text-xs', getStatusColor(campaign.status))}>
+                          {campaign.status}
                         </Badge>
+                        {campaign.has_promotion && (
+                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                            {campaign.promotion_type === 'percentage' 
+                              ? `${campaign.promotion_value}% off`
+                              : `$${campaign.promotion_value} off`}
+                          </Badge>
+                        )}
+                      </div>
+                      {campaign.description && (
+                        <p className="text-sm text-gray-500 mb-4">{campaign.description}</p>
                       )}
+                      <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <span className="flex items-center gap-2">
+                          <Icon name="calendar" size="sm" />
+                          {campaign.start_date 
+                            ? format(new Date(campaign.start_date), 'MMM d, yyyy')
+                            : 'Not scheduled'}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <Icon name="users" size="sm" />
+                          {campaign.total_targeted} targeted
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <Icon name="send" size="sm" />
+                          {campaign.total_sent} sent
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <Icon name="trendUp" size="sm" />
+                          {campaign.total_bookings} booked
+                        </span>
+                      </div>
                     </div>
-                    {campaign.description && (
-                      <p className="text-sm text-gray-500 mb-4">{campaign.description}</p>
-                    )}
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
-                      <span className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {campaign.start_date 
-                          ? format(new Date(campaign.start_date), 'MMM d, yyyy')
-                          : 'Not scheduled'}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        {campaign.total_targeted} targeted
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Send className="w-4 h-4" />
-                        {campaign.total_sent} sent
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4" />
-                        {campaign.total_bookings} booked
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {campaign.status === 'draft' && (
-                      <Button size="sm" onClick={() => handleSchedule(campaign.id)} className="rounded-xl">
-                        <Play className="w-4 h-4 mr-1" />
-                        Schedule
-                      </Button>
-                    )}
-                    {campaign.status === 'active' && (
-                      <Button size="sm" variant="outline" onClick={() => handlePause(campaign.id)} className="rounded-xl">
-                        <Pause className="w-4 h-4 mr-1" />
-                        Pause
-                      </Button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="rounded-xl">
-                          <MoreVertical className="w-4 h-4" />
+                    <div className="flex items-center gap-2">
+                      {campaign.status === 'draft' && (
+                        <Button size="sm" onClick={() => handleSchedule(campaign.id)} className="rounded-xl">
+                          <Icon name="play" size="sm" className="mr-1" />
+                          Schedule
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-xl">
-                        <DropdownMenuItem onClick={() => { setEditingCampaign(campaign); setShowBuilder(true); }} className="rounded-lg">
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setDeleteConfirm(campaign.id)}
-                          className="text-red-600 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      )}
+                      {campaign.status === 'active' && (
+                        <Button size="sm" variant="outline" onClick={() => handlePause(campaign.id)} className="rounded-xl">
+                          <Icon name="pause" size="sm" className="mr-1" />
+                          Pause
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-xl">
+                            <Icon name="moreVertical" size="sm" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-xl">
+                          <DropdownMenuItem onClick={() => { setEditingCampaign(campaign); setShowBuilder(true); }} className="rounded-lg">
+                            <Icon name="edit" size="sm" className="mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteConfirm(campaign.id)}
+                            className="text-red-600 rounded-lg"
+                          >
+                            <Icon name="trash" size="sm" className="mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

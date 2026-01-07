@@ -15,7 +15,7 @@ import {
 import StepEditor from './StepEditor';
 import TemplateLibrary from './TemplateLibrary';
 import { generateId } from '@/lib/formatters';
-import { Plus, Wand2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface SequenceEditorProps {
   open: boolean;
@@ -165,7 +165,7 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
               onClick={() => setShowTemplates(true)}
               className="w-full gap-2 border-dashed"
             >
-              <Wand2 className="w-4 h-4" />
+              <Icon name="wand" size="sm" />
               Start from Template
             </Button>
           )}
@@ -205,7 +205,7 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
             <div className="flex items-center justify-between">
               <Label className="text-base">Sequence Steps</Label>
               <Button variant="outline" size="sm" onClick={handleAddStep} className="gap-1">
-                <Plus className="w-3 h-3" />
+                <Icon name="plus" size="xs" />
                 Add Step
               </Button>
             </div>

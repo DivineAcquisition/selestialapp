@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Bot, Send, Edit2, RefreshCw, X, Loader2 } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 interface SmartRepliesProps {
@@ -28,7 +28,7 @@ export default function SmartReplies({
       <div className="p-4 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5 border border-primary/20 rounded-xl">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+            <Icon name="spinner" size="sm" className="text-primary animate-spin" />
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900">AI is thinking...</p>
@@ -47,7 +47,7 @@ export default function SmartReplies({
       <div className="flex items-center justify-between p-3 border-b border-primary/10">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary/10 rounded-lg">
-            <Bot className="w-4 h-4 text-primary" />
+            <Icon name="robot" size="sm" className="text-primary" />
           </div>
           <span className="text-sm font-medium text-gray-900">
             AI Suggested Replies
@@ -59,14 +59,14 @@ export default function SmartReplies({
             className="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
             title="Regenerate"
           >
-            <RefreshCw className="w-4 h-4" />
+            <Icon name="refresh" size="sm" />
           </button>
           <button
             onClick={onDismiss}
             className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             title="Dismiss"
           >
-            <X className="w-4 h-4" />
+            <Icon name="close" size="sm" />
           </button>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function SmartReplies({
                       }}
                       disabled={!editedText.trim()}
                     >
-                      <Send className="w-3 h-3 mr-1" />
+                      <Icon name="send" size="xs" className="mr-1" />
                       Send
                     </Button>
                   </div>
@@ -139,14 +139,14 @@ export default function SmartReplies({
                     className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     title="Edit"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Icon name="edit" size="xs" />
                   </button>
                   <Button
                     size="sm"
                     onClick={() => onSelect(suggestion)}
                     className="h-7"
                   >
-                    <Send className="w-3 h-3 mr-1" />
+                    <Icon name="send" size="xs" className="mr-1" />
                     Send
                   </Button>
                 </div>

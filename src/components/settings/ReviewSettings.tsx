@@ -17,13 +17,7 @@ import {
 import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { 
-  ThumbsUp, 
-  Loader2, 
-  Check, 
-  ExternalLink,
-  Info,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function ReviewSettings() {
   const { business, refetch } = useBusiness();
@@ -101,7 +95,7 @@ export default function ReviewSettings() {
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-amber-100">
-            <ThumbsUp className="h-5 w-5 text-amber-600" />
+            <Icon name="thumbsUp" size="lg" className="text-amber-600" />
           </div>
           <div>
             <CardTitle className="text-gray-900">Review Requests</CardTitle>
@@ -143,7 +137,7 @@ export default function ReviewSettings() {
               className="text-xs text-primary flex items-center gap-1 hover:underline"
             >
               How to get your Google review link
-              <ExternalLink className="h-3 w-3" />
+              <Icon name="externalLink" size="xs" />
             </a>
           </Field>
 
@@ -226,7 +220,7 @@ export default function ReviewSettings() {
         {/* Merge Fields */}
         <div className="p-4 bg-gray-50 rounded-xl">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-primary mt-0.5" />
+            <Icon name="info" size="md" className="text-primary mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-900 mb-2">Available Merge Fields</p>
               <div className="flex flex-wrap gap-2">
@@ -251,9 +245,9 @@ export default function ReviewSettings() {
         <div className="flex justify-end pt-4 border-t border-gray-100">
           <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-xl">
             {saving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Icon name="spinner" size="md" className="animate-spin" />
             ) : saved ? (
-              <Check className="w-4 h-4" />
+              <Icon name="check" size="md" />
             ) : null}
             {saved ? 'Saved!' : 'Save Settings'}
           </Button>

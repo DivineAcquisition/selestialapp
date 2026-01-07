@@ -19,7 +19,7 @@ import {
   DEFAULT_RETENTION_STEPS 
 } from '@/hooks/useRetentionSequences';
 import RetentionStepEditor from './RetentionStepEditor';
-import { Plus, Save, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface RetentionSequenceEditorProps {
   open: boolean;
@@ -221,7 +221,7 @@ export default function RetentionSequenceEditor({
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Message Steps</h3>
                 <Button variant="outline" size="sm" onClick={handleAddStep}>
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Icon name="plus" size="md" className="mr-1" />
                   Add Step
                 </Button>
               </div>
@@ -253,9 +253,9 @@ export default function RetentionSequenceEditor({
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Icon name="spinner" size="md" className="mr-2 animate-spin" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Icon name="save" size="md" className="mr-2" />
             )}
             Save Sequence
           </Button>

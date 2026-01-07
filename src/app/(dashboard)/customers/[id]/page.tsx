@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AnimatedCounter } from '@/components/ui/text-effects';
+import { Icon } from '@/components/ui/icon';
 import {
   Select,
   SelectContent,
@@ -31,28 +32,6 @@ import { formatPhone, formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import {
-  ArrowLeft,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  DollarSign,
-  Briefcase,
-  Heart,
-  TrendingUp,
-  TrendingDown,
-  MessageSquare,
-  Play,
-  Save,
-  Loader2,
-  Clock,
-  RefreshCw,
-  User,
-  ThumbsUp,
-  Sparkles,
-  ArrowRight,
-} from 'lucide-react';
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -135,9 +114,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   };
 
   const getHealthIcon = (score: number) => {
-    if (score >= 70) return <TrendingUp className="h-4 w-4" />;
-    if (score >= 40) return <Heart className="h-4 w-4" />;
-    return <TrendingDown className="h-4 w-4" />;
+    if (score >= 70) return <Icon name="trendUp" size="sm" />;
+    if (score >= 40) return <Icon name="heart" size="sm" />;
+    return <Icon name="trendDown" size="sm" />;
   };
 
   const getStatusBadge = (status: string) => {
@@ -155,7 +134,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     return (
       <Layout title="Customer Details">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -166,12 +145,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       <Layout title="Customer Not Found">
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-            <User className="h-10 w-10 text-gray-400" />
+            <Icon name="user" size="3xl" className="text-gray-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Customer not found</h3>
           <p className="text-gray-500 mb-6">The customer you&apos;re looking for doesn&apos;t exist.</p>
           <Button variant="outline" onClick={() => router.push('/customers')} className="rounded-xl">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon name="arrowLeft" size="sm" className="mr-2" />
             Back to Customers
           </Button>
         </div>
@@ -185,22 +164,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <Button variant="ghost" onClick={() => router.push('/customers')} className="w-fit rounded-xl">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon name="arrowLeft" size="sm" className="mr-2" />
             Back to Customers
           </Button>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={handleRequestReview} disabled={sendingReview} className="rounded-xl">
               {sendingReview ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon name="spinner" size="sm" className="mr-2 animate-spin" />
               ) : (
-                <ThumbsUp className="h-4 w-4 mr-2" />
+                <Icon name="thumbsUp" size="sm" className="mr-2" />
               )}
               Request Review
             </Button>
             <Dialog open={showSequenceDialog} onOpenChange={setShowSequenceDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl">
-                  <Play className="h-4 w-4 mr-2" />
+                  <Icon name="play" size="sm" className="mr-2" />
                   Start Sequence
                 </Button>
               </DialogTrigger>
@@ -228,7 +207,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     Cancel
                   </Button>
                   <Button onClick={handleStartSequence} disabled={!selectedSequence || startingSequence} className="rounded-xl">
-                    {startingSequence && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {startingSequence && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
                     Start Sequence
                   </Button>
                 </DialogFooter>
@@ -266,18 +245,18 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  <Phone className="h-5 w-5 text-gray-400" />
+                  <Icon name="phone" size="lg" className="text-gray-400" />
                   <span className="text-gray-700">{formatPhone(customer.phone)}</span>
                 </div>
                 {customer.email && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Icon name="email" size="lg" className="text-gray-400" />
                     <span className="text-gray-700 truncate">{customer.email}</span>
                   </div>
                 )}
                 {customer.address && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl col-span-2">
-                    <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <Icon name="mapPin" size="lg" className="text-gray-400 flex-shrink-0" />
                     <span className="text-gray-700">{customer.address}</span>
                   </div>
                 )}
@@ -286,28 +265,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               {/* Stats Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                 <div className="group text-center p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors">
-                  <DollarSign className="h-6 w-6 mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
+                  <Icon name="dollarSign" size="xl" className="mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
                   <p className="text-xl font-bold text-gray-900">
                     {formatCurrency(customer.total_spent / 100)}
                   </p>
                   <p className="text-xs text-gray-500">Total Spent</p>
                 </div>
                 <div className="group text-center p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors">
-                  <Briefcase className="h-6 w-6 mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
+                  <Icon name="briefcase" size="xl" className="mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
                   <p className="text-xl font-bold text-gray-900">
                     <AnimatedCounter value={customer.total_jobs} />
                   </p>
                   <p className="text-xs text-gray-500">Jobs</p>
                 </div>
                 <div className="group text-center p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors">
-                  <TrendingUp className="h-6 w-6 mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
+                  <Icon name="trendUp" size="xl" className="mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
                   <p className="text-xl font-bold text-gray-900">
                     {formatCurrency(customer.average_job_value / 100)}
                   </p>
                   <p className="text-xs text-gray-500">Avg Job</p>
                 </div>
                 <div className="group text-center p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors">
-                  <RefreshCw className="h-6 w-6 mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
+                  <Icon name="refresh" size="xl" className="mx-auto text-gray-400 group-hover:text-primary mb-2 transition-colors" />
                   <p className="text-xl font-bold text-gray-900">
                     <AnimatedCounter value={customer.referral_count} />
                   </p>
@@ -351,7 +330,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <div className="p-5">
                 {quotes.length === 0 ? (
                   <div className="text-center py-8">
-                    <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <Icon name="briefcase" size="3xl" className="text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No jobs found for this customer</p>
                   </div>
                 ) : (
@@ -373,7 +352,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                             {formatCurrency(quote.quote_amount / 100)}
                           </span>
                           {getStatusBadge(quote.status)}
-                          <ArrowRight className="h-4 w-4 text-gray-300" />
+                          <Icon name="arrowRight" size="sm" className="text-gray-300" />
                         </div>
                       </div>
                     ))}
@@ -388,7 +367,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             {/* Notes */}
             <Card className="card-elevated p-5 rounded-2xl">
               <div className="flex items-center gap-2 mb-4">
-                <MessageSquare className="h-5 w-5 text-primary" />
+                <Icon name="message" size="lg" className="text-primary" />
                 <h3 className="font-semibold text-gray-900">Notes</h3>
               </div>
               <div className="space-y-3">
@@ -405,9 +384,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   className="w-full rounded-xl"
                 >
                   {savingNotes ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Icon name="spinner" size="sm" className="mr-2 animate-spin" />
                   ) : (
-                    <Save className="h-4 w-4 mr-2" />
+                    <Icon name="save" size="sm" className="mr-2" />
                   )}
                   Save Notes
                 </Button>
@@ -417,13 +396,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             {/* Timeline */}
             <Card className="card-elevated p-5 rounded-2xl">
               <div className="flex items-center gap-2 mb-4">
-                <Clock className="h-5 w-5 text-primary" />
+                <Icon name="clock" size="lg" className="text-primary" />
                 <h3 className="font-semibold text-gray-900">Timeline</h3>
               </div>
               <div className="space-y-4">
                 {customer.last_service_at && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <Icon name="calendar" size="sm" className="text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-900">Last service</p>
                       <p className="text-xs text-gray-500">{format(new Date(customer.last_service_at), 'MMM d, yyyy')}</p>
@@ -432,7 +411,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 )}
                 {customer.next_service_at && (
                   <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Icon name="calendar" size="sm" className="text-primary" />
                     <div>
                       <p className="text-sm text-gray-900">Next service</p>
                       <p className="text-xs text-primary">{format(new Date(customer.next_service_at), 'MMM d, yyyy')}</p>
@@ -441,7 +420,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 )}
                 {customer.last_contact_at && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <MessageSquare className="h-4 w-4 text-gray-400" />
+                    <Icon name="message" size="sm" className="text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-900">Last contact</p>
                       <p className="text-xs text-gray-500">{format(new Date(customer.last_contact_at), 'MMM d, yyyy')}</p>
@@ -450,7 +429,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 )}
                 {customer.first_service_at && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <Sparkles className="h-4 w-4 text-gray-400" />
+                    <Icon name="sparkles" size="sm" className="text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-900">First service</p>
                       <p className="text-xs text-gray-500">{format(new Date(customer.first_service_at), 'MMM d, yyyy')}</p>
@@ -465,7 +444,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
               {activities.length === 0 ? (
                 <div className="text-center py-6">
-                  <Clock className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                  <Icon name="clock" size="2xl" className="text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">No recent activity</p>
                 </div>
               ) : (

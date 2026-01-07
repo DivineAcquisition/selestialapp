@@ -1,14 +1,14 @@
 "use client";
 
-import { XCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Icon } from '@/components/ui/icon';
 
 export default function PaymentCancelledPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="max-w-md w-full p-8 text-center">
         <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <XCircle className="h-10 w-10 text-amber-600" />
+          <Icon name="xCircle" size="3xl" className="text-amber-600" />
         </div>
         
         <h1 className="text-2xl font-bold text-foreground mb-2">

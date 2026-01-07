@@ -5,6 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Icon, IconName } from '@/components/ui/icon';
 import { useBilling } from '@/hooks/useBilling';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useUsage } from '@/hooks/useUsage';
@@ -12,27 +13,6 @@ import UsageBar from '@/components/shared/UsageBar';
 import { AnimatedCounter } from '@/components/ui/text-effects';
 import { formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import {
-  Check,
-  Loader2,
-  AlertCircle,
-  Sparkles,
-  Clock,
-  XCircle,
-  Zap,
-  Crown,
-  MessageSquare,
-  Users,
-  BarChart3,
-  Shield,
-  Headphones,
-  ArrowRight,
-  CreditCard,
-  ExternalLink,
-  Bot,
-  Target,
-  Receipt,
-} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +22,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const plans = [
+interface PlanFeature {
+  text: string;
+  icon: IconName;
+  included: boolean;
+}
+
+const plans: {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  priceId: string;
+  popular: boolean;
+  color: string;
+  bgColor: string;
+  features: PlanFeature[];
+}[] = [
   {
     id: 'starter',
     name: 'Selestial Start',
@@ -53,16 +49,16 @@ const plans = [
     color: 'text-gray-900',
     bgColor: 'bg-gray-50/50',
     features: [
-      { text: '100 quotes per month', icon: Receipt, included: true },
-      { text: '500 SMS per month', icon: MessageSquare, included: true },
-      { text: '5 follow-up sequences', icon: Zap, included: true },
-      { text: 'SMS & Email automation', icon: MessageSquare, included: true },
-      { text: 'Business hours scheduling', icon: Clock, included: true },
-      { text: 'Basic analytics', icon: BarChart3, included: true },
-      { text: 'Email support', icon: Headphones, included: true },
-      { text: 'AI smart replies', icon: Bot, included: false },
-      { text: 'Payment links', icon: CreditCard, included: false },
-      { text: 'Bulk campaigns', icon: Target, included: false },
+      { text: '100 quotes per month', icon: 'receipt', included: true },
+      { text: '500 SMS per month', icon: 'message', included: true },
+      { text: '5 follow-up sequences', icon: 'bolt', included: true },
+      { text: 'SMS & Email automation', icon: 'message', included: true },
+      { text: 'Business hours scheduling', icon: 'clock', included: true },
+      { text: 'Basic analytics', icon: 'chart', included: true },
+      { text: 'Email support', icon: 'headphones', included: true },
+      { text: 'AI smart replies', icon: 'robot', included: false },
+      { text: 'Payment links', icon: 'creditCard', included: false },
+      { text: 'Bulk campaigns', icon: 'target', included: false },
     ],
   },
   {
@@ -75,16 +71,16 @@ const plans = [
     color: 'text-primary',
     bgColor: 'bg-primary/5',
     features: [
-      { text: 'Unlimited quotes', icon: Receipt, included: true },
-      { text: '2,000 SMS per month', icon: MessageSquare, included: true },
-      { text: 'Unlimited sequences', icon: Zap, included: true },
-      { text: 'AI-powered smart replies', icon: Bot, included: true },
-      { text: 'Advanced analytics & reports', icon: BarChart3, included: true },
-      { text: 'Payment link generation', icon: CreditCard, included: true },
-      { text: 'Bulk campaigns', icon: Target, included: true },
-      { text: 'Priority phone & email support', icon: Headphones, included: true },
-      { text: 'Team collaboration (5 users)', icon: Users, included: true },
-      { text: 'Custom integrations', icon: Shield, included: true },
+      { text: 'Unlimited quotes', icon: 'receipt', included: true },
+      { text: '2,000 SMS per month', icon: 'message', included: true },
+      { text: 'Unlimited sequences', icon: 'bolt', included: true },
+      { text: 'AI-powered smart replies', icon: 'robot', included: true },
+      { text: 'Advanced analytics & reports', icon: 'chart', included: true },
+      { text: 'Payment link generation', icon: 'creditCard', included: true },
+      { text: 'Bulk campaigns', icon: 'target', included: true },
+      { text: 'Priority phone & email support', icon: 'headphones', included: true },
+      { text: 'Team collaboration (5 users)', icon: 'users', included: true },
+      { text: 'Custom integrations', icon: 'shield', included: true },
     ],
   },
 ];
@@ -149,7 +145,7 @@ export default function BillingPage() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
-            <Sparkles className="h-4 w-4" />
+            <Icon name="sparkles" size="sm" />
             Simple Pricing
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">Choose Your Plan</h2>
@@ -162,7 +158,7 @@ export default function BillingPage() {
         <div className="max-w-3xl mx-auto space-y-4">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-600">
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <Icon name="alertCircle" size="lg" className="flex-shrink-0" />
               <p>{error}</p>
             </div>
           )}
@@ -170,7 +166,7 @@ export default function BillingPage() {
           {isTrialing && (
             <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex items-center gap-4">
               <div className="p-3 bg-amber-100 rounded-xl">
-                <Clock className="h-6 w-6 text-amber-600" />
+                <Icon name="clock" size="xl" className="text-amber-600" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-amber-900">
@@ -193,7 +189,7 @@ export default function BillingPage() {
           {isPastDue && (
             <div className="p-5 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4">
               <div className="p-3 bg-red-100 rounded-xl">
-                <AlertCircle className="h-6 w-6 text-red-600" />
+                <Icon name="alertCircle" size="xl" className="text-red-600" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-red-900">Payment Past Due</p>
@@ -227,7 +223,7 @@ export default function BillingPage() {
                 {plan.popular && (
                   <div className="absolute top-0 right-0">
                     <div className="bg-gradient-to-r from-primary to-[#9D96FF] text-white text-xs font-bold px-4 py-2 rounded-bl-2xl flex items-center gap-1.5">
-                      <Crown className="h-3.5 w-3.5" />
+                      <Icon name="crown" size="xs" />
                       RECOMMENDED
                     </div>
                   </div>
@@ -280,9 +276,9 @@ export default function BillingPage() {
                               : "bg-gray-100 text-gray-400"
                           )}>
                             {feature.included ? (
-                              <Check className="h-4 w-4" />
+                              <Icon name="check" size="sm" />
                             ) : (
-                              <XCircle className="h-4 w-4" />
+                              <Icon name="xCircle" size="sm" />
                             )}
                           </div>
                           <span className={cn(
@@ -306,9 +302,9 @@ export default function BillingPage() {
                         disabled={loading}
                       >
                         {loading ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <Icon name="spinner" size="sm" className="animate-spin mr-2" />
                         ) : (
-                          <ExternalLink className="h-4 w-4 mr-2" />
+                          <Icon name="externalLink" size="sm" className="mr-2" />
                         )}
                         Manage Subscription
                       </Button>
@@ -319,12 +315,12 @@ export default function BillingPage() {
                         disabled={loading || selectedPlan === plan.id}
                       >
                         {selectedPlan === plan.id ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <Icon name="spinner" size="lg" className="animate-spin" />
                         ) : (
                           <>
-                            <Sparkles className="h-5 w-5" />
+                            <Icon name="sparkles" size="lg" />
                             Upgrade to Growth
-                            <ArrowRight className="h-5 w-5" />
+                            <Icon name="arrowRight" size="lg" />
                           </>
                         )}
                       </Button>
@@ -339,11 +335,11 @@ export default function BillingPage() {
                         disabled={loading || selectedPlan === plan.id}
                       >
                         {selectedPlan === plan.id ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <Icon name="spinner" size="lg" className="animate-spin" />
                         ) : (
                           <>
                             Get Started
-                            <ArrowRight className="h-5 w-5" />
+                            <Icon name="arrowRight" size="lg" />
                           </>
                         )}
                       </Button>
@@ -361,7 +357,7 @@ export default function BillingPage() {
           <Card className="card-elevated p-6 rounded-2xl">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center shadow-lg shadow-primary/20">
-                <BarChart3 className="h-6 w-6 text-white" />
+                <Icon name="chart" size="xl" className="text-white" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Current Usage</h3>
@@ -381,7 +377,7 @@ export default function BillingPage() {
             <Card className="card-elevated p-6 rounded-2xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center shadow-lg shadow-primary/20">
-                  <CreditCard className="h-6 w-6 text-white" />
+                  <Icon name="creditCard" size="xl" className="text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Subscription</h3>
@@ -411,17 +407,17 @@ export default function BillingPage() {
                   <div>
                     {isTrialing ? (
                       <Badge className="bg-amber-100 text-amber-800 border-0">
-                        <Clock className="h-3 w-3 mr-1" />
+                        <Icon name="clock" size="xs" className="mr-1" />
                         Trial
                       </Badge>
                     ) : willCancel ? (
                       <Badge className="bg-amber-100 text-amber-800 border-0">
-                        <XCircle className="h-3 w-3 mr-1" />
+                        <Icon name="xCircle" size="xs" className="mr-1" />
                         Canceling
                       </Badge>
                     ) : (
                       <Badge className="bg-emerald-100 text-emerald-800 border-0">
-                        <Check className="h-3 w-3 mr-1" />
+                        <Icon name="check" size="xs" className="mr-1" />
                         Active
                       </Badge>
                     )}
@@ -431,15 +427,15 @@ export default function BillingPage() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   {business?.stripe_customer_id && (
                     <Button variant="outline" onClick={openPortal} disabled={loading} className="flex-1 rounded-xl">
-                      {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {loading && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
+                      <Icon name="externalLink" size="sm" className="mr-2" />
                       Billing Portal
                     </Button>
                   )}
 
                   {willCancel ? (
                     <Button variant="outline" onClick={handleResume} disabled={loading} className="flex-1 rounded-xl">
-                      {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      {loading && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
                       Resume
                     </Button>
                   ) : !isTrialing && (
@@ -484,7 +480,7 @@ export default function BillingPage() {
               Keep Subscription
             </Button>
             <Button variant="destructive" onClick={handleCancel} disabled={loading} className="rounded-xl">
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {loading && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
               Yes, Cancel
             </Button>
           </DialogFooter>

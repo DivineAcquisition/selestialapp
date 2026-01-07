@@ -19,14 +19,7 @@ import {
 } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import {
-  Check,
-  Loader2,
-  Clock,
-  MessageSquare,
-  Sparkles,
-  Copy,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface TemplateLibraryProps {
   open: boolean;
@@ -93,7 +86,7 @@ export default function TemplateLibrary({
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+            <Icon name="sparkles" size="lg" className="text-primary" />
             Sequence Templates
           </DialogTitle>
           <DialogDescription>
@@ -111,7 +104,7 @@ export default function TemplateLibrary({
           <TabsContent value={activeType} className="flex-1 min-h-0 mt-4">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
               </div>
             ) : templates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -156,18 +149,18 @@ export default function TemplateLibrary({
                           
                           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" />
+                              <Icon name="message" size="xs" />
                               {template.steps.length} messages
                             </span>
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
+                              <Icon name="clock" size="xs" />
                               {calculateSequenceDuration(template.steps)}
                             </span>
                           </div>
                         </div>
                         
                         {selectedTemplate?.id === template.id && (
-                          <Check className="w-5 h-5 text-primary shrink-0" />
+                          <Icon name="check" size="lg" className="text-primary shrink-0" />
                         )}
                       </div>
 
@@ -227,7 +220,7 @@ export default function TemplateLibrary({
             onClick={handleApply} 
             disabled={!selectedTemplate}
           >
-            <Copy className="w-4 h-4 mr-2" />
+            <Icon name="copy" size="md" className="mr-2" />
             Use Template
           </Button>
         </DialogFooter>

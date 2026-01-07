@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Check, Phone, Clock, ExternalLink, AlertCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function StepPhoneSetup() {
   const { data, updateData, setCanGoNext } = useOnboarding();
@@ -49,11 +49,11 @@ export default function StepPhoneSetup() {
                     : 'border-muted-foreground'
                 )}
               >
-                {data.skipPhoneSetup && <Check className="h-3 w-3 text-primary-foreground" />}
+                {data.skipPhoneSetup && <Icon name="check" size="xs" className="text-primary-foreground" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="clock" size="md" className="text-muted-foreground" />
                   <h3 className="font-semibold text-foreground">Skip for Now</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -82,11 +82,11 @@ export default function StepPhoneSetup() {
                     : 'border-muted-foreground'
                 )}
               >
-                {!data.skipPhoneSetup && <Check className="h-3 w-3 text-primary-foreground" />}
+                {!data.skipPhoneSetup && <Icon name="check" size="xs" className="text-primary-foreground" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="phone" size="md" className="text-muted-foreground" />
                   <h3 className="font-semibold text-foreground">Connect Twilio</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -101,7 +101,7 @@ export default function StepPhoneSetup() {
         {!data.skipPhoneSetup && (
           <div className="bg-muted/50 rounded-lg p-6 space-y-4">
             <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <Icon name="alertCircle" size="lg" className="text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-medium text-amber-800 dark:text-amber-200">You'll need a Twilio account</h4>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
@@ -113,7 +113,7 @@ export default function StepPhoneSetup() {
                     className="inline-flex items-center gap-1 font-medium hover:underline"
                   >
                     Create free account
-                    <ExternalLink className="h-3 w-3" />
+                    <Icon name="externalLink" size="xs" />
                   </a>
                 </p>
               </div>

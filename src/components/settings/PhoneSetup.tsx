@@ -17,18 +17,7 @@ import {
 import { usePhoneNumber } from '@/hooks/usePhoneNumber';
 import { formatPhone } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import { 
-  Phone, 
-  Search, 
-  Loader2, 
-  CheckCircle, 
-  AlertCircle,
-  Plus,
-  Trash2,
-  MessageSquare,
-  Zap,
-  Shield,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function PhoneSetup() {
   const {
@@ -81,7 +70,7 @@ export default function PhoneSetup() {
     return (
       <Card className="p-6 rounded-2xl">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-gray-400" />
         </div>
       </Card>
     );
@@ -94,7 +83,7 @@ export default function PhoneSetup() {
           <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-50 to-transparent rounded-xl border border-emerald-100">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <Phone className="h-7 w-7 text-emerald-600" />
+                <Icon name="phone" size="2xl" className="text-emerald-600" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -102,7 +91,7 @@ export default function PhoneSetup() {
                     {formatPhone(phoneNumber.phone_number)}
                   </p>
                   <Badge className="bg-emerald-100 text-emerald-700 border-0">
-                    <CheckCircle className="h-3 w-3 mr-1" />
+                    <Icon name="checkCircle" size="xs" className="mr-1" />
                     Active
                   </Badge>
                 </div>
@@ -115,28 +104,28 @@ export default function PhoneSetup() {
               className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl"
               onClick={() => setShowRelease(true)}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Icon name="trash" size="md" className="mr-2" />
               Release
             </Button>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="p-4 rounded-xl bg-gray-50 text-center">
-              <MessageSquare className="h-5 w-5 text-primary mx-auto mb-2" />
+              <Icon name="message" size="lg" className="text-primary mx-auto mb-2" />
               <p className="text-xs font-medium text-gray-700">SMS Enabled</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 text-center">
-              <Zap className="h-5 w-5 text-primary mx-auto mb-2" />
+              <Icon name="bolt" size="lg" className="text-primary mx-auto mb-2" />
               <p className="text-xs font-medium text-gray-700">Auto-replies</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 text-center">
-              <Shield className="h-5 w-5 text-primary mx-auto mb-2" />
+              <Icon name="shield" size="lg" className="text-primary mx-auto mb-2" />
               <p className="text-xs font-medium text-gray-700">Verified</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 text-sm">
-            <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+            <Icon name="message" size="lg" className="text-blue-600 mt-0.5 shrink-0" />
             <p className="text-blue-800">
               All follow-up messages will be sent from this number. 
               Customer replies will automatically pause the sequence.
@@ -172,7 +161,7 @@ export default function PhoneSetup() {
     <>
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <div className="w-20 h-20 rounded-2xl bg-amber-100 flex items-center justify-center mb-6">
-          <AlertCircle className="h-10 w-10 text-amber-600" />
+          <Icon name="alertCircle" size="3xl" className="text-amber-600" />
         </div>
         <h4 className="text-lg font-semibold text-gray-900 mb-2">No phone number configured</h4>
         <p className="text-sm text-gray-500 max-w-sm mb-8">
@@ -180,7 +169,7 @@ export default function PhoneSetup() {
           Get one now to start automating your quote follow-up.
         </p>
         <Button onClick={() => setShowSearch(true)} className="gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]">
-          <Plus className="h-4 w-4" />
+          <Icon name="plus" size="md" />
           Get Phone Number
         </Button>
       </div>
@@ -198,7 +187,7 @@ export default function PhoneSetup() {
           <div className="space-y-4">
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-xl text-sm">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+                <Icon name="alertCircle" size="md" className="shrink-0" />
                 <p>{error}</p>
               </div>
             )}
@@ -218,9 +207,9 @@ export default function PhoneSetup() {
               </div>
               <Button onClick={handleSearch} disabled={searching} className="h-11 rounded-xl gap-2">
                 {searching ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Icon name="spinner" size="md" className="animate-spin" />
                 ) : (
-                  <Search className="h-4 w-4" />
+                  <Icon name="search" size="md" />
                 )}
                 Search
               </Button>
@@ -269,7 +258,7 @@ export default function PhoneSetup() {
             >
               {purchasing ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Icon name="spinner" size="md" className="mr-2 animate-spin" />
                   Purchasing...
                 </>
               ) : (

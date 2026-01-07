@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Bell, Mail, MessageSquare } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface NotificationSettingsProps {
   settings: {
@@ -23,7 +23,7 @@ export default function NotificationSettings({ settings, onChange }: Notificatio
     <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2.5 bg-primary/10 rounded-xl">
-          <Bell className="h-5 w-5 text-primary" />
+          <Icon name="bell" size="lg" className="text-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Notifications</h3>
@@ -35,7 +35,7 @@ export default function NotificationSettings({ settings, onChange }: Notificatio
         {/* Email notifications */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            <Mail className="h-4 w-4" />
+            <Icon name="email" size="sm" />
             Email Notifications
           </div>
           
@@ -81,7 +81,7 @@ export default function NotificationSettings({ settings, onChange }: Notificatio
         {/* SMS notifications */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            <MessageSquare className="h-4 w-4" />
+            <Icon name="message" size="sm" />
             SMS Notifications
           </div>
           

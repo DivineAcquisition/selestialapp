@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 
 type CallbackStatus = 'loading' | 'success' | 'error';
 
@@ -88,7 +88,7 @@ function AuthCallbackContent() {
       <div className="w-full max-w-md text-center">
         {status === 'loading' && (
           <div className="space-y-4">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+            <Icon name="spinner" size="4xl" className="animate-spin text-primary mx-auto" />
             <h1 className="text-xl font-semibold text-foreground">Verifying...</h1>
             <p className="text-muted-foreground">Please wait while we verify your request.</p>
           </div>
@@ -97,7 +97,7 @@ function AuthCallbackContent() {
         {status === 'success' && (
           <div className="space-y-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <Icon name="checkCircle" size="2xl" className="text-green-600" />
             </div>
             <h1 className="text-xl font-semibold text-foreground">Success!</h1>
             <p className="text-muted-foreground">{message}</p>
@@ -108,7 +108,7 @@ function AuthCallbackContent() {
         {status === 'error' && (
           <div className="space-y-4">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <Icon name="alertCircle" size="2xl" className="text-red-600" />
             </div>
             <h1 className="text-xl font-semibold text-foreground">Verification Failed</h1>
             <p className="text-muted-foreground">{message}</p>
@@ -132,7 +132,7 @@ export default function AuthCallbackPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md text-center space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+          <Icon name="spinner" size="4xl" className="animate-spin text-primary mx-auto" />
           <h1 className="text-xl font-semibold text-foreground">Loading...</h1>
         </div>
       </div>

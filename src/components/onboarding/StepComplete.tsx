@@ -9,7 +9,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toE164 } from '@/lib/formatters';
-import { CheckCircle, Loader2, AlertCircle, ArrowRight, Lightbulb } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function StepComplete() {
   const router = useRouter();
@@ -151,7 +151,7 @@ export default function StepComplete() {
           {status === 'saving' && (
             <div className="space-y-4">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <Icon name="spinner" size="2xl" className="text-primary animate-spin" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Setting up your account...</h1>
@@ -163,7 +163,7 @@ export default function StepComplete() {
           {status === 'success' && (
             <div className="space-y-6">
               <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
-                <CheckCircle className="h-8 w-8 text-emerald-600" />
+                <Icon name="checkCircle" size="2xl" className="text-emerald-600" />
               </div>
               
               <div>
@@ -176,7 +176,7 @@ export default function StepComplete() {
               {/* What's next */}
               <div className="bg-muted/50 rounded-lg p-6 text-left">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <Icon name="lightbulb" size="md" className="text-primary" />
                   What&apos;s next?
                 </h3>
                 <div className="space-y-3">
@@ -209,7 +209,7 @@ export default function StepComplete() {
               
               <Button size="lg" onClick={handleContinue} className="w-full">
                 Go to Dashboard
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <Icon name="arrowRight" size="md" className="ml-2" />
               </Button>
             </div>
           )}
@@ -217,7 +217,7 @@ export default function StepComplete() {
           {status === 'error' && (
             <div className="space-y-6">
               <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                <AlertCircle className="h-8 w-8 text-destructive" />
+                <Icon name="alertCircle" size="2xl" className="text-destructive" />
               </div>
               
               <div>

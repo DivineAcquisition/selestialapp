@@ -16,24 +16,7 @@ import { useIntegrations } from '@/hooks/useIntegrations';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import UpgradePrompt from '@/components/shared/UpgradePrompt';
 import { cn } from '@/lib/utils';
-import { 
-  Copy, 
-  RefreshCw, 
-  Check, 
-  Loader2,
-  Webhook,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Zap,
-  MessageSquare,
-  CreditCard,
-  ArrowRight,
-  Sparkles,
-  Building2,
-  Globe,
-} from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 import { format } from 'date-fns';
 
 // Company Logo Components
@@ -115,7 +98,7 @@ const integrationCategories = [
   {
     id: 'field-service',
     name: 'Field Service Management',
-    icon: Building2,
+    icon: 'building' as IconName,
     integrations: [
       { 
         id: 'servicetitan', 
@@ -149,7 +132,7 @@ const integrationCategories = [
   {
     id: 'communication',
     name: 'Communication',
-    icon: MessageSquare,
+    icon: 'message' as IconName,
     integrations: [
       { 
         id: 'twilio', 
@@ -169,7 +152,7 @@ const integrationCategories = [
   {
     id: 'payments',
     name: 'Payments & Accounting',
-    icon: CreditCard,
+    icon: 'creditCard' as IconName,
     integrations: [
       { 
         id: 'stripe', 
@@ -188,7 +171,7 @@ const integrationCategories = [
   {
     id: 'automation',
     name: 'Automation',
-    icon: Zap,
+    icon: 'bolt' as IconName,
     integrations: [
       { 
         id: 'zapier', 
@@ -254,16 +237,29 @@ export default function ConnectionsPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): IconName => {
     switch (status) {
       case 'processed':
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+        return 'checkCircle';
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return 'xCircle';
       case 'ignored':
-        return <AlertCircle className="h-4 w-4 text-amber-500" />;
+        return 'alertCircle';
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
+        return 'clock';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'processed':
+        return 'text-emerald-500';
+      case 'failed':
+        return 'text-red-500';
+      case 'ignored':
+        return 'text-amber-500';
+      default:
+        return 'text-gray-400';
     }
   };
 
@@ -271,7 +267,7 @@ export default function ConnectionsPage() {
     return (
       <Layout title="Connections">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -283,7 +279,7 @@ export default function ConnectionsPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-            <Globe className="h-6 w-6 text-white" />
+            <Icon name="globe" size="xl" className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Integrations & Connections</h1>
@@ -303,15 +299,15 @@ export default function ConnectionsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-gray-100/80 p-1 rounded-xl">
             <TabsTrigger value="integrations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Sparkles className="h-4 w-4" />
+              <Icon name="sparkles" size="sm" />
               Integrations
             </TabsTrigger>
             <TabsTrigger value="webhook" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Webhook className="h-4 w-4" />
+              <Icon name="api" size="sm" />
               Webhook API
             </TabsTrigger>
             <TabsTrigger value="events" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-              <Clock className="h-4 w-4" />
+              <Icon name="clock" size="sm" />
               Event Log
             </TabsTrigger>
           </TabsList>
@@ -321,7 +317,7 @@ export default function ConnectionsPage() {
             {integrationCategories.map((category) => (
               <div key={category.id}>
                 <div className="flex items-center gap-2 mb-4">
-                  <category.icon className="h-5 w-5 text-gray-400" />
+                  <Icon name={category.icon} size="lg" className="text-gray-400" />
                   <h3 className="font-semibold text-gray-900">{category.name}</h3>
                 </div>
                 
@@ -363,7 +359,7 @@ export default function ConnectionsPage() {
                           {isConnected ? (
                             <>
                               <Badge className="bg-emerald-100 text-emerald-700 border-0">
-                                <Check className="h-3 w-3 mr-1" />
+                                <Icon name="check" size="xs" className="mr-1" />
                                 Connected
                               </Badge>
                               <Button 
@@ -386,7 +382,7 @@ export default function ConnectionsPage() {
                                 disabled={!hasIntegrations}
                               >
                                 Connect
-                                <ArrowRight className="h-3 w-3" />
+                                <Icon name="arrowRight" size="xs" />
                               </Button>
                             </>
                           )}
@@ -405,7 +401,7 @@ export default function ConnectionsPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary/10 rounded-xl">
-                    <Webhook className="h-6 w-6 text-primary" />
+                    <Icon name="api" size="xl" className="text-primary" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Webhook Endpoint</h3>
@@ -436,7 +432,7 @@ export default function ConnectionsPage() {
                       className="font-mono text-sm bg-gray-50 rounded-xl"
                     />
                     <Button variant="outline" size="icon" onClick={handleCopy} className="rounded-xl">
-                      {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                      {copied ? <Icon name="check" size="sm" className="text-emerald-500" /> : <Icon name="copy" size="sm" />}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -445,7 +441,7 @@ export default function ConnectionsPage() {
                       disabled={regenerating}
                       className="rounded-xl"
                     >
-                      <RefreshCw className={cn("h-4 w-4", regenerating && "animate-spin")} />
+                      <Icon name="refresh" size="sm" className={cn(regenerating && "animate-spin")} />
                     </Button>
                   </div>
                 </div>
@@ -489,7 +485,7 @@ export default function ConnectionsPage() {
                 ].map(({ event, desc, color }) => (
                   <div key={event} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                     <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", color)}>
-                      <Zap className="w-5 h-5" />
+                      <Icon name="bolt" size="lg" />
                     </div>
                     <div>
                       <Badge variant="outline" className="font-mono text-[10px] rounded-lg">
@@ -509,7 +505,7 @@ export default function ConnectionsPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold text-gray-900">Recent Events</h3>
                 <Button variant="outline" size="sm" onClick={refetch} className="rounded-xl">
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <Icon name="refresh" size="sm" className="mr-2" />
                   Refresh
                 </Button>
               </div>
@@ -517,7 +513,7 @@ export default function ConnectionsPage() {
               {events.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Clock className="h-8 w-8 text-gray-400" />
+                    <Icon name="clock" size="2xl" className="text-gray-400" />
                   </div>
                   <p className="text-gray-500 font-medium">No events received yet</p>
                   <p className="text-sm text-gray-400 mt-1">
@@ -532,7 +528,7 @@ export default function ConnectionsPage() {
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
-                        {getStatusIcon(event.status)}
+                        <Icon name={getStatusIcon(event.status)} size="sm" className={getStatusColor(event.status)} />
                         <Badge variant="outline" className="font-mono text-xs rounded-lg">
                           {event.event_type}
                         </Badge>

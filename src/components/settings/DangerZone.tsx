@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface DangerZoneProps {
   businessName: string;
@@ -35,7 +35,7 @@ export default function DangerZone({ businessName, onDeleteAccount }: DangerZone
       <Card className="p-6 border-destructive/50">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-destructive/10 rounded-lg">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <Icon name="alertTriangle" size="lg" className="text-destructive" />
           </div>
           <div>
             <h3 className="font-semibold text-foreground">Danger Zone</h3>
@@ -55,7 +55,7 @@ export default function DangerZone({ businessName, onDeleteAccount }: DangerZone
             onClick={() => setShowConfirm(true)}
             className="gap-2"
           >
-            <Trash2 className="h-4 w-4" />
+            <Icon name="trash" size="sm" />
             Delete
           </Button>
         </div>

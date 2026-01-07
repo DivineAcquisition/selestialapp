@@ -15,20 +15,7 @@ import {
 } from '@/components/ui/select';
 import { useAISettings } from '@/hooks/useAISettings';
 import { cn } from '@/lib/utils';
-import {
-  Bot,
-  Loader2,
-  MessageSquare,
-  Settings2,
-  Zap,
-  Brain,
-  TrendingUp,
-  DollarSign,
-  Smile,
-  FileText,
-  CheckCircle2,
-  Wand2,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function AISettings() {
   const { settings, loading, saving, updateSettings, usagePercent } = useAISettings();
@@ -36,7 +23,7 @@ export default function AISettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Icon name="spinner" size="xl" className="animate-spin text-gray-400" />
       </div>
     );
   }
@@ -49,7 +36,7 @@ export default function AISettings() {
         <div className="relative p-6">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-[#9D96FF]/20 rounded-2xl flex items-center justify-center">
-              <Bot className="w-7 h-7 text-primary" />
+              <Icon name="robot" size="2xl" className="text-primary" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -83,7 +70,7 @@ export default function AISettings() {
                 
                 {usagePercent > 80 && (
                   <p className="text-sm text-amber-600 flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
+                    <Icon name="bolt" size="sm" />
                     Running low on AI suggestions this month
                   </p>
                 )}
@@ -98,7 +85,7 @@ export default function AISettings() {
         <Card className="card-elevated p-4 rounded-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              <Icon name="trendUp" size="lg" className="text-emerald-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{settings.suggestions_used_this_month}</p>
@@ -110,7 +97,7 @@ export default function AISettings() {
         <Card className="card-elevated p-4 rounded-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <Brain className="w-5 h-5 text-blue-600" />
+              <Icon name="brain" size="lg" className="text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{settings.monthly_suggestion_limit - settings.suggestions_used_this_month}</p>
@@ -122,7 +109,7 @@ export default function AISettings() {
         <Card className="card-elevated p-4 rounded-2xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Wand2 className="w-5 h-5 text-primary" />
+              <Icon name="wand" size="lg" className="text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 capitalize">{settings.tone}</p>
@@ -137,7 +124,7 @@ export default function AISettings() {
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <MessageSquare className="w-6 h-6 text-primary" />
+              <Icon name="message" size="xl" className="text-primary" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">Enable Smart Replies</h4>
@@ -146,15 +133,15 @@ export default function AISettings() {
               </p>
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500" />
                   <span>Saves time</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500" />
                   <span>Professional tone</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500" />
                   <span>Context-aware</span>
                 </div>
               </div>
@@ -172,7 +159,7 @@ export default function AISettings() {
       <Card className="card-elevated p-6 rounded-2xl">
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-            <Settings2 className="w-6 h-6 text-gray-500" />
+            <Icon name="settings" size="xl" className="text-gray-500" />
           </div>
           <div>
             <h4 className="font-semibold text-gray-900">Response Style</h4>
@@ -185,7 +172,7 @@ export default function AISettings() {
         <div className="grid gap-6 md:grid-cols-3">
           <Field name="tone">
             <FieldLabel className="flex items-center gap-2">
-              <Smile className="w-4 h-4 text-gray-400" />
+              <Icon name="smile" size="sm" className="text-gray-400" />
               Tone
             </FieldLabel>
             <Select
@@ -207,7 +194,7 @@ export default function AISettings() {
 
           <Field name="emoji">
             <FieldLabel className="flex items-center gap-2">
-              <Wand2 className="w-4 h-4 text-gray-400" />
+              <Icon name="wand" size="sm" className="text-gray-400" />
               Emoji Usage
             </FieldLabel>
             <Select
@@ -229,7 +216,7 @@ export default function AISettings() {
 
           <Field name="length">
             <FieldLabel className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gray-400" />
+              <Icon name="fileText" size="sm" className="text-gray-400" />
               Length
             </FieldLabel>
             <Select
@@ -254,7 +241,7 @@ export default function AISettings() {
       <Card className="card-elevated p-6 rounded-2xl">
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-            <Brain className="w-6 h-6 text-gray-500" />
+            <Icon name="brain" size="xl" className="text-gray-500" />
           </div>
           <div>
             <h4 className="font-semibold text-gray-900">Custom Instructions</h4>
@@ -281,7 +268,7 @@ export default function AISettings() {
       <Card className="card-elevated p-6 rounded-2xl">
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-            <Zap className="w-6 h-6 text-gray-500" />
+            <Icon name="bolt" size="xl" className="text-gray-500" />
           </div>
           <div>
             <h4 className="font-semibold text-gray-900">Smart Features</h4>
@@ -295,7 +282,7 @@ export default function AISettings() {
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                <TrendingUp className="w-5 h-5 text-gray-500" />
+                <Icon name="trendUp" size="lg" className="text-gray-500" />
               </div>
               <div>
                 <p className="font-medium text-sm text-gray-900">Suggest Upsells</p>
@@ -313,7 +300,7 @@ export default function AISettings() {
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                <DollarSign className="w-5 h-5 text-gray-500" />
+                <Icon name="dollar" size="lg" className="text-gray-500" />
               </div>
               <div>
                 <p className="font-medium text-sm text-gray-900">Include Pricing</p>
@@ -333,7 +320,7 @@ export default function AISettings() {
       {/* Saving indicator */}
       {saving && (
         <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-2">
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Icon name="spinner" size="sm" className="animate-spin" />
           Saving changes...
         </div>
       )}

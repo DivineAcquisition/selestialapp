@@ -9,19 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useWebhookConfig } from '@/hooks/useWebhookConfig';
 import { useIntegrations } from '@/hooks/useIntegrations';
-import { 
-  Copy, 
-  RefreshCw, 
-  Check, 
-  X, 
-  ExternalLink, 
-  Loader2,
-  Webhook,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle
-} from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 import { format } from 'date-fns';
 
 const SUPPORTED_PLATFORMS = [
@@ -106,23 +94,23 @@ export default function ConnectionsSettings() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): { name: IconName; className: string } => {
     switch (status) {
       case 'processed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return { name: 'checkCircle', className: 'text-green-500' };
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return { name: 'xCircle', className: 'text-red-500' };
       case 'ignored':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+        return { name: 'alertCircle', className: 'text-yellow-500' };
       default:
-        return <Clock className="h-4 w-4 text-muted-foreground" />;
+        return { name: 'clock', className: 'text-muted-foreground' };
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Icon name="spinner" size="2xl" className="animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -135,7 +123,7 @@ export default function ConnectionsSettings() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Webhook className="h-5 w-5 text-primary" />
+                <Icon name="webhook" size="lg" className="text-primary" />
               </div>
               <div>
                 <CardTitle>Webhook Endpoint</CardTitle>
@@ -166,7 +154,7 @@ export default function ConnectionsSettings() {
                 className="font-mono text-sm bg-muted"
               />
               <Button variant="outline" size="icon" onClick={handleCopy}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Icon name="check" size="md" /> : <Icon name="copy" size="md" />}
               </Button>
               <Button 
                 variant="outline" 
@@ -174,7 +162,7 @@ export default function ConnectionsSettings() {
                 onClick={handleRegenerateKey}
                 disabled={regenerating}
               >
-                <RefreshCw className={`h-4 w-4 ${regenerating ? 'animate-spin' : ''}`} />
+                <Icon name="refresh" size="md" className={regenerating ? 'animate-spin' : ''} />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -241,41 +229,44 @@ export default function ConnectionsSettings() {
                 <CardDescription>Last 20 webhook events received</CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={refetch}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <Icon name="refresh" size="md" className="mr-2" />
                 Refresh
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {events.map((event) => (
-                <div 
-                  key={event.id} 
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(event.status)}
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {event.event_type}
-                    </Badge>
-                    {event.result_type && (
-                      <span className="text-sm text-muted-foreground">
-                        → {event.result_type}
+              {events.map((event) => {
+                const statusIcon = getStatusIcon(event.status);
+                return (
+                  <div 
+                    key={event.id} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon name={statusIcon.name} size="md" className={statusIcon.className} />
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {event.event_type}
+                      </Badge>
+                      {event.result_type && (
+                        <span className="text-sm text-muted-foreground">
+                          → {event.result_type}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {event.error_message && (
+                        <span className="text-xs text-red-500 max-w-[200px] truncate">
+                          {event.error_message}
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(event.created_at), 'MMM d, h:mm a')}
                       </span>
-                    )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {event.error_message && (
-                      <span className="text-xs text-red-500 max-w-[200px] truncate">
-                        {event.error_message}
-                      </span>
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(event.created_at), 'MMM d, h:mm a')}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -315,7 +306,7 @@ export default function ConnectionsSettings() {
                     {isConnected ? (
                       <>
                         <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-200">
-                          <Check className="h-3 w-3 mr-1" />
+                          <Icon name="check" size="xs" className="mr-1" />
                           Connected
                         </Badge>
                         <Button 
@@ -323,7 +314,7 @@ export default function ConnectionsSettings() {
                           size="sm"
                           onClick={() => disconnectIntegration(platform.id)}
                         >
-                          <X className="h-4 w-4" />
+                          <Icon name="close" size="md" />
                         </Button>
                       </>
                     ) : (
@@ -362,7 +353,7 @@ export default function ConnectionsSettings() {
                   rel="noopener noreferrer"
                   className="text-primary hover:underline inline-flex items-center gap-1"
                 >
-                  Zapier <ExternalLink className="h-3 w-3" />
+                  Zapier <Icon name="externalLink" size="xs" />
                 </a>
               </span>
             </li>

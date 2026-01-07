@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Quote } from '@/types';
 import { formatCurrency, getDaysSince, formatRelativeTime } from '@/lib/formatters';
-import { Clock, ArrowRight, Zap } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface QuoteCardProps {
@@ -25,7 +25,7 @@ export default function QuoteCard({ quote, onClick }: QuoteCardProps) {
         {/* Customer name and arrow */}
         <div className="flex items-center justify-between gap-2">
           <p className="font-semibold text-sm text-foreground truncate">{quote.customer_name}</p>
-          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+          <Icon name="arrowRight" size="sm" className="text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
         </div>
         
         {/* Service type */}
@@ -37,7 +37,7 @@ export default function QuoteCard({ quote, onClick }: QuoteCardProps) {
             {formatCurrency(quote.quote_amount)}
           </span>
           <span className="text-[10px] text-muted-foreground flex items-center gap-1 bg-secondary/50 px-2 py-0.5 rounded-full">
-            <Clock className="h-3 w-3" />
+            <Icon name="clock" size="xs" />
             {daysSince}d ago
           </span>
         </div>
@@ -45,7 +45,7 @@ export default function QuoteCard({ quote, onClick }: QuoteCardProps) {
         {/* Next message indicator (if active) */}
         {quote.next_message_at && quote.status === 'active' && (
           <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20">
-            <Zap className="h-3 w-3" />
+            <Icon name="bolt" size="xs" />
             <span className="font-medium">Next: {formatRelativeTime(quote.next_message_at)}</span>
           </div>
         )}

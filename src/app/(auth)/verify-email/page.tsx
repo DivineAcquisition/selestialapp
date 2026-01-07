@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Mail, ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/ui/icon'
 
 export default function VerifyEmailPage() {
   return (
@@ -8,7 +8,7 @@ export default function VerifyEmailPage() {
       {/* Icon and Header */}
       <div className="text-center space-y-4">
         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-          <Mail className="w-10 h-10 text-primary" />
+          <Icon name="email" size="3xl" className="text-primary" />
         </div>
         
         <div className="space-y-2">
@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
 
         <Link href="/signup">
           <Button variant="outline" className="w-full h-12">
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <Icon name="refresh" size="md" className="mr-2" />
             Try signing up again
           </Button>
         </Link>
@@ -53,7 +53,7 @@ export default function VerifyEmailPage() {
           href="/login" 
           className="text-primary hover:text-primary/80 text-sm font-medium inline-flex items-center gap-2 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <Icon name="arrowLeft" size="md" />
           Back to sign in
         </Link>
       </div>

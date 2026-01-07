@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { INDUSTRIES } from '@/lib/constants';
 import { formatPhone } from '@/lib/formatters';
-import { Building2, Save, Loader2, User, Mail, Phone } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface BusinessProfileFormProps {
   business: Business;
@@ -88,7 +88,7 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
     <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-4 mb-6">
         <div className="p-3 bg-primary/10 rounded-xl">
-          <Building2 className="h-5 w-5 text-primary" />
+          <Icon name="building" size="lg" className="text-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Business Profile</h3>
@@ -101,7 +101,7 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
           <Field name="businessName">
             <FieldLabel required>Business Name</FieldLabel>
             <div className="relative">
-              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon name="building" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 name="businessName"
                 defaultValue={business.name}
@@ -115,7 +115,7 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
           <Field name="ownerName">
             <FieldLabel required>Your Name</FieldLabel>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon name="user" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 name="ownerName"
                 defaultValue={business.owner_name}
@@ -131,7 +131,7 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
           <Field name="email">
             <FieldLabel required>Email</FieldLabel>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon name="email" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 name="email"
                 type="email"
@@ -146,7 +146,7 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
           <Field name="phone">
             <FieldLabel required>Phone Number</FieldLabel>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon name="phone" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 name="phone"
                 type="tel"
@@ -188,9 +188,9 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
             className="h-11 gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Icon name="spinner" size="md" className="animate-spin" />
             ) : (
-              <Save className="h-4 w-4" />
+              <Icon name="save" size="md" />
             )}
             {saving ? 'Saving...' : 'Save Changes'}
           </Button>

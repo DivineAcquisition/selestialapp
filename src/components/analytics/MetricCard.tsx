@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import type { Metric } from '@/hooks/useAnalytics';
 
@@ -60,19 +60,19 @@ export default function MetricCard({ metric }: MetricCardProps) {
       <div className="flex items-center gap-2 mt-3 text-sm">
         {isPositiveChange && (
           <span className="flex items-center text-emerald-600">
-            <TrendingUp className="w-3 h-3 mr-1" />
+            <Icon name="trendUp" size="xs" className="mr-1" />
             +{metric.change_pct.toFixed(1)}%
           </span>
         )}
         {isNegativeChange && (
           <span className="flex items-center text-red-600">
-            <TrendingDown className="w-3 h-3 mr-1" />
+            <Icon name="trendDown" size="xs" className="mr-1" />
             {metric.change_pct.toFixed(1)}%
           </span>
         )}
         {!isPositiveChange && !isNegativeChange && (
           <span className="flex items-center text-muted-foreground">
-            <Minus className="w-3 h-3 mr-1" />
+            <Icon name="minus" size="xs" className="mr-1" />
             No change
           </span>
         )}

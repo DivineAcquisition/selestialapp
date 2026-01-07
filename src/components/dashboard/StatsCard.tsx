@@ -1,12 +1,12 @@
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 
 interface StatsCardProps {
   title: string;
   value: string;
   subtitle?: string;
-  icon: LucideIcon;
+  icon: IconName;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -43,7 +43,7 @@ export default function StatsCard({
   title,
   value,
   subtitle,
-  icon: Icon,
+  icon,
   trend,
   accentColor = 'default',
   onClick,
@@ -72,11 +72,10 @@ export default function StatsCard({
                   ? "text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400" 
                   : "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
               )}>
-                {trend.isPositive ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
+                <Icon 
+                  name={trend.isPositive ? "trendUp" : "trendDown"} 
+                  size="xs" 
+                />
                 {trend.value}%
               </div>
             )}
@@ -91,7 +90,7 @@ export default function StatsCard({
           "flex items-center justify-center w-12 h-12 rounded-xl transition-transform group-hover:scale-105",
           accent.iconBg
         )}>
-          <Icon className={cn("h-6 w-6", accent.iconText)} />
+          <Icon name={icon} size="xl" className={accent.iconText} />
         </div>
       </div>
     </Card>

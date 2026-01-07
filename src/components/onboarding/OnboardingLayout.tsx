@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useOnboarding } from './OnboardingContext';
 import OnboardingProgress from './OnboardingProgress';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -74,7 +74,7 @@ export default function OnboardingLayout({
           <div className="flex justify-between">
             {showBack && currentStep > 0 ? (
               <Button variant="ghost" onClick={prevStep}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Icon name="arrowLeft" size="md" className="mr-2" />
                 Back
               </Button>
             ) : (
@@ -85,13 +85,13 @@ export default function OnboardingLayout({
               <Button onClick={handleNext} disabled={!canGoNext || loading}>
                 {loading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Icon name="spinner" size="md" className="mr-2 animate-spin" />
                     Please wait...
                   </>
                 ) : (
                   <>
                     {nextLabel}
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <Icon name="arrowRight" size="md" className="ml-2" />
                   </>
                 )}
               </Button>

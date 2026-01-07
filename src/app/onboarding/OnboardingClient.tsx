@@ -19,25 +19,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Icon, IconName } from '@/components/ui/icon';
 import { INDUSTRIES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { 
-  Loader2, 
-  ArrowRight, 
-  CheckCircle, 
-  Building2, 
-  User, 
-  Phone,
-  Sparkles,
-  MessageSquare,
-  TrendingUp,
-  Clock,
-  Zap,
-  Bot,
-  Target,
-} from 'lucide-react';
 
 type Step = 'welcome' | 'business' | 'complete';
+
+interface Feature {
+  icon: IconName;
+  title: string;
+  desc: string;
+  color: string;
+}
+
+interface QuickStartItem {
+  num: number;
+  text: string;
+  desc: string;
+  icon: IconName;
+}
 
 export default function OnboardingClient() {
   const router = useRouter();
@@ -179,7 +179,7 @@ export default function OnboardingClient() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
@@ -187,6 +187,18 @@ export default function OnboardingClient() {
   }
   
   if (!user) return null;
+
+  const features: Feature[] = [
+    { icon: 'message', title: 'Smart Follow-Ups', desc: 'Automated SMS sequences', color: 'bg-blue-100 text-blue-600' },
+    { icon: 'trendUp', title: 'Win More Jobs', desc: 'Increase close rate by 30%', color: 'bg-emerald-100 text-emerald-600' },
+    { icon: 'clock', title: 'Save 10+ Hours', desc: 'Per week on follow-ups', color: 'bg-amber-100 text-amber-600' },
+  ];
+
+  const quickStartItems: QuickStartItem[] = [
+    { num: 1, text: 'Add your first quote', desc: 'Enter a recent quote you gave', icon: 'target' },
+    { num: 2, text: 'Watch the magic', desc: 'We auto-follow up at the perfect time', icon: 'robot' },
+    { num: 3, text: 'Win the job', desc: 'Track your success in the dashboard', icon: 'trendUp' },
+  ];
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -214,7 +226,7 @@ export default function OnboardingClient() {
           <div className="text-center space-y-8 animate-fade-in">
             <div className="space-y-4">
               <Badge className="bg-primary/10 text-primary border-0 px-4 py-2">
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Icon name="sparkles" size="sm" className="mr-2" />
                 Welcome to Selestial
               </Badge>
               
@@ -230,11 +242,7 @@ export default function OnboardingClient() {
             
             {/* Features */}
             <div className="grid sm:grid-cols-3 gap-4 py-6">
-              {[
-                { icon: MessageSquare, title: 'Smart Follow-Ups', desc: 'Automated SMS sequences', color: 'bg-blue-100 text-blue-600' },
-                { icon: TrendingUp, title: 'Win More Jobs', desc: 'Increase close rate by 30%', color: 'bg-emerald-100 text-emerald-600' },
-                { icon: Clock, title: 'Save 10+ Hours', desc: 'Per week on follow-ups', color: 'bg-amber-100 text-amber-600' },
-              ].map((feature, i) => (
+              {features.map((feature, i) => (
                 <Card 
                   key={i}
                   className="card-elevated p-5 text-center hover:shadow-lg transition-all group"
@@ -243,7 +251,7 @@ export default function OnboardingClient() {
                     "w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110",
                     feature.color
                   )}>
-                    <feature.icon className="w-6 h-6" />
+                    <Icon name={feature.icon} size="xl" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
                   <p className="text-sm text-gray-500">{feature.desc}</p>
@@ -257,7 +265,7 @@ export default function OnboardingClient() {
               className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
             >
               Get Started
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="lg" className="group-hover:translate-x-1 transition-transform" />
             </Button>
             
             <p className="text-sm text-gray-400">
@@ -271,7 +279,7 @@ export default function OnboardingClient() {
           <div className="space-y-8 animate-fade-in">
             <div className="text-center space-y-3">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
-                <Building2 className="w-8 h-8 text-white" />
+                <Icon name="building" size="2xl" className="text-white" />
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Tell us about your business</h1>
               <p className="text-gray-500">
@@ -291,7 +299,7 @@ export default function OnboardingClient() {
                 <Field name="businessName">
                   <FieldLabel required>Business Name</FieldLabel>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Icon name="building" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input
                       name="businessName"
                       placeholder="Johnson Plumbing"
@@ -306,7 +314,7 @@ export default function OnboardingClient() {
                 <Field name="ownerName">
                   <FieldLabel required>Your Name</FieldLabel>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Icon name="user" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input
                       name="ownerName"
                       placeholder="Mike Johnson"
@@ -323,7 +331,7 @@ export default function OnboardingClient() {
                   <Field name="phone">
                     <FieldLabel required>Business Phone</FieldLabel>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Icon name="phone" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <Input
                         name="phone"
                         type="tel"
@@ -342,7 +350,7 @@ export default function OnboardingClient() {
                     <Select value={industry} onValueChange={setIndustry}>
                       <SelectTrigger className="h-12 rounded-xl">
                         <div className="flex items-center gap-2">
-                          <Zap className="h-4 w-4 text-gray-400" />
+                          <Icon name="bolt" size="sm" className="text-gray-400" />
                           <SelectValue placeholder="Select industry" />
                         </div>
                       </SelectTrigger>
@@ -367,13 +375,13 @@ export default function OnboardingClient() {
                   >
                     {saving ? (
                       <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Icon name="spinner" size="lg" className="animate-spin" />
                         Creating...
                       </>
                     ) : (
                       <>
                         Complete Setup
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <Icon name="arrowRight" size="lg" className="group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </Button>
@@ -388,7 +396,7 @@ export default function OnboardingClient() {
           <div className="text-center space-y-8 animate-fade-in">
             <div className="space-y-4">
               <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center mx-auto shadow-lg">
-                <CheckCircle className="w-12 h-12 text-emerald-600" />
+                <Icon name="checkCircle" size="4xl" className="text-emerald-600" />
               </div>
               
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -403,16 +411,12 @@ export default function OnboardingClient() {
             {/* Next Steps */}
             <Card className="card-elevated p-6 text-left max-w-md mx-auto rounded-2xl">
               <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Icon name="sparkles" size="lg" className="text-primary" />
                 Quick Start Guide
               </h3>
               
               <div className="space-y-4">
-                {[
-                  { num: 1, text: 'Add your first quote', desc: 'Enter a recent quote you gave', icon: Target },
-                  { num: 2, text: 'Watch the magic', desc: 'We auto-follow up at the perfect time', icon: Bot },
-                  { num: 3, text: 'Win the job', desc: 'Track your success in the dashboard', icon: TrendingUp },
-                ].map((item) => (
+                {quickStartItems.map((item) => (
                   <div key={item.num} className="flex items-start gap-4 p-3 bg-gray-50 rounded-xl">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-lg shadow-primary/20">
                       {item.num}
@@ -421,7 +425,7 @@ export default function OnboardingClient() {
                       <p className="font-medium text-gray-900">{item.text}</p>
                       <p className="text-sm text-gray-500">{item.desc}</p>
                     </div>
-                    <item.icon className="w-5 h-5 text-gray-300" />
+                    <Icon name={item.icon} size="lg" className="text-gray-300" />
                   </div>
                 ))}
               </div>
@@ -433,7 +437,7 @@ export default function OnboardingClient() {
               className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
             >
               Go to Dashboard
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="lg" className="group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         )}

@@ -8,7 +8,7 @@ import AuthLayout from '@/components/auth/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, AlertCircle, Mail } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 function ResendVerificationContent() {
   const searchParams = useSearchParams();
@@ -49,7 +49,7 @@ function ResendVerificationContent() {
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Mail className="w-8 h-8 text-primary" />
+              <Icon name="email" size="2xl" className="text-primary" />
             </div>
           </div>
           <div>
@@ -65,7 +65,7 @@ function ResendVerificationContent() {
           
           <Link href="/login">
             <Button variant="ghost" className="w-full gap-2">
-              <ArrowLeft className="w-4 h-4" />
+              <Icon name="arrowLeft" size="md" />
               Back to sign in
             </Button>
           </Link>
@@ -83,7 +83,7 @@ function ResendVerificationContent() {
         {/* Error alert */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <Icon name="alertCircle" size="lg" className="shrink-0 mt-0.5" />
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -108,7 +108,7 @@ function ResendVerificationContent() {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Icon name="spinner" size="md" className="mr-2 animate-spin" />
               Sending...
             </>
           ) : (
@@ -119,7 +119,7 @@ function ResendVerificationContent() {
         {/* Back to login */}
         <Link href="/login">
           <Button variant="ghost" className="w-full gap-2">
-            <ArrowLeft className="w-4 h-4" />
+            <Icon name="arrowLeft" size="md" />
             Back to sign in
           </Button>
         </Link>
@@ -132,7 +132,7 @@ export default function ResendVerificationPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
       </div>
     }>
       <ResendVerificationContent />

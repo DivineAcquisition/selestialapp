@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import MergeFieldPicker from './MergeFieldPicker';
-import { GripVertical, MessageSquare, Mail, Trash2, Clock } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useRef } from 'react';
 
@@ -58,7 +58,7 @@ export default function StepEditor({
       <div className="flex gap-3">
         {/* Drag handle */}
         <div className="flex items-start pt-1">
-          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+          <Icon name="grip" size="lg" className="text-muted-foreground cursor-grab" />
         </div>
         
         {/* Main content */}
@@ -79,7 +79,7 @@ export default function StepEditor({
                   )}
                   onClick={() => onChange({ ...step, channel: 'sms' })}
                 >
-                  <MessageSquare className="h-3 w-3" />
+                  <Icon name="message" size="xs" />
                   SMS
                 </button>
                 <button
@@ -91,7 +91,7 @@ export default function StepEditor({
                   )}
                   onClick={() => onChange({ ...step, channel: 'email' })}
                 >
-                  <Mail className="h-3 w-3" />
+                  <Icon name="email" size="xs" />
                   Email
                 </button>
               </div>
@@ -105,7 +105,7 @@ export default function StepEditor({
               
               {canDelete && (
                 <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8 text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
+                  <Icon name="trash" size="sm" />
                 </Button>
               )}
             </div>
@@ -114,7 +114,7 @@ export default function StepEditor({
           {/* Timing */}
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Icon name="clock" size="sm" className="text-muted-foreground" />
               <span className="text-muted-foreground">Send after</span>
             </div>
             

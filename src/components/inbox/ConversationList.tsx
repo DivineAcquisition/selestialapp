@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 import type { Conversation } from '@/hooks/useConversations';
-import { MessageSquare, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 
 interface ConversationListProps {
@@ -31,7 +31,7 @@ export default function ConversationList({
     return (
       <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center">
         <div className="w-14 h-14 bg-secondary/50 rounded-2xl flex items-center justify-center mb-4">
-          <MessageSquare className="w-7 h-7 text-muted-foreground" />
+          <Icon name="message" size="2xl" className="text-muted-foreground" />
         </div>
         <h3 className="font-semibold text-foreground mb-1">No conversations yet</h3>
         <p className="text-sm text-muted-foreground max-w-[200px]">
@@ -99,11 +99,11 @@ export default function ConversationList({
                       ? "bg-primary/10" 
                       : "bg-secondary"
                   )}>
-                    {conversation.lastMessageDirection === 'inbound' ? (
-                      <ArrowDownLeft className="w-3 h-3 text-primary" />
-                    ) : (
-                      <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
-                    )}
+                    <Icon 
+                      name={conversation.lastMessageDirection === 'inbound' ? "arrowDownLeft" : "arrowUpRight"} 
+                      size="xs" 
+                      className={conversation.lastMessageDirection === 'inbound' ? "text-primary" : "text-muted-foreground"} 
+                    />
                   </div>
                   <p className={cn(
                     'text-sm truncate',

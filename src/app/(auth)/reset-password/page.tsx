@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
-import { Loader2, Lock, CheckCircle2, ArrowRight, Eye, EyeOff, Shield } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
         {/* Success state */}
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-full flex items-center justify-center mx-auto animate-scale-fade shadow-lg shadow-emerald-100">
-            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+            <Icon name="checkCircle" size="3xl" className="text-emerald-600" />
           </div>
           
           <div className="space-y-2">
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="flex justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <Icon name="spinner" size="lg" className="animate-spin text-primary" />
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
       {/* Header */}
       <div className="space-y-3">
         <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-[#9D96FF]/10 rounded-2xl flex items-center justify-center mb-4">
-          <Shield className="w-7 h-7 text-primary" />
+          <Icon name="shield" size="2xl" className="text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create new password</h1>
         <p className="text-gray-500">
@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
         <Field name="password">
           <FieldLabel>New password</FieldLabel>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="lock" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="password"
               type={showPassword ? 'text' : 'password'}
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              <Icon name={showPassword ? "eyeOff" : "eye"} size="lg" />
             </button>
           </div>
           <FieldDescription>Must be at least 8 characters</FieldDescription>
@@ -138,7 +138,7 @@ export default function ResetPasswordPage() {
         <Field name="confirmPassword">
           <FieldLabel>Confirm new password</FieldLabel>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon name="lock" size="lg" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
               name="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              <Icon name={showConfirmPassword ? "eyeOff" : "eye"} size="lg" />
             </button>
           </div>
           <FieldError show={!!errors.confirmPassword}>{errors.confirmPassword}</FieldError>
@@ -169,11 +169,11 @@ export default function ResetPasswordPage() {
           )}
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icon name="spinner" size="lg" className="animate-spin" />
           ) : (
             <>
               Reset password
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <Icon name="arrowRight" size="md" className="ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </Button>

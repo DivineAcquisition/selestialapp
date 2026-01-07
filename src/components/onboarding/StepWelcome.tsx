@@ -1,26 +1,26 @@
 import { useEffect } from 'react';
 import { useOnboarding } from './OnboardingContext';
 import OnboardingLayout from './OnboardingLayout';
-import { MessageSquare, TrendingUp, Clock, Zap } from 'lucide-react';
+import { Icon, IconName } from '@/components/ui/icon';
 
-const features = [
+const features: { icon: IconName; title: string; description: string }[] = [
   {
-    icon: MessageSquare,
+    icon: 'message',
     title: 'Automated Follow-Ups',
     description: 'SMS sequences that follow up on every quote automatically',
   },
   {
-    icon: TrendingUp,
+    icon: 'trendUp',
     title: 'Win More Jobs',
     description: 'Convert 20-40% more quotes with consistent follow-up',
   },
   {
-    icon: Clock,
+    icon: 'clock',
     title: 'Save 10+ Hours Weekly',
     description: 'No more manual texting or remembering to follow up',
   },
   {
-    icon: Zap,
+    icon: 'bolt',
     title: 'Get Started in 5 Minutes',
     description: 'Simple setup, immediate results',
   },
@@ -51,7 +51,7 @@ export default function StepWelcome() {
               className="flex items-start gap-4 p-4 rounded-lg bg-card border border-border"
             >
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <feature.icon className="h-5 w-5 text-primary" />
+                <Icon name={feature.icon} size="lg" className="text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">{feature.title}</h3>
@@ -79,7 +79,7 @@ export default function StepWelcome() {
             ))}
           </div>
           <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+            <Icon name="clock" size="md" />
             Takes about 5 minutes
           </p>
         </div>

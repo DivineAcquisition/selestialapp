@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { RetentionStep } from '@/hooks/useRetentionSequences';
 import MergeFieldPicker from '@/components/sequences/MergeFieldPicker';
-import { Trash2, MessageSquare, Mail, GripVertical } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { useRef } from 'react';
 
 interface RetentionStepEditorProps {
@@ -64,12 +64,12 @@ export default function RetentionStepEditor({
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+              <Icon name="grip" size="md" className="text-muted-foreground cursor-grab" />
               <span className="text-sm font-medium">Step {stepNumber}</span>
               {step.channel === 'sms' ? (
-                <MessageSquare className="h-4 w-4 text-blue-600" />
+                <Icon name="message" size="md" className="text-blue-600" />
               ) : (
-                <Mail className="h-4 w-4 text-purple-600" />
+                <Icon name="email" size="md" className="text-purple-600" />
               )}
             </div>
             <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function RetentionStepEditor({
               </div>
               {canDelete && (
                 <Button variant="ghost" size="icon" onClick={onDelete}>
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  <Icon name="trash" size="md" className="text-muted-foreground" />
                 </Button>
               )}
             </div>

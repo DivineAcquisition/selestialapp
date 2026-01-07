@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { MERGE_FIELDS } from '@/lib/constants';
-import { Plus } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface MergeFieldPickerProps {
   onSelect: (field: string) => void;
@@ -16,7 +16,7 @@ export default function MergeFieldPicker({ onSelect }: MergeFieldPickerProps) {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
-          <Plus className="h-3 w-3" />
+          <Icon name="plus" size="xs" />
           Insert Field
         </Button>
       </PopoverTrigger>

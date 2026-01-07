@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useUsage } from '@/hooks/useUsage'
 import { useFeatureGate } from '@/hooks/useFeatureGate'
 import { cn } from '@/lib/utils'
-import { Infinity as InfinityIcon } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 interface UsageBarProps {
   feature: 'quotesPerMonth' | 'smsPerMonth' | 'activeSequences' | 'teamMembers'
@@ -47,7 +47,7 @@ export default function UsageBar({
           <span className="text-muted-foreground">{label}</span>
           <span className="font-medium flex items-center gap-1">
             {used} used
-            <InfinityIcon className="w-4 h-4 text-primary" />
+            <Icon name="infinity" size="sm" className="text-primary" />
           </span>
         </div>
         <div className="h-2 bg-primary/20 rounded-full overflow-hidden">

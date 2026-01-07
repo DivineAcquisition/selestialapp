@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
-import { Clock } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 interface BusinessHoursSettingsProps {
@@ -39,7 +39,7 @@ export default function BusinessHoursSettings({ settings, onChange }: BusinessHo
     <Card className="card-elevated p-6 rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2.5 bg-primary/10 rounded-xl">
-          <Clock className="h-5 w-5 text-primary" />
+          <Icon name="clock" size="lg" className="text-primary" />
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">Business Hours</h3>

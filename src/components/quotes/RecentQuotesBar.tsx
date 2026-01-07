@@ -1,6 +1,6 @@
 import { useQuotes } from '@/hooks/useQuotes';
 import { formatCurrency } from '@/lib/formatters';
-import { Copy } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface QuoteData {
   customer_name: string;
@@ -47,7 +47,7 @@ export default function RecentQuotesBar({ onDuplicate }: RecentQuotesBarProps) {
           <span className="text-muted-foreground">
             {formatCurrency(quote.quote_amount)}
           </span>
-          <Copy className="w-3 h-3 text-muted-foreground" />
+          <Icon name="copy" size="xs" className="text-muted-foreground" />
         </button>
       ))}
     </div>

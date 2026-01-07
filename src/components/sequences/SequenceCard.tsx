@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Zap, MessageSquare, Mail, Edit2, Trash2, Crown } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 interface SequenceCardProps {
   sequence: Sequence;
@@ -33,14 +33,14 @@ export default function SequenceCard({
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Zap className="h-5 w-5 text-primary" />
+            <Icon name="bolt" size="lg" className="text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-foreground">{sequence.name}</h3>
               {sequence.is_default && (
                 <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700 border-0">
-                  <Crown className="h-3 w-3" />
+                  <Icon name="crown" size="xs" />
                   Default
                 </Badge>
               )}
@@ -60,12 +60,12 @@ export default function SequenceCard({
       {/* Stats */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
         <span className="flex items-center gap-1">
-          <MessageSquare className="h-4 w-4" />
+          <Icon name="message" size="sm" />
           {smsCount} SMS
         </span>
         {emailCount > 0 && (
           <span className="flex items-center gap-1">
-            <Mail className="h-4 w-4" />
+            <Icon name="email" size="sm" />
             {emailCount} Email
           </span>
         )}
@@ -75,7 +75,7 @@ export default function SequenceCard({
       {/* Actions */}
       <div className="flex items-center justify-between pt-3 border-t border-border">
         <Button variant="ghost" size="sm" onClick={onEdit} className="gap-1">
-          <Edit2 className="h-4 w-4" />
+          <Icon name="edit" size="sm" />
           Edit
         </Button>
         
@@ -89,7 +89,7 @@ export default function SequenceCard({
         
         {!sequence.is_default && (
           <Button variant="ghost" size="sm" onClick={onDelete} className="text-destructive hover:text-destructive">
-            <Trash2 className="h-4 w-4" />
+            <Icon name="trash" size="sm" />
           </Button>
         )}
       </div>

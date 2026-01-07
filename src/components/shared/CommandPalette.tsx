@@ -3,30 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
-import {
-  FileText,
-  Users,
-  MessageSquare,
-  Zap,
-  BarChart3,
-  Settings,
-  Plus,
-  Search,
-  CreditCard,
-  Sparkles,
-  Home,
-  LogOut,
-  Phone,
-  Target,
-  Link as LinkIcon,
-} from 'lucide-react'
+import { Icon, IconName } from '@/components/ui/icon'
 import { supabase } from '@/integrations/supabase/client'
-import { cn } from '@/lib/utils'
 
 interface CommandPaletteProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onOpenAI?: () => void
+}
+
+interface Action {
+  id: string
+  name: string
+  icon: IconName
+  shortcut?: string
+  action: () => void | Promise<void>
+  category: string
 }
 
 export default function CommandPalette({ open, onOpenChange, onOpenAI }: CommandPaletteProps) {
@@ -37,11 +29,11 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     if (open) setSearch('')
   }, [open])
 
-  const actions = [
+  const actions: Action[] = [
     {
       id: 'ai',
       name: 'Ask AI Assistant',
-      icon: Sparkles,
+      icon: 'sparkles',
       shortcut: '⌘J',
       action: () => {
         onOpenChange(false)
@@ -52,7 +44,7 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     {
       id: 'new-quote',
       name: 'Create New Quote',
-      icon: Plus,
+      icon: 'plus',
       shortcut: '⌘N',
       action: () => router.push('/quotes?new=true'),
       category: 'Create',
@@ -60,21 +52,21 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     {
       id: 'new-customer',
       name: 'Add Customer',
-      icon: Users,
+      icon: 'users',
       action: () => router.push('/customers?new=true'),
       category: 'Create',
     },
     {
       id: 'new-sequence',
       name: 'Create Sequence',
-      icon: Zap,
+      icon: 'bolt',
       action: () => router.push('/sequences?new=true'),
       category: 'Create',
     },
     {
       id: 'dashboard',
       name: 'Go to Dashboard',
-      icon: Home,
+      icon: 'home',
       shortcut: '⌘D',
       action: () => router.push('/'),
       category: 'Navigate',
@@ -82,21 +74,21 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     {
       id: 'quotes',
       name: 'View Quotes',
-      icon: FileText,
+      icon: 'fileText',
       action: () => router.push('/quotes'),
       category: 'Navigate',
     },
     {
       id: 'customers',
       name: 'View Customers',
-      icon: Users,
+      icon: 'users',
       action: () => router.push('/customers'),
       category: 'Navigate',
     },
     {
       id: 'inbox',
       name: 'Open Inbox',
-      icon: MessageSquare,
+      icon: 'message',
       shortcut: '⌘I',
       action: () => router.push('/inbox'),
       category: 'Navigate',
@@ -104,49 +96,49 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     {
       id: 'sequences',
       name: 'View Sequences',
-      icon: Zap,
+      icon: 'bolt',
       action: () => router.push('/sequences'),
       category: 'Navigate',
     },
     {
       id: 'campaigns',
       name: 'View Campaigns',
-      icon: Target,
+      icon: 'target',
       action: () => router.push('/campaigns'),
       category: 'Navigate',
     },
     {
       id: 'analytics',
       name: 'View Analytics',
-      icon: BarChart3,
+      icon: 'chart',
       action: () => router.push('/analytics'),
       category: 'Navigate',
     },
     {
       id: 'connections',
       name: 'Connections',
-      icon: LinkIcon,
+      icon: 'link',
       action: () => router.push('/connections'),
       category: 'Settings',
     },
     {
       id: 'billing',
       name: 'Billing & Plans',
-      icon: CreditCard,
+      icon: 'creditCard',
       action: () => router.push('/billing'),
       category: 'Settings',
     },
     {
       id: 'settings',
       name: 'Settings',
-      icon: Settings,
+      icon: 'settings',
       action: () => router.push('/settings'),
       category: 'Settings',
     },
     {
       id: 'logout',
       name: 'Sign Out',
-      icon: LogOut,
+      icon: 'logout',
       action: async () => {
         await supabase.auth.signOut()
         router.push('/login')
@@ -155,7 +147,7 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
     },
   ]
 
-  const handleSelect = (action: typeof actions[0]) => {
+  const handleSelect = (action: Action) => {
     onOpenChange(false)
     action.action()
   }
@@ -182,7 +174,7 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
         <div className="bg-background rounded-2xl shadow-2xl border overflow-hidden">
           {/* Search Input */}
           <div className="flex items-center gap-3 px-4 py-3 border-b">
-            <Search className="w-5 h-5 text-muted-foreground" />
+            <Icon name="search" size="lg" className="text-muted-foreground" />
             <Command.Input
               value={search}
               onValueChange={setSearch}
@@ -214,7 +206,7 @@ export default function CommandPalette({ open, onOpenChange, onOpenAI }: Command
                       onSelect={() => handleSelect(action)}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-primary/5 data-[selected=true]:bg-primary/10"
                     >
-                      <action.icon className="w-4 h-4 text-muted-foreground" />
+                      <Icon name={action.icon} size="sm" className="text-muted-foreground" />
                       <span className="flex-1 text-foreground">{action.name}</span>
                       {action.shortcut && (
                         <kbd className="px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded">

@@ -406,6 +406,9 @@ export const icons = {
   puzzlePiece: "puzzle-piece",
   api: "api",
   rss: "rss",
+  webhook: "link-alt",
+  network: "network",
+  networkCloud: "network-cloud",
   
   // Sequences & Automation
   sequence: "arrows-repeat",

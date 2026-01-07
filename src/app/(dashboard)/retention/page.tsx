@@ -22,18 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRetentionSequences, TRIGGER_TYPES, DEFAULT_RETENTION_STEPS } from '@/hooks/useRetentionSequences';
 import RetentionSequenceEditor from '@/components/retention/RetentionSequenceEditor';
-import { 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Loader2,
-  RefreshCw,
-  Calendar,
-  Clock,
-  MessageSquare,
-  Mail
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 import { toast } from 'sonner';
 
 export default function RetentionSequencesPage() {
@@ -131,10 +120,10 @@ export default function RetentionSequencesPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={refetch}>
-              <RefreshCw className="h-4 w-4" />
+              <Icon name="refresh" size="sm" />
             </Button>
             <Button onClick={handleCreate}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Icon name="plus" size="sm" className="mr-2" />
               New Sequence
             </Button>
           </div>
@@ -143,18 +132,18 @@ export default function RetentionSequencesPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Icon name="spinner" size="2xl" className="animate-spin text-muted-foreground" />
           </div>
         ) : sequences.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <Icon name="refresh" size="3xl" className="text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium">No retention sequences yet</h3>
               <p className="text-muted-foreground mt-1 mb-4">
                 Create your first sequence to automatically follow up with customers after jobs
               </p>
               <Button onClick={handleCreate}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Icon name="plus" size="sm" className="mr-2" />
                 Create First Sequence
               </Button>
             </CardContent>
@@ -187,19 +176,19 @@ export default function RetentionSequencesPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <Icon name="more" size="sm" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleEdit(sequence)}>
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Icon name="edit" size="sm" className="mr-2" />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => setDeleteConfirm(sequence.id)}
                               className="text-destructive"
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <Icon name="trash" size="sm" className="mr-2" />
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -210,7 +199,7 @@ export default function RetentionSequencesPage() {
                   <CardContent>
                     <div className="flex flex-wrap gap-4 text-sm">
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
+                        <Icon name="calendar" size="sm" />
                         <span>{getTriggerLabel(sequence.trigger_type)}</span>
                         {sequence.trigger_days > 0 && (
                           <span className="text-foreground font-medium">
@@ -219,17 +208,17 @@ export default function RetentionSequencesPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <MessageSquare className="h-4 w-4" />
+                        <Icon name="message" size="sm" />
                         <span>{smsCount} SMS</span>
                       </div>
                       {emailCount > 0 && (
                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Mail className="h-4 w-4" />
+                          <Icon name="email" size="sm" />
                           <span>{emailCount} Email</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Clock className="h-4 w-4" />
+                        <Icon name="clock" size="sm" />
                         <span>{totalDays} day span</span>
                       </div>
                     </div>
@@ -267,7 +256,7 @@ export default function RetentionSequencesPage() {
               onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
               disabled={deleting}
             >
-              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {deleting && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

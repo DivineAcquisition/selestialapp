@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import AIAssistant from './AIAssistant'
-import { Bot, MessageCircle } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 // Animated border gradient component
 function AnimatedBorderGradient({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -68,10 +68,14 @@ export default function AIFloatingButton() {
               "relative z-10 transition-transform duration-300",
               isHovered ? "scale-110" : "scale-100"
             )}>
-              <Bot className={cn(
-                "w-6 h-6 transition-all duration-300",
-                isHovered ? "text-[#9D96FF]" : "text-white"
-              )} />
+              <Icon 
+                name="robot" 
+                size="xl" 
+                className={cn(
+                  "transition-all duration-300",
+                  isHovered ? "text-[#9D96FF]" : "text-white"
+                )} 
+              />
             </div>
             
             {/* Floating particles */}
@@ -95,7 +99,7 @@ export default function AIFloatingButton() {
           isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
         )}>
           <div className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-primary" />
+            <Icon name="message" size="sm" className="text-primary" />
             <span>Ask AI Assistant</span>
             <kbd className="ml-2 px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs text-gray-400">⌘J</kbd>
           </div>

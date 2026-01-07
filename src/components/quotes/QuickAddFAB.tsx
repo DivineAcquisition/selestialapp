@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import QuickAddQuote from './QuickAddQuote';
-import { Plus } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function QuickAddFAB() {
   const [open, setOpen] = useState(false);
@@ -16,7 +16,7 @@ export default function QuickAddFAB() {
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg lg:hidden z-40"
         size="icon"
       >
-        <Plus className="w-6 h-6" />
+        <Icon name="plus" size="xl" />
       </Button>
       
       <QuickAddQuote open={open} onClose={() => setOpen(false)} />

@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { useMessageQueue } from '@/hooks/useMessages';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, Send, AlertCircle, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icon';
 
 export default function QueueStatusCard() {
   const { business } = useBusiness();
@@ -12,7 +12,7 @@ export default function QueueStatusCard() {
     return (
       <Card className="p-4">
         <div className="flex items-center justify-center py-4">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          <Icon name="spinner" size="lg" className="animate-spin text-muted-foreground" />
         </div>
       </Card>
     );
@@ -25,7 +25,7 @@ export default function QueueStatusCard() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <Clock className="w-4 h-4 text-amber-500" />
+            <Icon name="clock" size="sm" className="text-amber-500" />
             <span className="text-muted-foreground">Scheduled</span>
           </div>
           <span className="font-medium">{stats.pending}</span>
@@ -33,7 +33,7 @@ export default function QueueStatusCard() {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <Send className="w-4 h-4 text-emerald-500" />
+            <Icon name="send" size="sm" className="text-emerald-500" />
             <span className="text-muted-foreground">Sent</span>
           </div>
           <span className="font-medium">{stats.sent}</span>
@@ -42,7 +42,7 @@ export default function QueueStatusCard() {
         {stats.failed > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <AlertCircle className="w-4 h-4 text-destructive" />
+              <Icon name="alertCircle" size="sm" className="text-destructive" />
               <span className="text-muted-foreground">Failed</span>
             </div>
             <span className="font-medium text-destructive">{stats.failed}</span>

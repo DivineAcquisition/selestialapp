@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { Icon } from '@/components/ui/icon'
 
 export default function AboutPage() {
   return (
@@ -54,7 +54,7 @@ export default function AboutPage() {
           <Link href="/signup">
             <Button size="lg" className="text-lg h-14 px-8 glow">
               Join 500+ Businesses
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <Icon name="arrowRight" size="lg" className="ml-2" />
             </Button>
           </Link>
         </div>
