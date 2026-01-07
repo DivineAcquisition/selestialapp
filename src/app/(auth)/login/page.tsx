@@ -4,9 +4,11 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/integrations/supabase/client'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Form } from '@/components/ui/form'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
 import { Loader2, Mail, Lock, ArrowRight, Sparkles, CheckCircle, Zap } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -18,15 +20,28 @@ function LoginForm() {
   const redirect = searchParams.get('redirect') || '/'
   const { toast } = useToast()
   
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    // Validate
+    const newErrors: { email?: string; password?: string } = {}
+    if (!email) newErrors.email = 'Email is required'
+    if (!password) newErrors.password = 'Password is required'
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
     setLoading(true)
+    setErrors({})
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -39,6 +54,9 @@ function LoginForm() {
         description: error.message,
         variant: 'destructive',
       })
+      if (error.message.includes('Invalid login')) {
+        setErrors({ email: 'Invalid email or password' })
+      }
       setLoading(false)
     } else {
       router.push(redirect)
@@ -137,38 +155,26 @@ function LoginForm() {
       <FormDivider text="Or continue with email" />
 
       {/* Email Form */}
-      <form onSubmit={handleEmailLogin} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-            Email address
-          </Label>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'email' && "ring-2 ring-primary/20"
-          )}>
-            <Mail className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'email' ? "text-primary" : "text-gray-400"
-            )} />
+      <Form onSubmit={handleEmailLogin}>
+        <Field name="email">
+          <FieldLabel>Email address</FieldLabel>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 peer-focus:text-primary transition-colors" />
             <Input
-              id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
               placeholder="you@company.com"
               required
-              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary"
+              disabled={loading}
+              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary peer"
             />
           </div>
-        </div>
+          <FieldError show={!!errors.email}>{errors.email}</FieldError>
+        </Field>
 
-        <div className="space-y-2">
+        <Field name="password">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </Label>
+            <FieldLabel>Password</FieldLabel>
             <Link 
               href="/forgot-password" 
               className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
@@ -176,39 +182,27 @@ function LoginForm() {
               Forgot password?
             </Link>
           </div>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'password' && "ring-2 ring-primary/20"
-          )}>
-            <Lock className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'password' ? "text-primary" : "text-gray-400"
-            )} />
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 peer-focus:text-primary transition-colors" />
             <Input
-              id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedField('password')}
-              onBlur={() => setFocusedField(null)}
               placeholder="••••••••"
               required
-              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary"
+              disabled={loading}
+              className="h-12 pl-11 text-sm rounded-xl border-gray-200 focus:border-primary peer"
             />
           </div>
-        </div>
+          <FieldError show={!!errors.password}>{errors.password}</FieldError>
+        </Field>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
           className={cn(
-            "group/btn relative w-full h-12 text-sm font-semibold rounded-xl text-white",
+            "group/btn relative w-full h-12 text-sm font-semibold rounded-xl",
             "bg-gradient-to-br from-primary to-[#9D96FF]",
-            "shadow-[0px_1px_0px_0px_rgba(255,255,255,0.2)_inset,0px_-1px_0px_0px_rgba(255,255,255,0.2)_inset]",
-            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5",
-            "transition-all duration-300",
-            "flex items-center justify-center gap-2",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25"
           )}
         >
           {loading ? (
@@ -216,12 +210,11 @@ function LoginForm() {
           ) : (
             <>
               Sign in to your account
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
             </>
           )}
-          <BottomGradient />
-        </button>
-      </form>
+        </Button>
+      </Form>
 
       {/* Sign up link */}
       <div className="relative">

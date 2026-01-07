@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/integrations/supabase/client'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Form } from '@/components/ui/form'
+import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { BottomGradient } from '@/components/ui/bottom-gradient'
 import { Loader2, ArrowLeft, Mail, CheckCircle2, ArrowRight, Shield } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -15,13 +17,24 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [errors, setErrors] = useState<{ email?: string }>({})
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const emailValue = formData.get('email') as string
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    // Validate
+    if (!emailValue) {
+      setErrors({ email: 'Email is required' })
+      return
+    }
+
+    setLoading(true)
+    setErrors({})
+    setEmail(emailValue)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(emailValue, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/reset-password`,
     })
 
@@ -31,6 +44,7 @@ export default function ForgotPasswordPage() {
         description: error.message,
         variant: 'destructive',
       })
+      setErrors({ email: error.message })
       setLoading(false)
       return
     }
@@ -40,7 +54,7 @@ export default function ForgotPasswordPage() {
       await fetch('/api/email/password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: emailValue }),
       })
     } catch (err) {
       console.error('Failed to send password reset email via Resend:', err)
@@ -79,14 +93,14 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => setSent(false)}
-            className="group/btn relative w-full h-12 font-medium rounded-xl bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 flex items-center justify-center"
+            className="w-full h-12 rounded-xl"
           >
             Try another email
-            <BottomGradient />
-          </button>
+          </Button>
         </div>
 
         <div className="text-center">
@@ -125,44 +139,30 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-            Email address
-          </Label>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'email' && "ring-2 ring-primary/20"
-          )}>
-            <Mail className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'email' ? "text-primary" : "text-gray-400"
-            )} />
+      <Form onSubmit={handleSubmit}>
+        <Field name="email">
+          <FieldLabel>Email address</FieldLabel>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
               placeholder="you@company.com"
               required
+              disabled={loading}
               className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
-        </div>
+          <FieldError show={!!errors.email}>{errors.email}</FieldError>
+        </Field>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
           className={cn(
-            "group/btn relative w-full h-12 text-base font-semibold rounded-xl text-white",
+            "w-full h-12 text-base font-semibold rounded-xl",
             "bg-gradient-to-br from-primary to-[#9D96FF]",
-            "shadow-[0px_1px_0px_0px_rgba(255,255,255,0.2)_inset,0px_-1px_0px_0px_rgba(255,255,255,0.2)_inset]",
-            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5",
-            "transition-all duration-300",
-            "flex items-center justify-center gap-2",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25"
           )}
         >
           {loading ? (
@@ -170,12 +170,11 @@ export default function ForgotPasswordPage() {
           ) : (
             <>
               Send reset link
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
-          <BottomGradient />
-        </button>
-      </form>
+        </Button>
+      </Form>
     </div>
   )
 }

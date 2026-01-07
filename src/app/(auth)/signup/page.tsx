@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/integrations/supabase/client'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Form } from '@/components/ui/form'
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
 import { Loader2, User, Mail, Lock, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -16,16 +18,31 @@ export default function SignupPage() {
   const router = useRouter()
   const { toast } = useToast()
   
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({})
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    // Validate
+    const newErrors: { name?: string; email?: string; password?: string } = {}
+    if (!name) newErrors.name = 'Name is required'
+    if (!email) newErrors.email = 'Email is required'
+    if (!password) newErrors.password = 'Password is required'
+    else if (password.length < 8) newErrors.password = 'Password must be at least 8 characters'
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
     setLoading(true)
+    setErrors({})
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -46,6 +63,9 @@ export default function SignupPage() {
           description: error.message,
           variant: 'destructive',
         })
+        if (error.message.includes('email')) {
+          setErrors({ email: error.message })
+        }
         setLoading(false)
         return
       }
@@ -169,100 +189,64 @@ export default function SignupPage() {
       <FormDivider text="Or continue with email" />
 
       {/* Email Form */}
-      <form onSubmit={handleSignup} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-            Full name
-          </Label>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'name' && "ring-2 ring-primary/20"
-          )}>
-            <User className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'name' ? "text-primary" : "text-gray-400"
-            )} />
+      <Form onSubmit={handleSignup}>
+        <Field name="name">
+          <FieldLabel>Full name</FieldLabel>
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              id="name"
+              name="name"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onFocus={() => setFocusedField('name')}
-              onBlur={() => setFocusedField(null)}
               placeholder="John Smith"
               required
+              disabled={loading}
               className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
-        </div>
+          <FieldError show={!!errors.name}>{errors.name}</FieldError>
+        </Field>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-            Work email
-          </Label>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'email' && "ring-2 ring-primary/20"
-          )}>
-            <Mail className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'email' ? "text-primary" : "text-gray-400"
-            )} />
+        <Field name="email">
+          <FieldLabel>Work email</FieldLabel>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
               placeholder="you@company.com"
               required
+              disabled={loading}
               className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
-        </div>
+          <FieldError show={!!errors.email}>{errors.email}</FieldError>
+        </Field>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-            Password
-          </Label>
-          <div className={cn(
-            "relative rounded-xl transition-all duration-300",
-            focusedField === 'password' && "ring-2 ring-primary/20"
-          )}>
-            <Lock className={cn(
-              "absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
-              focusedField === 'password' ? "text-primary" : "text-gray-400"
-            )} />
+        <Field name="password">
+          <FieldLabel>Password</FieldLabel>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedField('password')}
-              onBlur={() => setFocusedField(null)}
               placeholder="••••••••"
               required
               minLength={8}
+              disabled={loading}
               className="h-12 pl-11 text-base rounded-xl border-gray-200"
             />
           </div>
-          <p className="text-xs text-gray-400">
-            Must be at least 8 characters
-          </p>
-        </div>
+          <FieldDescription>Must be at least 8 characters</FieldDescription>
+          <FieldError show={!!errors.password}>{errors.password}</FieldError>
+        </Field>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
           className={cn(
-            "group/btn relative w-full h-12 text-base font-semibold rounded-xl text-white",
-            "bg-gradient-to-br from-primary to-[#9D96FF]",
-            "shadow-[0px_1px_0px_0px_rgba(255,255,255,0.2)_inset,0px_-1px_0px_0px_rgba(255,255,255,0.2)_inset]",
-            "hover:opacity-90 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5",
-            "transition-all duration-300",
-            "flex items-center justify-center gap-2",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            "w-full h-12 text-base font-semibold rounded-xl",
+            "bg-gradient-to-r from-primary to-[#9D96FF]",
+            "hover:opacity-90 shadow-lg shadow-primary/25"
           )}
         >
           {loading ? (
@@ -270,12 +254,11 @@ export default function SignupPage() {
           ) : (
             <>
               Create account
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}
-          <BottomGradient />
-        </button>
-      </form>
+        </Button>
+      </Form>
 
       {/* Terms */}
       <p className="text-center text-xs text-gray-400">
