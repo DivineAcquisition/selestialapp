@@ -524,15 +524,16 @@ interface IconProps {
   className?: string;
 }
 
+// Size classes with explicit width/height for proper centering
 const sizeClasses = {
-  xs: "text-xs",      // 12px
-  sm: "text-sm",      // 14px
-  md: "text-base",    // 16px
-  lg: "text-lg",      // 18px
-  xl: "text-xl",      // 20px
-  "2xl": "text-2xl",  // 24px
-  "3xl": "text-3xl",  // 30px
-  "4xl": "text-4xl",  // 36px
+  xs: "text-xs w-3 h-3",        // 12px
+  sm: "text-sm w-3.5 h-3.5",    // 14px
+  md: "text-base w-4 h-4",      // 16px
+  lg: "text-lg w-[18px] h-[18px]", // 18px
+  xl: "text-xl w-5 h-5",        // 20px
+  "2xl": "text-2xl w-6 h-6",    // 24px
+  "3xl": "text-3xl w-[30px] h-[30px]", // 30px
+  "4xl": "text-4xl w-9 h-9",    // 36px
 };
 
 export function Icon({ name, size = "md", className }: IconProps) {
@@ -548,7 +549,7 @@ export function Icon({ name, size = "md", className }: IconProps) {
         "fi",
         `fi-sr-${iconClass}`,
         sizeClasses[size],
-        "leading-none inline-flex items-center justify-center",
+        "leading-none inline-flex items-center justify-center shrink-0",
         className
       )} 
     />
