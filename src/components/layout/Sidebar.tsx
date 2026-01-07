@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, Wand2 } from 'lucide-react';
+import { LogOut, ChevronRight, Wand2, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
@@ -30,6 +30,7 @@ const navigation = [
   { name: 'Sequences', href: '/sequences', icon: SequenceIcon },
   { name: 'Campaigns', href: '/campaigns', icon: CampaignIcon },
   { name: 'Analytics', href: '/analytics', icon: AnalyticsIcon },
+  { name: 'Pricing', href: '/pricing', icon: DollarSign, badge: 'AI' },
 ];
 
 const bottomNavigation = [
@@ -54,7 +55,7 @@ export default function Sidebar() {
     router.push('/login');
   };
 
-  const NavLink = ({ item }: { item: typeof navigation[0] }) => {
+  const NavLink = ({ item }: { item: typeof navigation[0] & { badge?: string } }) => {
     const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
     const Icon = item.icon;
     
@@ -86,6 +87,16 @@ export default function Sidebar() {
             )} size={18} />
           </div>
           <span>{item.name}</span>
+          {item.badge && (
+            <span className={cn(
+              "px-1.5 py-0.5 text-[9px] font-bold rounded-md",
+              isActive
+                ? "bg-white/20 text-white"
+                : "bg-gradient-to-r from-violet-500 to-purple-500 text-white"
+            )}>
+              {item.badge}
+            </span>
+          )}
         </div>
         
         {item.showBadge && totalUnread > 0 && (
