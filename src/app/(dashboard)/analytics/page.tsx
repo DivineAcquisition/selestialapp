@@ -17,18 +17,8 @@ import PerformanceChart from '@/components/analytics/PerformanceChart';
 import BenchmarkComparison from '@/components/analytics/BenchmarkComparison';
 import InsightsPanel from '@/components/analytics/InsightsPanel';
 import { AnimatedCounter } from '@/components/ui/text-effects';
+import { Icon } from '@/components/ui/icon';
 import { useAnalytics, useMetricsSummary } from '@/hooks/useAnalytics';
-import {
-  Loader2,
-  TrendingUp,
-  Users,
-  DollarSign,
-  Target,
-  BarChart3,
-  ArrowRight,
-  Sparkles,
-  Calendar,
-} from 'lucide-react';
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('monthly');
@@ -52,7 +42,7 @@ export default function AnalyticsPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <BarChart3 className="h-6 w-6 text-white" />
+              <Icon name="chart" size="xl" className="text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
@@ -62,7 +52,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-3">
             <Select value={period} onValueChange={(v) => setPeriod(v as 'weekly' | 'monthly')}>
               <SelectTrigger className="w-36 bg-white rounded-xl">
-                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                <Icon name="calendar" size="sm" className="mr-2 text-gray-400" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -75,7 +65,7 @@ export default function AnalyticsPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
           </div>
         ) : (
           <>
@@ -84,7 +74,7 @@ export default function AnalyticsPage() {
               <div className="group card-elevated p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                    <Target className="w-5 h-5" />
+                    <Icon name="target" size="lg" />
                   </div>
                   <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
                     +5%
@@ -99,9 +89,9 @@ export default function AnalyticsPage() {
               <div className="group card-elevated p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                    <DollarSign className="w-5 h-5" />
+                    <Icon name="dollar" size="lg" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                  <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                 </div>
                 <div className="text-3xl font-bold text-gray-900 mb-1">
                   ${((summary?.totalRevenue || 0) / 100).toLocaleString()}
@@ -112,9 +102,9 @@ export default function AnalyticsPage() {
               <div className="group card-elevated p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                    <Users className="w-5 h-5" />
+                    <Icon name="users" size="lg" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                  <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
                 </div>
                 <div className="text-3xl font-bold text-gray-900 mb-1">
                   <AnimatedCounter value={summary?.totalCustomers || 0} />
@@ -125,9 +115,9 @@ export default function AnalyticsPage() {
               <div className="group card-elevated p-5 bg-gradient-to-br from-primary/5 to-transparent">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                    <TrendingUp className="w-5 h-5" />
+                    <Icon name="trendUp" size="lg" />
                   </div>
-                  <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+                  <Icon name="sparkles" size="sm" className="text-primary animate-pulse" />
                 </div>
                 <div className="text-3xl font-bold text-gray-900 mb-1">
                   <AnimatedCounter value={summary?.recurringRate || 0} suffix="%" />

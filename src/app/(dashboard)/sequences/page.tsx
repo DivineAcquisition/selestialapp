@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { AnimatedCounter } from '@/components/ui/text-effects';
+import { Icon, IconName } from '@/components/ui/icon';
 import {
   Dialog,
   DialogContent,
@@ -20,43 +21,18 @@ import {
 import { useSequences } from '@/hooks/useSequences';
 import { useFeatureGate } from '@/hooks/useFeatureGate';
 import UpgradePrompt from '@/components/shared/UpgradePrompt';
-import { 
-  Plus, 
-  Loader2, 
-  Zap, 
-  Sparkles, 
-  MessageSquare, 
-  Clock, 
-  Heart,
-  Bot,
-  Wand2,
-  Search,
-  LayoutGrid,
-  List,
-  Play,
-  Pause,
-  Crown,
-  ArrowRight,
-  Leaf,
-  Flame,
-  Hand,
-  RefreshCw,
-  Gift,
-  LucideIcon,
-} from 'lucide-react';
-
-const TEMPLATE_ICONS: Record<string, LucideIcon> = {
-  zap: Zap,
-  leaf: Leaf,
-  flame: Flame,
-  hand: Hand,
-  refresh: RefreshCw,
-  gift: Gift,
-};
 import type { TablesInsert } from '@/integrations/supabase/types';
 import type { Sequence, SequenceStep } from '@/types';
 import { cn } from '@/lib/utils';
 
+const TEMPLATE_ICONS: Record<string, IconName> = {
+  zap: 'bolt',
+  leaf: 'leaf',
+  flame: 'fire',
+  hand: 'loyalty',
+  refresh: 'repeat',
+  gift: 'gift',
+};
 
 const sequenceTemplates = [
   {
@@ -262,7 +238,7 @@ export default function SequencesPage() {
     return (
       <Layout title="Sequences">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icon name="spinner" size="2xl" className="animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -274,7 +250,7 @@ export default function SequencesPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-            <Zap className="h-6 w-6 text-white" />
+            <Icon name="bolt" size="xl" className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">AI Sequence Builder</h1>
@@ -287,9 +263,9 @@ export default function SequencesPage() {
           <div className="group card-elevated p-5 bg-gradient-to-br from-primary/10 to-primary/5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary text-white">
-                <Bot className="h-5 w-5" />
+                <Icon name="robot" size="lg" />
               </div>
-              <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              <Icon name="arrowRight" size="sm" className="text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-1">
               <AnimatedCounter value={stats.total} />
@@ -300,7 +276,7 @@ export default function SequencesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                <Play className="h-5 w-5" />
+                <Icon name="play" size="lg" />
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
                 Live
@@ -315,7 +291,7 @@ export default function SequencesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                <MessageSquare className="h-5 w-5" />
+                <Icon name="message" size="lg" />
               </div>
             </div>
             <div className="text-3xl font-bold text-amber-600 mb-1">
@@ -327,9 +303,9 @@ export default function SequencesPage() {
           <div className="group card-elevated p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-purple-100 text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                <Heart className="h-5 w-5" />
+                <Icon name="heart" size="lg" />
               </div>
-              <Sparkles className="h-4 w-4 text-purple-500" />
+              <Icon name="sparkles" size="sm" className="text-purple-500" />
             </div>
             <div className="text-3xl font-bold text-purple-600 mb-1">
               <AnimatedCounter value={stats.retention} />
@@ -351,7 +327,7 @@ export default function SequencesPage() {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search sequences..."
                 value={searchQuery}
@@ -399,7 +375,7 @@ export default function SequencesPage() {
                   viewMode === 'grid' ? 'bg-primary text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 )}
               >
-                <LayoutGrid className="h-4 w-4" />
+                <Icon name="grid" size="sm" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -408,18 +384,18 @@ export default function SequencesPage() {
                   viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 )}
               >
-                <List className="h-4 w-4" />
+                <Icon name="list" size="sm" />
               </button>
             </div>
             
             {hasAIBuilder && (
               <Button variant="outline" className="gap-2 rounded-xl" onClick={handleGenerateWithAI}>
-                <Wand2 className="h-4 w-4" />
+                <Icon name="magic" size="sm" />
                 AI Generate
               </Button>
             )}
             <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl">
-              <Plus className="h-4 w-4" />
+              <Icon name="plus" size="sm" />
               New Sequence
             </Button>
           </div>
@@ -428,7 +404,7 @@ export default function SequencesPage() {
         {filteredSequences.length === 0 ? (
           <Card className="card-elevated flex flex-col items-center justify-center p-12 text-center">
             <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <Sparkles className="h-10 w-10 text-primary" />
+              <Icon name="sparkles" size="3xl" className="text-primary" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2 text-lg">
               {searchQuery || filterType !== 'all' ? 'No sequences found' : 'No sequences yet'}
@@ -440,7 +416,7 @@ export default function SequencesPage() {
             </p>
             {!searchQuery && filterType === 'all' && (
               <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl">
-                <Plus className="h-4 w-4" />
+                <Icon name="plus" size="sm" />
                 Create Your First Sequence
               </Button>
             )}
@@ -472,14 +448,14 @@ export default function SequencesPage() {
                         "w-12 h-12 rounded-xl flex items-center justify-center",
                         isQuoteType ? "bg-amber-100" : "bg-purple-100"
                       )}>
-                        {isQuoteType ? <MessageSquare className="w-6 h-6 text-amber-600" /> : <Heart className="w-6 h-6 text-purple-600" />}
+                        {isQuoteType ? <Icon name="message" size="xl" className="text-amber-600" /> : <Icon name="heart" size="xl" className="text-purple-600" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-gray-900">{sequence.name}</h3>
                           {sequence.is_default && (
                             <Badge className="bg-amber-100 text-amber-700 border-0 text-[10px] gap-1">
-                              <Crown className="h-2.5 w-2.5" />
+                              <Icon name="crown" size="xs" />
                               Default
                             </Badge>
                           )}
@@ -502,7 +478,7 @@ export default function SequencesPage() {
                           : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                       )}
                     >
-                      {sequence.is_active ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                      {sequence.is_active ? <Icon name="play" size="sm" /> : <Icon name="pause" size="sm" />}
                     </button>
                   </div>
                   
@@ -514,7 +490,7 @@ export default function SequencesPage() {
                   
                   <div className="flex items-center gap-4 text-xs text-gray-400 pt-4 border-t border-gray-100">
                     <span className="flex items-center gap-1.5">
-                      <MessageSquare className="h-3.5 w-3.5" />
+                      <Icon name="message" size="xs" />
                       {smsCount} SMS
                     </span>
                     {emailCount > 0 && (
@@ -523,7 +499,7 @@ export default function SequencesPage() {
                       </span>
                     )}
                     <span className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" />
+                      <Icon name="clock" size="xs" />
                       {totalDays}d
                     </span>
                   </div>
@@ -548,7 +524,7 @@ export default function SequencesPage() {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Icon name="sparkles" size="lg" className="text-primary" />
               Choose a Template
             </DialogTitle>
             <DialogDescription>
@@ -567,9 +543,9 @@ export default function SequencesPage() {
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl text-white shadow-lg shadow-primary/20">
                     {generatingAI ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Icon name="spinner" size="xl" className="animate-spin" />
                     ) : (
-                      <Wand2 className="h-6 w-6" />
+                      <Icon name="magic" size="xl" />
                     )}
                   </div>
                   <div className="flex-1">
@@ -590,7 +566,7 @@ export default function SequencesPage() {
             {/* Quote Follow-up Templates */}
             <div>
               <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                <MessageSquare className="h-4 w-4" />
+                <Icon name="message" size="sm" />
                 Quote Follow-up
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -602,10 +578,7 @@ export default function SequencesPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", template.color, "text-white shadow-lg")}>
-                        {(() => {
-                          const IconComponent = TEMPLATE_ICONS[template.icon] || Zap;
-                          return <IconComponent className="w-6 h-6" />;
-                        })()}
+                        <Icon name={TEMPLATE_ICONS[template.icon] || 'bolt'} size="xl" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -634,7 +607,7 @@ export default function SequencesPage() {
             {/* Retention Templates */}
             <div>
               <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                <Heart className="h-4 w-4" />
+                <Icon name="heart" size="sm" />
                 Retention & Engagement
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -646,10 +619,7 @@ export default function SequencesPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", template.color, "text-white shadow-lg")}>
-                        {(() => {
-                          const IconComponent = TEMPLATE_ICONS[template.icon] || Heart;
-                          return <IconComponent className="w-6 h-6" />;
-                        })()}
+                        <Icon name={TEMPLATE_ICONS[template.icon] || 'heart'} size="xl" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -685,7 +655,7 @@ export default function SequencesPage() {
               className="w-full p-4 border-2 border-dashed rounded-xl hover:border-primary/40 transition-colors text-center"
             >
               <div className="flex items-center justify-center gap-2 text-gray-500">
-                <Plus className="h-4 w-4" />
+                <Icon name="plus" size="sm" />
                 <span className="font-medium">Start from scratch</span>
               </div>
             </button>
@@ -724,7 +694,7 @@ export default function SequencesPage() {
               disabled={deleting}
               className="rounded-xl"
             >
-              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {deleting && <Icon name="spinner" size="sm" className="mr-2 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>
