@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { Icon, IconName } from "@/components/ui/icon";
 import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
@@ -30,6 +31,7 @@ import {
   type PricingModel,
   type RetentionModel,
 } from "@/lib/pricing/pricing-data";
+import { usePricingWizard } from "@/hooks/usePricingWizard";
 
 // ============================================================================
 // TYPES
@@ -614,6 +616,13 @@ const TABS: Tab[] = [
 
 export default function PriceBuilderPage() {
   const { toast } = useToast();
+  const { 
+    config: wizardConfig, 
+    isConfigured: isWizardConfigured,
+    hourlyRate: wizardHourlyRate,
+    insights: wizardInsights,
+    isLoaded: isWizardLoaded,
+  } = usePricingWizard();
   
   // State
   const [activeTab, setActiveTab] = useState<TabId>("industry");
@@ -628,6 +637,16 @@ export default function PriceBuilderPage() {
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Apply wizard configuration when available
+  useEffect(() => {
+    if (isWizardLoaded && isWizardConfigured && wizardConfig.industry) {
+      setConfig(prev => ({
+        ...prev,
+        industry: wizardConfig.industry,
+      }));
+    }
+  }, [isWizardLoaded, isWizardConfigured, wizardConfig.industry]);
 
   // Derived state
   const selectedIndustry = useMemo(() => 
@@ -774,29 +793,59 @@ export default function PriceBuilderPage() {
   return (
     <Layout title="Price Builder">
       <div className="space-y-6">
-        {/* Discovery CTA */}
-        <Card className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Icon name="sparkles" size="lg" className="text-primary" />
+        {/* Pricing Wizard CTA */}
+        {isWizardConfigured ? (
+          <Card className="p-4 rounded-xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-50/50">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <Icon name="checkCircle" size="lg" className="text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Pricing Wizard configured</p>
+                  <p className="text-sm text-muted-foreground">
+                    Target: ${wizardHourlyRate.toFixed(0)}/hr • {wizardConfig.targetMargin}% margin • {wizardConfig.pricingStrategy} strategy
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">Not sure what to charge?</p>
-                <p className="text-sm text-muted-foreground">Let our wizard help you discover optimal pricing</p>
+              <div className="flex items-center gap-2">
+                <Link href="/pricing/wizard">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 border-emerald-300 hover:bg-emerald-50 whitespace-nowrap"
+                  >
+                    <Icon name="edit" size="sm" />
+                    Edit Settings
+                  </Button>
+                </Link>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              className="gap-2 border-primary/30 hover:bg-primary/10 whitespace-nowrap"
-              onClick={() => window.location.href = "/pricing/discover"}
-            >
-              <Icon name="wand" size="sm" />
-              Pricing Discovery
-              <Icon name="arrowRight" size="sm" />
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <Card className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Icon name="wand" size="lg" className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Configure your pricing strategy</p>
+                  <p className="text-sm text-muted-foreground">Use the Pricing Wizard to set up costs, margins, and goals</p>
+                </div>
+              </div>
+              <Link href="/pricing/wizard">
+                <Button 
+                  variant="outline" 
+                  className="gap-2 border-primary/30 hover:bg-primary/10 whitespace-nowrap"
+                >
+                  <Icon name="wand" size="sm" />
+                  Start Wizard
+                  <Icon name="arrowRight" size="sm" />
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

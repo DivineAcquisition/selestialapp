@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,91 +10,37 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Icon, IconName } from "@/components/ui/icon";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { INDUSTRIES } from "@/lib/pricing/pricing-data";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface WizardAnswers {
-  // Step 1: Business
-  industry: string;
-  zipCode: string;
-  yearsInBusiness: "new" | "growing" | "established" | "expert";
-  
-  // Step 2: Operations
-  teamSize: "solo" | "small" | "medium" | "large";
-  avgJobDuration: number;
-  jobsPerDay: number;
-  
-  // Step 3: Costs
-  hourlyLaborCost: number;
-  avgMaterialCost: number;
-  monthlyOverhead: number;
-  
-  // Step 4: Goals
-  targetMargin: number;
-  monthlyRevenueGoal: number;
-  pricingStrategy: "value" | "competitive" | "premium" | "penetration";
-}
-
-interface PricingRecommendation {
-  serviceName: string;
-  recommendedPrice: number;
-  priceRange: { min: number; max: number };
-  marketPosition: "below" | "competitive" | "premium";
-  reasoning: string;
-  margin: number;
-}
-
-interface Insight {
-  title: string;
-  value: string;
-  description: string;
-  icon: IconName;
-  color: string;
-}
+import {
+  usePricingWizard,
+  EXPERIENCE_LEVELS,
+  TEAM_SIZES,
+  PRICING_STRATEGIES,
+  type WizardConfig,
+  type ServiceRecommendation,
+} from "@/hooks/usePricingWizard";
+import { useState } from "react";
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
 const STEPS = [
-  { id: 1, title: "Your Business", icon: "building" as IconName },
-  { id: 2, title: "Operations", icon: "users" as IconName },
-  { id: 3, title: "Your Costs", icon: "dollar" as IconName },
-  { id: 4, title: "Your Goals", icon: "target" as IconName },
-  { id: 5, title: "Your Prices", icon: "sparkles" as IconName },
-];
-
-const EXPERIENCE_LEVELS = [
-  { value: "new", label: "New (< 1 year)", description: "Just getting started", multiplier: 0.85 },
-  { value: "growing", label: "Growing (1-3 years)", description: "Building reputation", multiplier: 0.95 },
-  { value: "established", label: "Established (3-7 years)", description: "Proven track record", multiplier: 1.0 },
-  { value: "expert", label: "Expert (7+ years)", description: "Industry leader", multiplier: 1.15 },
-];
-
-const TEAM_SIZES = [
-  { value: "solo", label: "Solo", description: "Just me", capacity: 1 },
-  { value: "small", label: "Small (2-3)", description: "Small team", capacity: 2.5 },
-  { value: "medium", label: "Medium (4-8)", description: "Growing team", capacity: 6 },
-  { value: "large", label: "Large (9+)", description: "Full crew", capacity: 12 },
-];
-
-const PRICING_STRATEGIES = [
-  { value: "penetration", label: "Entry/Penetration", description: "Lower prices to gain market share", icon: "trendDown" as IconName },
-  { value: "value", label: "Value", description: "Balanced quality and price", icon: "scale" as IconName },
-  { value: "competitive", label: "Competitive", description: "Match market rates", icon: "target" as IconName },
-  { value: "premium", label: "Premium", description: "Higher prices, premium service", icon: "crown" as IconName },
+  { id: 1, title: "Business", icon: "building" as IconName, description: "Industry & experience" },
+  { id: 2, title: "Operations", icon: "users" as IconName, description: "Team & capacity" },
+  { id: 3, title: "Costs", icon: "dollar" as IconName, description: "Labor & overhead" },
+  { id: 4, title: "Goals", icon: "target" as IconName, description: "Margin & revenue" },
+  { id: 5, title: "Results", icon: "sparkles" as IconName, description: "Your pricing" },
 ];
 
 const INDUSTRY_ICONS: Record<string, IconName> = {
@@ -110,96 +57,12 @@ const INDUSTRY_ICONS: Record<string, IconName> = {
   pool_spa: "waves",
 };
 
-const DEFAULT_ANSWERS: WizardAnswers = {
-  industry: "",
-  zipCode: "",
-  yearsInBusiness: "growing",
-  teamSize: "solo",
-  avgJobDuration: 2,
-  jobsPerDay: 3,
-  hourlyLaborCost: 25,
-  avgMaterialCost: 50,
-  monthlyOverhead: 2000,
-  targetMargin: 45,
-  monthlyRevenueGoal: 10000,
-  pricingStrategy: "competitive",
-};
-
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
-function calculateHourlyRate(answers: WizardAnswers): number {
-  const baseRate = answers.hourlyLaborCost / (1 - answers.targetMargin / 100);
-  const experienceMultiplier = EXPERIENCE_LEVELS.find(e => e.value === answers.yearsInBusiness)?.multiplier || 1;
-  return baseRate * experienceMultiplier;
-}
-
-function calculateJobPrice(answers: WizardAnswers): number {
-  const hourlyRate = calculateHourlyRate(answers);
-  return hourlyRate * answers.avgJobDuration + answers.avgMaterialCost;
-}
-
-function calculateInsights(answers: WizardAnswers): Insight[] {
-  const hourlyRate = calculateHourlyRate(answers);
-  const jobPrice = calculateJobPrice(answers);
-  const teamCapacity = TEAM_SIZES.find(t => t.value === answers.teamSize)?.capacity || 1;
-  const dailyRevenue = jobPrice * answers.jobsPerDay * teamCapacity;
-  const monthlyRevenue = dailyRevenue * 22;
-  const profitPerJob = jobPrice * (answers.targetMargin / 100);
-  const breakEvenJobs = Math.ceil(answers.monthlyOverhead / profitPerJob);
-
-  return [
-    {
-      title: "Target Hourly Rate",
-      value: `$${hourlyRate.toFixed(0)}/hr`,
-      description: `To achieve ${answers.targetMargin}% margin on $${answers.hourlyLaborCost}/hr labor`,
-      icon: "clock",
-      color: "text-blue-600",
-    },
-    {
-      title: "Average Job Price",
-      value: `$${jobPrice.toFixed(0)}`,
-      description: `${answers.avgJobDuration}hr × $${hourlyRate.toFixed(0)}/hr + $${answers.avgMaterialCost} materials`,
-      icon: "receipt",
-      color: "text-emerald-600",
-    },
-    {
-      title: "Monthly Revenue Potential",
-      value: `$${monthlyRevenue.toLocaleString()}`,
-      description: `${answers.jobsPerDay} jobs × ${teamCapacity} workers × 22 days`,
-      icon: "trendUp",
-      color: "text-purple-600",
-    },
-    {
-      title: "Break-Even Jobs",
-      value: `${breakEvenJobs} jobs/mo`,
-      description: `Minimum to cover $${answers.monthlyOverhead.toLocaleString()} overhead`,
-      icon: "scale",
-      color: "text-amber-600",
-    },
-    {
-      title: "Profit Per Job",
-      value: `$${profitPerJob.toFixed(0)}`,
-      description: `At ${answers.targetMargin}% margin`,
-      icon: "dollarSign",
-      color: "text-emerald-600",
-    },
-    {
-      title: "Goal Achievement",
-      value: monthlyRevenue >= answers.monthlyRevenueGoal ? "On Track ✓" : `${((monthlyRevenue / answers.monthlyRevenueGoal) * 100).toFixed(0)}%`,
-      description: monthlyRevenue >= answers.monthlyRevenueGoal 
-        ? "Your capacity exceeds your goal!" 
-        : `Need ${Math.ceil((answers.monthlyRevenueGoal - monthlyRevenue) / jobPrice)} more jobs/month`,
-      icon: monthlyRevenue >= answers.monthlyRevenueGoal ? "checkCircle" : "alertCircle",
-      color: monthlyRevenue >= answers.monthlyRevenueGoal ? "text-emerald-600" : "text-amber-600",
-    },
-  ];
-}
-
-function generateServiceRecommendations(answers: WizardAnswers): PricingRecommendation[] {
-  const hourlyRate = calculateHourlyRate(answers);
-  const industry = INDUSTRIES.find(i => i.slug === answers.industry);
+function generateServiceRecommendations(config: WizardConfig, hourlyRate: number): ServiceRecommendation[] {
+  const industry = INDUSTRIES.find(i => i.slug === config.industry);
   
   if (!industry) return [];
 
@@ -208,7 +71,7 @@ function generateServiceRecommendations(answers: WizardAnswers): PricingRecommen
     value: 0.95,
     competitive: 1.0,
     premium: 1.15,
-  }[answers.pricingStrategy];
+  }[config.pricingStrategy];
 
   return industry.services.slice(0, 8).map(service => {
     const basePrice = service.avgPrice * strategyMultiplier;
@@ -217,7 +80,7 @@ function generateServiceRecommendations(answers: WizardAnswers): PricingRecommen
       : basePrice;
     
     const recommendedPrice = Math.round(calculatedPrice);
-    const margin = ((recommendedPrice - (answers.hourlyLaborCost * (service.laborHours?.low || 1))) / recommendedPrice) * 100;
+    const margin = ((recommendedPrice - (config.hourlyLaborCost * (service.laborHours?.low || 1))) / recommendedPrice) * 100;
     
     let marketPosition: "below" | "competitive" | "premium" = "competitive";
     if (recommendedPrice < service.lowPrice) marketPosition = "below";
@@ -228,29 +91,29 @@ function generateServiceRecommendations(answers: WizardAnswers): PricingRecommen
       recommendedPrice,
       priceRange: { min: service.lowPrice, max: service.highPrice },
       marketPosition,
-      reasoning: getReasoningForService(service, answers),
+      reasoning: getReasoningForService(service, config),
       margin: Math.max(0, Math.min(100, margin)),
     };
   });
 }
 
-function getReasoningForService(service: { name: string; category: string }, answers: WizardAnswers): string {
-  const strategy = answers.pricingStrategy;
-  const experience = answers.yearsInBusiness;
+function getReasoningForService(service: { name: string; category: string }, config: WizardConfig): string {
+  const strategy = config.pricingStrategy;
+  const experience = config.yearsInBusiness;
   
   if (strategy === "premium" && experience === "expert") {
-    return "Premium pricing justified by your expertise and track record";
+    return "Premium pricing justified by your expertise";
   }
   if (strategy === "penetration") {
-    return "Entry pricing to build customer base and reviews";
+    return "Entry pricing to build customer base";
   }
   if (service.category === "Installation") {
-    return "Higher margin service - focus on quality and warranty";
+    return "High-ticket service - focus on value";
   }
   if (service.category === "Maintenance") {
-    return "Recurring revenue opportunity - price for retention";
+    return "Recurring revenue opportunity";
   }
-  return "Competitive pricing based on market rates and your costs";
+  return "Competitive market-rate pricing";
 }
 
 // ============================================================================
@@ -258,25 +121,25 @@ function getReasoningForService(service: { name: string; category: string }, ans
 // ============================================================================
 
 function StepBusiness({
-  answers,
+  config,
   onChange,
 }: {
-  answers: WizardAnswers;
-  onChange: (updates: Partial<WizardAnswers>) => void;
+  config: WizardConfig;
+  onChange: (updates: Partial<WizardConfig>) => void;
 }) {
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold mb-1">Tell us about your business</h2>
-        <p className="text-muted-foreground">We'll use this to find relevant market data</p>
+        <p className="text-muted-foreground">We&apos;ll use this to find relevant market data</p>
       </div>
 
       {/* Industry Selection */}
       <div className="space-y-3">
-        <label className="text-sm font-medium">What industry are you in?</label>
+        <label className="text-sm font-medium">What industry are you in? *</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {INDUSTRIES.slice(0, 12).map((industry) => {
-            const isSelected = answers.industry === industry.slug;
+            const isSelected = config.industry === industry.slug;
             const iconName = INDUSTRY_ICONS[industry.slug] || "briefcase";
             
             return (
@@ -307,12 +170,12 @@ function StepBusiness({
 
       {/* ZIP Code */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">Your ZIP code</label>
+        <label className="text-sm font-medium">Your ZIP code *</label>
         <Input
           type="text"
           placeholder="Enter ZIP code"
-          value={answers.zipCode}
-          onChange={(e) => onChange({ zipCode: e.target.value.slice(0, 5) })}
+          value={config.zipCode}
+          onChange={(e) => onChange({ zipCode: e.target.value.replace(/\D/g, '').slice(0, 5) })}
           className="max-w-xs"
           maxLength={5}
         />
@@ -324,11 +187,11 @@ function StepBusiness({
         <label className="text-sm font-medium">How long have you been in business?</label>
         <div className="grid grid-cols-2 gap-3">
           {EXPERIENCE_LEVELS.map((level) => {
-            const isSelected = answers.yearsInBusiness === level.value;
+            const isSelected = config.yearsInBusiness === level.value;
             return (
               <button
                 key={level.value}
-                onClick={() => onChange({ yearsInBusiness: level.value as WizardAnswers["yearsInBusiness"] })}
+                onClick={() => onChange({ yearsInBusiness: level.value as WizardConfig["yearsInBusiness"] })}
                 className={cn(
                   "p-4 rounded-xl border-2 text-left transition-all",
                   isSelected
@@ -348,11 +211,11 @@ function StepBusiness({
 }
 
 function StepOperations({
-  answers,
+  config,
   onChange,
 }: {
-  answers: WizardAnswers;
-  onChange: (updates: Partial<WizardAnswers>) => void;
+  config: WizardConfig;
+  onChange: (updates: Partial<WizardConfig>) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -366,11 +229,11 @@ function StepOperations({
         <label className="text-sm font-medium">Team size</label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {TEAM_SIZES.map((size) => {
-            const isSelected = answers.teamSize === size.value;
+            const isSelected = config.teamSize === size.value;
             return (
               <button
                 key={size.value}
-                onClick={() => onChange({ teamSize: size.value as WizardAnswers["teamSize"] })}
+                onClick={() => onChange({ teamSize: size.value as WizardConfig["teamSize"] })}
                 className={cn(
                   "p-4 rounded-xl border-2 text-center transition-all",
                   isSelected
@@ -395,12 +258,12 @@ function StepOperations({
             min={0.5}
             max={8}
             step={0.5}
-            value={answers.avgJobDuration}
+            value={config.avgJobDuration}
             onChange={(e) => onChange({ avgJobDuration: Number(e.target.value) })}
             className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <div className="w-24 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-lg font-bold text-primary">{answers.avgJobDuration} hrs</span>
+            <span className="text-lg font-bold text-primary">{config.avgJobDuration} hrs</span>
           </div>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
@@ -418,12 +281,12 @@ function StepOperations({
             min={1}
             max={10}
             step={1}
-            value={answers.jobsPerDay}
+            value={config.jobsPerDay}
             onChange={(e) => onChange({ jobsPerDay: Number(e.target.value) })}
             className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <div className="w-24 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-lg font-bold text-primary">{answers.jobsPerDay} jobs</span>
+            <span className="text-lg font-bold text-primary">{config.jobsPerDay} jobs</span>
           </div>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
@@ -436,11 +299,11 @@ function StepOperations({
 }
 
 function StepCosts({
-  answers,
+  config,
   onChange,
 }: {
-  answers: WizardAnswers;
-  onChange: (updates: Partial<WizardAnswers>) => void;
+  config: WizardConfig;
+  onChange: (updates: Partial<WizardConfig>) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -459,17 +322,13 @@ function StepCosts({
             min={15}
             max={75}
             step={5}
-            value={answers.hourlyLaborCost}
+            value={config.hourlyLaborCost}
             onChange={(e) => onChange({ hourlyLaborCost: Number(e.target.value) })}
             className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <div className="w-28 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-lg font-bold text-primary">${answers.hourlyLaborCost}/hr</span>
+            <span className="text-lg font-bold text-primary">${config.hourlyLaborCost}/hr</span>
           </div>
-        </div>
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>$15/hr</span>
-          <span>$75/hr</span>
         </div>
       </div>
 
@@ -481,7 +340,7 @@ function StepCosts({
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
           <Input
             type="number"
-            value={answers.avgMaterialCost || ""}
+            value={config.avgMaterialCost || ""}
             onChange={(e) => onChange({ avgMaterialCost: Number(e.target.value) || 0 })}
             className="pl-7"
             placeholder="50"
@@ -498,7 +357,7 @@ function StepCosts({
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
           <Input
             type="number"
-            value={answers.monthlyOverhead || ""}
+            value={config.monthlyOverhead || ""}
             onChange={(e) => onChange({ monthlyOverhead: Number(e.target.value) || 0 })}
             className="pl-7"
             placeholder="2000"
@@ -515,21 +374,21 @@ function StepCosts({
         </h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Labor per job ({answers.avgJobDuration} hrs)</span>
-            <span className="font-medium">${(answers.hourlyLaborCost * answers.avgJobDuration).toFixed(0)}</span>
+            <span className="text-muted-foreground">Labor per job ({config.avgJobDuration} hrs)</span>
+            <span className="font-medium">${(config.hourlyLaborCost * config.avgJobDuration).toFixed(0)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Materials per job</span>
-            <span className="font-medium">${answers.avgMaterialCost}</span>
+            <span className="font-medium">${config.avgMaterialCost}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Overhead per job (est.)</span>
-            <span className="font-medium">${(answers.monthlyOverhead / (answers.jobsPerDay * 22)).toFixed(0)}</span>
+            <span className="font-medium">${(config.monthlyOverhead / (config.jobsPerDay * 22)).toFixed(0)}</span>
           </div>
           <div className="flex justify-between pt-2 border-t font-semibold">
             <span>Total cost per job</span>
             <span className="text-primary">
-              ${(answers.hourlyLaborCost * answers.avgJobDuration + answers.avgMaterialCost + answers.monthlyOverhead / (answers.jobsPerDay * 22)).toFixed(0)}
+              ${(config.hourlyLaborCost * config.avgJobDuration + config.avgMaterialCost + config.monthlyOverhead / (config.jobsPerDay * 22)).toFixed(0)}
             </span>
           </div>
         </div>
@@ -539,11 +398,11 @@ function StepCosts({
 }
 
 function StepGoals({
-  answers,
+  config,
   onChange,
 }: {
-  answers: WizardAnswers;
-  onChange: (updates: Partial<WizardAnswers>) => void;
+  config: WizardConfig;
+  onChange: (updates: Partial<WizardConfig>) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -564,26 +423,22 @@ function StepGoals({
             min={20}
             max={70}
             step={5}
-            value={answers.targetMargin}
+            value={config.targetMargin}
             onChange={(e) => onChange({ targetMargin: Number(e.target.value) })}
             className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
           <div className="w-20 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-lg font-bold text-primary">{answers.targetMargin}%</span>
+            <span className="text-lg font-bold text-primary">{config.targetMargin}%</span>
           </div>
-        </div>
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Low (20%)</span>
-          <span>High (70%)</span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <Badge variant="secondary" className={cn(
-            answers.targetMargin < 30 ? "bg-amber-100 text-amber-700" :
-            answers.targetMargin > 55 ? "bg-purple-100 text-purple-700" :
+            config.targetMargin < 30 ? "bg-amber-100 text-amber-700" :
+            config.targetMargin > 55 ? "bg-purple-100 text-purple-700" :
             "bg-emerald-100 text-emerald-700"
           )}>
-            {answers.targetMargin < 30 ? "Value Pricing" :
-             answers.targetMargin > 55 ? "Premium Pricing" :
+            {config.targetMargin < 30 ? "Value Pricing" :
+             config.targetMargin > 55 ? "Premium Pricing" :
              "Competitive Pricing"}
           </Badge>
         </div>
@@ -596,7 +451,7 @@ function StepGoals({
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
           <Input
             type="number"
-            value={answers.monthlyRevenueGoal || ""}
+            value={config.monthlyRevenueGoal || ""}
             onChange={(e) => onChange({ monthlyRevenueGoal: Number(e.target.value) || 0 })}
             className="pl-7"
             placeholder="10000"
@@ -611,11 +466,11 @@ function StepGoals({
         <label className="text-sm font-medium">Pricing strategy</label>
         <div className="grid grid-cols-2 gap-3">
           {PRICING_STRATEGIES.map((strategy) => {
-            const isSelected = answers.pricingStrategy === strategy.value;
+            const isSelected = config.pricingStrategy === strategy.value;
             return (
               <button
                 key={strategy.value}
-                onClick={() => onChange({ pricingStrategy: strategy.value as WizardAnswers["pricingStrategy"] })}
+                onClick={() => onChange({ pricingStrategy: strategy.value as WizardConfig["pricingStrategy"] })}
                 className={cn(
                   "p-4 rounded-xl border-2 text-left transition-all",
                   isSelected
@@ -624,7 +479,7 @@ function StepGoals({
                 )}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon name={strategy.icon} size="sm" className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                  <Icon name={strategy.icon as IconName} size="sm" className={isSelected ? "text-primary" : "text-muted-foreground"} />
                   <p className={cn("font-medium", isSelected && "text-primary")}>{strategy.label}</p>
                 </div>
                 <p className="text-xs text-muted-foreground">{strategy.description}</p>
@@ -638,25 +493,61 @@ function StepGoals({
 }
 
 function StepResults({
-  answers,
+  config,
   insights,
   recommendations,
   onApplyToPriceBuilder,
+  onEdit,
 }: {
-  answers: WizardAnswers;
-  insights: Insight[];
-  recommendations: PricingRecommendation[];
+  config: WizardConfig;
+  insights: { title: string; value: string; description: string; icon: string; color: string }[];
+  recommendations: ServiceRecommendation[];
   onApplyToPriceBuilder: () => void;
+  onEdit: (step: number) => void;
 }) {
-  const industry = INDUSTRIES.find(i => i.slug === answers.industry);
+  const industry = INDUSTRIES.find(i => i.slug === config.industry);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold mb-1">Your pricing recommendations</h2>
-        <p className="text-muted-foreground">
-          Based on your costs, goals, and {industry?.name || "industry"} market data
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Your pricing recommendations</h2>
+          <p className="text-muted-foreground">
+            Based on your costs, goals, and {industry?.name || "industry"} market data
+          </p>
+        </div>
+      </div>
+
+      {/* Quick Edit Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button
+          onClick={() => onEdit(1)}
+          className="p-3 rounded-xl border hover:border-primary/50 hover:bg-primary/5 text-left transition-all"
+        >
+          <p className="text-xs text-muted-foreground">Industry</p>
+          <p className="font-medium text-sm truncate">{industry?.name || "Not set"}</p>
+        </button>
+        <button
+          onClick={() => onEdit(3)}
+          className="p-3 rounded-xl border hover:border-primary/50 hover:bg-primary/5 text-left transition-all"
+        >
+          <p className="text-xs text-muted-foreground">Labor Cost</p>
+          <p className="font-medium text-sm">${config.hourlyLaborCost}/hr</p>
+        </button>
+        <button
+          onClick={() => onEdit(4)}
+          className="p-3 rounded-xl border hover:border-primary/50 hover:bg-primary/5 text-left transition-all"
+        >
+          <p className="text-xs text-muted-foreground">Target Margin</p>
+          <p className="font-medium text-sm">{config.targetMargin}%</p>
+        </button>
+        <button
+          onClick={() => onEdit(4)}
+          className="p-3 rounded-xl border hover:border-primary/50 hover:bg-primary/5 text-left transition-all"
+        >
+          <p className="text-xs text-muted-foreground">Strategy</p>
+          <p className="font-medium text-sm capitalize">{config.pricingStrategy}</p>
+        </button>
       </div>
 
       {/* Key Insights */}
@@ -664,7 +555,7 @@ function StepResults({
         {insights.slice(0, 6).map((insight, i) => (
           <Card key={i} className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Icon name={insight.icon} size="sm" className={insight.color} />
+              <Icon name={insight.icon as IconName} size="sm" className={insight.color} />
               <span className="text-xs text-muted-foreground">{insight.title}</span>
             </div>
             <p className="text-xl font-bold">{insight.value}</p>
@@ -705,11 +596,10 @@ function StepResults({
                 </div>
               </div>
               
-              {/* Price position indicator */}
               <div className="mt-3 flex items-center gap-2">
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-2 bg-gradient-to-r from-primary/60 to-primary rounded-full transition-all"
+                    className="h-2 bg-gradient-to-r from-primary/60 to-primary rounded-full"
                     style={{ 
                       width: `${Math.min(100, Math.max(0, ((rec.recommendedPrice - rec.priceRange.min) / (rec.priceRange.max - rec.priceRange.min)) * 100))}%` 
                     }}
@@ -730,7 +620,7 @@ function StepResults({
           <div className="flex-1 text-center sm:text-left">
             <h3 className="font-semibold text-lg">Ready to use these prices?</h3>
             <p className="text-sm text-muted-foreground">
-              Apply these recommendations to your Price Builder to start using them
+              Apply these recommendations to your Price Builder
             </p>
           </div>
           <Button 
@@ -739,7 +629,7 @@ function StepResults({
             size="lg"
           >
             <Icon name="arrowRight" size="sm" />
-            Apply to Price Builder
+            Open Price Builder
           </Button>
         </div>
       </Card>
@@ -751,83 +641,112 @@ function StepResults({
 // MAIN COMPONENT
 // ============================================================================
 
-export default function PricingDiscoveryPage() {
+export default function PricingWizardPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [showResetDialog, setShowResetDialog] = useState(false);
   
-  const [currentStep, setCurrentStep] = useState(1);
-  const [answers, setAnswers] = useState<WizardAnswers>(DEFAULT_ANSWERS);
+  const {
+    config,
+    updateConfig,
+    resetWizard,
+    completeWizard,
+    currentStep,
+    setCurrentStep,
+    nextStep,
+    prevStep,
+    isLoaded,
+    hourlyRate,
+    insights,
+  } = usePricingWizard();
 
-  const updateAnswers = useCallback((updates: Partial<WizardAnswers>) => {
-    setAnswers(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const insights = useMemo(() => calculateInsights(answers), [answers]);
-  const recommendations = useMemo(() => generateServiceRecommendations(answers), [answers]);
+  const recommendations = useMemo(
+    () => generateServiceRecommendations(config, hourlyRate),
+    [config, hourlyRate]
+  );
 
   const canProceed = useMemo(() => {
     switch (currentStep) {
       case 1:
-        return answers.industry !== "" && answers.zipCode.length === 5;
+        return config.industry !== "" && config.zipCode.length === 5;
       case 2:
         return true;
       case 3:
-        return answers.hourlyLaborCost > 0;
+        return config.hourlyLaborCost > 0;
       case 4:
-        return answers.monthlyRevenueGoal > 0;
+        return config.monthlyRevenueGoal > 0;
       default:
         return true;
     }
-  }, [currentStep, answers]);
+  }, [currentStep, config]);
 
   const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentStep === 4) {
+      completeWizard();
+    } else {
+      nextStep();
     }
   };
 
   const handleApplyToPriceBuilder = () => {
-    // Encode the config to pass to price builder
-    const config = {
-      industry: answers.industry,
-      services: recommendations.map(rec => ({
-        name: rec.serviceName,
-        price: rec.recommendedPrice,
-      })),
-    };
-    
     toast({
-      title: "Recommendations saved!",
-      description: "Redirecting to Price Builder...",
+      title: "Configuration saved!",
+      description: "Opening Price Builder with your settings...",
     });
-    
-    // Store in sessionStorage for the price builder to pick up
-    sessionStorage.setItem("pricingDiscoveryConfig", JSON.stringify(config));
-    
     router.push("/pricing");
+  };
+
+  const handleReset = () => {
+    resetWizard();
+    setShowResetDialog(false);
+    toast({
+      title: "Wizard reset",
+      description: "All settings have been cleared.",
+    });
   };
 
   const progressPercent = (currentStep / 5) * 100;
 
+  if (!isLoaded) {
+    return (
+      <Layout title="Pricing Wizard">
+        <div className="flex items-center justify-center py-12">
+          <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout title="Pricing Discovery">
+    <Layout title="Pricing Wizard">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl">
-              <Icon name="sparkles" size="lg" className="text-white" />
+              <Icon name="wand" size="lg" className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Pricing Discovery Wizard</h1>
-              <p className="text-muted-foreground">Discover what to charge in 5 easy steps</p>
+              <h1 className="text-2xl font-bold">Pricing Wizard</h1>
+              <p className="text-muted-foreground text-sm">Configure your pricing strategy</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowResetDialog(true)}
+              className="gap-2 text-muted-foreground"
+            >
+              <Icon name="refresh" size="sm" />
+              Reset
+            </Button>
+            <Link href="/pricing">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Icon name="layers" size="sm" />
+                Price Builder
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -836,13 +755,19 @@ export default function PricingDiscoveryPage() {
           <div className="flex items-center justify-between mb-2">
             {STEPS.map((step, i) => (
               <div key={step.id} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
+                <button
+                  onClick={() => setCurrentStep(step.id)}
+                  className="flex flex-col items-center group"
+                  disabled={step.id > currentStep && !config.completedAt}
+                >
                   <div className={cn(
                     "h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-all",
                     currentStep > step.id
                       ? "bg-primary text-white"
                       : currentStep === step.id
                       ? "bg-primary text-white ring-4 ring-primary/20"
+                      : config.completedAt
+                      ? "bg-muted text-muted-foreground hover:bg-primary/20 cursor-pointer"
                       : "bg-muted text-muted-foreground"
                   )}>
                     {currentStep > step.id ? (
@@ -852,12 +777,13 @@ export default function PricingDiscoveryPage() {
                     )}
                   </div>
                   <span className={cn(
-                    "text-xs mt-1.5 hidden sm:block",
-                    currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
+                    "text-xs mt-1.5 hidden sm:block transition-colors",
+                    currentStep >= step.id ? "text-foreground" : "text-muted-foreground",
+                    config.completedAt && "group-hover:text-primary cursor-pointer"
                   )}>
                     {step.title}
                   </span>
-                </div>
+                </button>
                 {i < STEPS.length - 1 && (
                   <div className={cn(
                     "h-0.5 flex-1 mx-2 transition-colors",
@@ -873,23 +799,24 @@ export default function PricingDiscoveryPage() {
         {/* Step Content */}
         <Card className="p-6 sm:p-8 rounded-2xl">
           {currentStep === 1 && (
-            <StepBusiness answers={answers} onChange={updateAnswers} />
+            <StepBusiness config={config} onChange={updateConfig} />
           )}
           {currentStep === 2 && (
-            <StepOperations answers={answers} onChange={updateAnswers} />
+            <StepOperations config={config} onChange={updateConfig} />
           )}
           {currentStep === 3 && (
-            <StepCosts answers={answers} onChange={updateAnswers} />
+            <StepCosts config={config} onChange={updateConfig} />
           )}
           {currentStep === 4 && (
-            <StepGoals answers={answers} onChange={updateAnswers} />
+            <StepGoals config={config} onChange={updateConfig} />
           )}
           {currentStep === 5 && (
             <StepResults
-              answers={answers}
+              config={config}
               insights={insights}
               recommendations={recommendations}
               onApplyToPriceBuilder={handleApplyToPriceBuilder}
+              onEdit={setCurrentStep}
             />
           )}
 
@@ -897,7 +824,7 @@ export default function PricingDiscoveryPage() {
           <div className="flex items-center justify-between mt-8 pt-6 border-t">
             <Button
               variant="outline"
-              onClick={handleBack}
+              onClick={prevStep}
               disabled={currentStep === 1}
               className="gap-2"
             >
@@ -911,18 +838,20 @@ export default function PricingDiscoveryPage() {
                 disabled={!canProceed}
                 className="gap-2 bg-gradient-to-r from-primary to-[#9D96FF]"
               >
-                Continue
+                {currentStep === 4 ? "See Results" : "Continue"}
                 <Icon name="arrowRight" size="sm" />
               </Button>
             ) : (
-              <Button
-                variant="outline"
-                onClick={() => router.push("/pricing")}
-                className="gap-2"
-              >
-                Skip to Price Builder
-                <Icon name="arrowRight" size="sm" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  className="gap-2"
+                >
+                  <Icon name="edit" size="sm" />
+                  Edit Answers
+                </Button>
+              </div>
             )}
           </div>
         </Card>
@@ -940,6 +869,27 @@ export default function PricingDiscoveryPage() {
           </div>
         )}
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Pricing Wizard?</DialogTitle>
+            <DialogDescription>
+              This will clear all your answers and start fresh. Your Price Builder configuration will not be affected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReset} className="gap-2">
+              <Icon name="trash" size="sm" />
+              Reset Wizard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

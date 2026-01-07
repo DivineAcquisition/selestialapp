@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ import { useQuotes } from '@/hooks/useQuotes';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useSequences } from '@/hooks/useSequences';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { usePricingWizard } from '@/hooks/usePricingWizard';
 import { useToast } from '@/hooks/use-toast';
 import { toE164 } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -54,6 +56,13 @@ export default function NewQuotePage() {
   const { createQuote, loading: quoteLoading } = useQuotes();
   const { customers } = useCustomers();
   const { sequences } = useSequences();
+  const { 
+    config: wizardConfig, 
+    isConfigured: isWizardConfigured, 
+    hourlyRate: wizardHourlyRate,
+    jobPrice: wizardJobPrice,
+    isLoaded: isWizardLoaded,
+  } = usePricingWizard();
 
   // Form state
   const [customerMode, setCustomerMode] = useState<'new' | 'existing'>('new');
@@ -409,22 +418,58 @@ export default function NewQuotePage() {
                     <Icon name="calculator" size="sm" className="text-primary" />
                     Pricing
                   </h2>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGeneratePrice}
-                    disabled={generatingPrice || !serviceType}
-                    className="gap-2 rounded-xl"
-                  >
-                    {generatingPrice ? (
-                      <Icon name="spinner" size="xs" className="animate-spin" />
-                    ) : (
-                      <Icon name="sparkles" size="xs" />
+                  <div className="flex items-center gap-2">
+                    {isWizardConfigured && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (lineItems.length > 0 && wizardJobPrice > 0) {
+                            handleLineItemChange(lineItems[0].id, 'unitPrice', wizardJobPrice);
+                            handleLineItemChange(lineItems[0].id, 'description', serviceType || 'Service');
+                            toast({ title: `Applied wizard price: $${wizardJobPrice.toFixed(0)}` });
+                          }
+                        }}
+                        disabled={!wizardJobPrice}
+                        className="gap-2 rounded-xl"
+                      >
+                        <Icon name="wand" size="xs" />
+                        Use Wizard Price
+                      </Button>
                     )}
-                    AI Suggest Price
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGeneratePrice}
+                      disabled={generatingPrice || !serviceType}
+                      className="gap-2 rounded-xl"
+                    >
+                      {generatingPrice ? (
+                        <Icon name="spinner" size="xs" className="animate-spin" />
+                      ) : (
+                        <Icon name="sparkles" size="xs" />
+                      )}
+                      AI Suggest
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Wizard Price Reference */}
+                {isWizardConfigured && wizardJobPrice > 0 && (
+                  <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon name="wand" size="sm" className="text-emerald-600" />
+                      <span className="text-sm text-emerald-700">
+                        Wizard price: <strong>${wizardJobPrice.toFixed(0)}</strong> ({wizardConfig.targetMargin}% margin)
+                      </span>
+                    </div>
+                    <Link href="/pricing/wizard" className="text-xs text-emerald-600 hover:underline">
+                      Edit wizard
+                    </Link>
+                  </div>
+                )}
 
                 {suggestedPrice && (
                   <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-2">
@@ -542,6 +587,42 @@ export default function NewQuotePage() {
                   </FieldDescription>
                 </Field>
               </Card>
+
+              {/* Pricing Wizard Status */}
+              {isWizardLoaded && (
+                isWizardConfigured ? (
+                  <Card className="card-elevated p-4 rounded-2xl border-emerald-200 bg-emerald-50/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="checkCircle" size="sm" className="text-emerald-600" />
+                      <h3 className="font-semibold text-emerald-800 text-sm">Pricing Wizard Active</h3>
+                    </div>
+                    <div className="space-y-1 text-xs text-emerald-700">
+                      <p>Target: ${wizardHourlyRate.toFixed(0)}/hr</p>
+                      <p>Job price: ${wizardJobPrice.toFixed(0)}</p>
+                      <p>Margin: {wizardConfig.targetMargin}%</p>
+                    </div>
+                    <Link href="/pricing/wizard" className="text-xs text-emerald-600 hover:underline mt-2 block">
+                      Edit settings →
+                    </Link>
+                  </Card>
+                ) : (
+                  <Card className="card-elevated p-4 rounded-2xl border-dashed border-2 border-primary/30 bg-primary/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="wand" size="sm" className="text-primary" />
+                      <h3 className="font-semibold text-sm">Set Up Pricing Wizard</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Configure your costs and margins for smarter pricing suggestions
+                    </p>
+                    <Link href="/pricing/wizard">
+                      <Button variant="outline" size="sm" className="w-full gap-2 rounded-xl border-primary/30 hover:bg-primary/10">
+                        <Icon name="arrowRight" size="xs" />
+                        Configure Now
+                      </Button>
+                    </Link>
+                  </Card>
+                )
+              )}
 
               {/* Quick Tips */}
               <Card className="card-elevated p-6 rounded-2xl bg-gray-50/50">
