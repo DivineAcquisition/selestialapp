@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +46,7 @@ const CommandInput = React.forwardRef<
   React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, ...props }, ref) => (
   <div className="flex items-center border-b border-gray-200 px-3" data-command-input-wrapper>
-    <Search className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+    <Icon name="search" size="sm" className="mr-2 shrink-0 text-gray-400" />
     <input
       ref={ref}
       data-command-input

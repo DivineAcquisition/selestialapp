@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 
 export interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -45,7 +45,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           )}
           onClick={() => innerRef.current?.click()}
         >
-          {isChecked && <Check className="h-3 w-3 text-white stroke-[3]" />}
+          {isChecked && <Icon name="check" size="xs" className="text-white" />}
         </div>
       </div>
     );

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 
 const Breadcrumb = React.forwardRef<
   HTMLElement,
@@ -92,7 +92,7 @@ const BreadcrumbSeparator = ({
     className={cn("[&>svg]:h-3.5 [&>svg]:w-3.5", className)}
     {...props}
   >
-    {children ?? <ChevronRight className="text-gray-400" />}
+    {children ?? <Icon name="chevronRight" size="xs" className="text-gray-400" />}
   </li>
 );
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
@@ -107,7 +107,7 @@ const BreadcrumbEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="h-4 w-4 text-gray-400" />
+    <Icon name="more" size="sm" className="text-gray-400" />
     <span className="sr-only">More</span>
   </span>
 );

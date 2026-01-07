@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RadioGroupContextValue {
@@ -81,7 +80,7 @@ const RadioGroupItem = React.forwardRef<HTMLDivElement, RadioGroupItemProps>(
       >
         {isSelected && (
           <div className="flex items-center justify-center h-full">
-            <Circle className="h-1.5 w-1.5 fill-white text-white" />
+            <div className="h-1.5 w-1.5 rounded-full bg-white" />
           </div>
         )}
       </div>

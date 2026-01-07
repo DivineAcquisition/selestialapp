@@ -2,17 +2,21 @@
 
 import { cn } from "@/lib/utils";
 
-// All available Flaticon Uicons (Solid Rounded)
+// Complete Flaticon Uicons mapping (Solid Rounded)
+// Browse all: https://www.flaticon.com/uicons/interface-icons
 export const icons = {
   // Navigation & UI
   home: "home",
   menu: "menu-burger",
+  menuDots: "menu-dots",
+  menuDotsVertical: "menu-dots-vertical",
   apps: "apps",
   appsAdd: "apps-add",
   search: "search",
   settings: "settings",
   settingsSliders: "settings-sliders",
   filter: "filter",
+  sort: "sort",
   list: "list",
   listCheck: "list-check",
   browser: "browser",
@@ -21,241 +25,525 @@ export const icons = {
   layers: "layers",
   dashboard: "dashboard",
   grid: "grid",
+  sidebar: "sidebar",
+  layout: "layout-fluid",
+  columns: "columns-3",
+  rows: "rows-3",
+  expand: "expand",
+  compress: "compress",
+  maximize: "maximize",
+  minimize: "minimize",
   
   // Arrows & Chevrons
   chevronLeft: "angle-left",
   chevronRight: "angle-right",
   chevronUp: "angle-up",
   chevronDown: "angle-down",
+  chevronsLeft: "angles-left",
+  chevronsRight: "angles-right",
+  chevronsUp: "angles-up",
+  chevronsDown: "angles-down",
   angleCircleRight: "angle-circle-right",
   arrowCircleRight: "arrow-circle-right",
   arrowLeft: "arrow-left",
   arrowRight: "arrow-right",
   arrowUp: "arrow-up",
   arrowDown: "arrow-down",
+  arrowUpRight: "arrow-up-right",
+  arrowDownLeft: "arrow-down-left",
+  undo: "undo",
+  redo: "redo",
   
-  // Users
+  // Users & People
   user: "user",
+  userAdd: "user-add",
   userPlus: "user-add",
+  userMinus: "user-minus",
+  userCheck: "user-check",
+  userX: "user-cross",
+  userCog: "user-gear",
   users: "users",
   usersAlt: "users-alt",
+  userGroup: "users",
   following: "following",
+  portrait: "portrait",
   
   // Communication
   phone: "phone-call",
+  phoneCall: "phone-call",
+  phoneIncoming: "phone-call",
+  phoneOutgoing: "phone-call",
+  phoneMissed: "phone-cross",
+  phoneOff: "phone-slash",
   phoneCircle: "circle-phone",
-  phoneCircleFlip: "circle-phone-flip",
   email: "envelope",
+  envelope: "envelope",
+  envelopeOpen: "envelope-open",
+  mail: "envelope",
+  mailOpen: "envelope-open",
   inbox: "inbox",
+  inboxIn: "inbox-in",
+  inboxOut: "inbox-out",
   message: "comment",
+  messageSquare: "comment",
   messageAlt: "comment-alt",
+  messageCircle: "comment",
   messages: "comments",
+  comment: "comment",
+  comments: "comments",
   send: "paper-plane",
+  paperPlane: "paper-plane",
   megaphone: "megaphone",
   bell: "bell",
   bellRing: "bell-ring",
+  bellOff: "bell-slash",
+  bellSlash: "bell-slash",
   headset: "headset",
+  headphones: "headphones",
+  video: "video-camera-alt",
+  videoOff: "video-camera-slash",
+  mic: "microphone",
+  micOff: "microphone-slash",
   
   // Actions
   add: "add",
   plus: "plus",
   plusSmall: "plus-small",
+  plusCircle: "plus-circle",
+  minus: "minus",
+  minusCircle: "minus-circle",
   close: "cross",
+  x: "cross",
+  xCircle: "cross-circle",
   closeSmall: "cross-small",
   closeCircle: "cross-circle",
   check: "check",
+  checkCircle: "check-circle",
   checkbox: "checkbox",
   edit: "edit",
+  edit2: "edit",
   pencil: "pencil",
+  pen: "pen-clip",
   trash: "trash",
+  trash2: "trash",
+  delete: "trash",
   refresh: "refresh",
+  refreshCw: "refresh",
+  rotateCw: "rotate-right",
+  rotateCcw: "rotate-left",
   download: "download",
   upload: "upload",
   share: "share",
-  copy: "copy",
-  link: "link",
+  share2: "share",
   externalLink: "arrow-up-right",
+  copy: "copy",
+  clipboard: "clipboard",
+  clipboardCheck: "clipboard-check",
+  clipboardList: "clipboard-list",
+  link: "link",
+  link2: "link",
+  unlink: "link-slash",
   more: "menu-dots",
+  moreHorizontal: "menu-dots",
   moreVertical: "menu-dots-vertical",
+  ellipsis: "menu-dots",
+  grip: "grip-dots",
+  gripVertical: "grip-dots-vertical",
+  move: "arrows",
+  drag: "grip-dots-vertical",
   
-  // Media
+  // Media & Files
   play: "play",
-  playAlt: "play-alt",
+  playCircle: "play-circle",
   pause: "pause",
   stop: "stop",
+  skipBack: "rewind",
+  skipForward: "forward",
+  rewind: "rewind",
+  fastForward: "forward",
   volume: "volume",
+  volume1: "volume",
+  volume2: "volume",
+  volumeX: "volume-slash",
+  volumeMute: "volume-mute",
   camera: "camera",
-  video: "video-camera-alt",
+  cameraOff: "camera-slash",
   image: "picture",
+  images: "images",
+  picture: "picture",
   music: "music-alt",
+  film: "film",
   
   // Files & Documents
+  file: "file",
+  fileText: "file",
+  fileAdd: "file-add",
+  filePlus: "file-add",
+  fileMinus: "file-minus",
+  fileCheck: "file-check",
+  fileX: "file-cross",
+  fileEdit: "file-edit",
+  fileSearch: "file-search",
   document: "document",
   documentSigned: "document-signed",
-  file: "file",
-  fileAdd: "file-add",
   folder: "folder",
+  folderOpen: "folder-open",
   folderAdd: "folder-add",
-  clipboard: "clipboard",
+  folderPlus: "folder-add",
+  folderMinus: "folder-minus",
+  archive: "archive",
   
   // Social & Feedback
   heart: "heart",
   heartFilled: "heart",
+  heartOff: "heart-crack",
   star: "star",
   starFilled: "star",
+  starHalf: "star-half",
   bookmark: "bookmark",
+  bookmarkFilled: "bookmark",
+  flag: "flag",
   thumbsUp: "thumbs-up",
   thumbsDown: "thumbs-down",
-  care: "hand-holding-heart",
+  smile: "smile",
+  frown: "frown",
+  meh: "meh",
+  laugh: "laugh",
+  angry: "angry",
   
   // E-commerce & Business
   cart: "shopping-cart",
+  shoppingCart: "shopping-cart",
   cartAdd: "shopping-cart-add",
+  cartPlus: "shopping-cart-add",
   bag: "shopping-bag",
+  shoppingBag: "shopping-bag",
   creditCard: "credit-card",
   wallet: "wallet",
-  dollar: "usd-circle",
+  dollar: "dollar",
   dollarSign: "dollar",
+  usd: "usd-circle",
+  euro: "euro",
   coins: "coins",
+  coin: "coin",
   moneyBag: "sack-dollar",
+  piggyBank: "piggy-bank",
   bank: "bank",
   briefcase: "briefcase",
   receipt: "receipt",
+  invoice: "file-invoice",
+  quote: "file-invoice-dollar",
+  fileInvoice: "file-invoice-dollar",
+  barcode: "barcode",
+  qrCode: "qrcode",
+  tag: "label",
+  tags: "tags",
+  percent: "percentage",
   
   // Time & Calendar
   clock: "clock",
+  watch: "watch",
+  timer: "stopwatch",
+  stopwatch: "stopwatch",
+  hourglass: "hourglass",
   alarm: "alarm-clock",
+  alarmClock: "alarm-clock",
   calendar: "calendar",
+  calendarDays: "calendar",
   calendarClock: "calendar-clock",
   calendarLines: "calendar-lines",
   calendarPlus: "calendar-plus",
+  calendarMinus: "calendar-minus",
+  calendarCheck: "calendar-check",
+  calendarX: "calendar-cross",
+  history: "time-past",
   
-  // Location
+  // Location & Maps
   mapPin: "marker",
+  pin: "marker",
+  marker: "marker",
   map: "map",
+  mapMarker: "map-marker",
   compass: "compass",
+  navigation: "navigation",
+  globe2: "earth-americas",
   
-  // Security
+  // Security & Privacy
   lock: "lock",
+  lockOpen: "lock-open",
   unlock: "unlock",
   key: "key",
-  shield: "shield-check",
-  shieldAlt: "shield",
+  keyhole: "keyhole",
+  shield: "shield",
+  shieldCheck: "shield-check",
+  shieldOff: "shield-slash",
   verified: "badge-check",
+  badge: "badge",
+  badgeCheck: "badge-check",
   eye: "eye",
   eyeOff: "eye-crossed",
+  eyeSlash: "eye-crossed",
+  fingerprint: "fingerprint",
+  scan: "scan",
   
   // Info & Status
   info: "info",
   infoCircle: "circle-info",
   question: "interrogation",
   questionCircle: "circle-question",
+  help: "interrogation",
+  helpCircle: "circle-question",
+  alertCircle: "exclamation",
+  alertTriangle: "triangle-warning",
   warning: "exclamation",
-  warningTriangle: "triangle-warning",
+  exclamation: "exclamation",
   error: "circle-xmark",
+  xMark: "circle-xmark",
   success: "circle-check",
+  checkMark: "circle-check",
+  ban: "ban",
+  slash: "slash",
   
   // Charts & Analytics
   chart: "chart-histogram",
+  chartBar: "chart-histogram",
   chartLine: "chart-line-up",
   chartPie: "chart-pie",
+  chartArea: "chart-area",
   stats: "stats",
+  activity: "pulse",
+  pulse: "pulse",
   trendUp: "arrow-trend-up",
+  trendingUp: "arrow-trend-up",
   trendDown: "arrow-trend-down",
+  trendingDown: "arrow-trend-down",
   target: "target",
+  crosshair: "crosshairs",
+  gauge: "gauge",
   
   // Tech & Development
   code: "code-simple",
+  codeBranch: "code-branch",
   terminal: "terminal",
+  command: "command",
   database: "database",
   server: "server",
   cloud: "cloud",
+  cloudUpload: "cloud-upload",
+  cloudDownload: "cloud-download",
   wifi: "wifi",
+  wifiOff: "wifi-slash",
   bluetooth: "bluetooth",
+  cpu: "microchip",
+  chip: "microchip",
+  monitor: "monitor",
+  laptop: "laptop",
+  smartphone: "smartphone",
+  tablet: "tablet",
+  mouse: "mouse",
+  keyboard: "keyboard",
   
-  // Misc
+  // Misc Objects
   lightbulb: "bulb",
+  bulb: "bulb",
   bolt: "bolt",
+  lightning: "bolt",
+  zap: "bolt",
+  flash: "bolt",
   magic: "magic-wand",
+  wand: "magic-wand",
+  sparkle: "sparkle",
   sparkles: "sparkles",
+  stars: "sparkles",
   crown: "crown",
   trophy: "trophy",
+  award: "award",
+  medal: "medal",
   graduationCap: "graduation-cap",
+  school: "school",
+  book: "book",
+  bookOpen: "book-open",
+  bookmark2: "bookmark",
   paw: "paw",
-  ballot: "ballot",
   rocket: "rocket",
+  plane: "plane",
+  car: "car",
+  truck: "truck",
+  bicycle: "bicycle",
   gift: "gift",
+  present: "gift",
+  box: "box",
+  package: "package",
   fire: "flame",
+  flame: "flame",
+  sun: "sun",
+  moon: "moon",
+  cloudSun: "cloud-sun",
+  rainbow: "rainbow",
+  umbrella: "umbrella",
+  snowflake: "snowflake",
+  thermometer: "thermometer-half",
+  droplet: "droplet",
+  leaf: "leaf",
+  tree: "tree",
+  flower: "flower",
   
-  // Layout
-  sidebar: "sidebar",
-  layout: "layout-fluid",
-  columns: "columns-3",
-  rows: "rows-3",
+  // Buildings & Places
+  home2: "house",
+  house: "house",
+  building: "building",
+  office: "building",
+  store: "store",
+  shop: "store",
+  hospital: "hospital",
+  factory: "factory",
+  warehouse: "warehouse",
   
-  // Integrations
+  // Integrations & Connections
   plug: "plug",
+  unplug: "plug-slash",
   puzzle: "puzzle-piece",
+  puzzlePiece: "puzzle-piece",
   api: "api",
+  rss: "rss",
   
   // Sequences & Automation
   sequence: "arrows-repeat",
+  repeat: "arrows-repeat",
+  repeat1: "arrows-repeat-1",
+  shuffle: "shuffle",
   automation: "process",
   workflow: "workflow",
+  gitBranch: "code-branch",
+  gitMerge: "code-merge",
+  split: "split",
+  merge: "merge",
   
-  // Campaigns
+  // Campaigns & Marketing
   campaign: "flag",
   broadcast: "broadcast-tower",
+  antenna: "antenna",
+  satellite: "satellite",
+  signal: "signal-alt",
   
-  // Retention
+  // Retention & Loyalty
   retention: "rotate-right",
-  repeat: "arrows-repeat",
+  loyalty: "hand-holding-heart",
+  handshake: "handshake",
   
-  // Quotes
-  quote: "file-invoice-dollar",
-  invoice: "receipt",
-  estimate: "file-edit",
-  
-  // AI
+  // AI & Intelligence
   ai: "brain",
+  brain: "brain",
   robot: "head-side-brain",
+  cpu2: "head-side-brain",
   
-  // Loading
+  // Loading & Progress
   spinner: "spinner",
   loading: "loading",
+  loader: "spinner",
+  loader2: "spinner",
   
-  // Logout
+  // Auth & Account
   logout: "sign-out-alt",
+  logOut: "sign-out-alt",
+  signOut: "sign-out-alt",
   login: "sign-in-alt",
+  logIn: "sign-in-alt",
+  signIn: "sign-in-alt",
+  power: "power",
+  powerOff: "power",
   
-  // Zap/Lightning
-  zap: "bolt",
+  // Misc UI
+  palette: "palette",
+  paintbrush: "paint-brush",
+  brush: "brush",
+  eraser: "eraser",
+  scissors: "scissors",
+  crop: "crop",
+  ruler: "ruler-combined",
+  print: "print",
+  printer: "print",
+  save: "disk",
+  disk: "disk",
+  at: "at",
+  hash: "hashtag",
+  asterisk: "asterisk",
+  circle: "circle",
+  square: "square",
+  triangle: "triangle",
+  octagon: "octagon",
+  hexagon: "hexagon",
+  
+  // Text & Typography
+  bold: "bold",
+  italic: "italic",
+  underline: "underline",
+  strikethrough: "strikethrough",
+  alignLeft: "align-left",
+  alignCenter: "align-center",
+  alignRight: "align-right",
+  alignJustify: "align-justify",
+  listUl: "list",
+  listOl: "list-ol",
+  indent: "indent",
+  outdent: "outdent",
+  quote2: "quote-right",
+  heading: "heading",
+  paragraph: "paragraph",
+  textSize: "text-size",
+  font: "font",
+  type: "text",
+  
+  // Math & Numbers
+  calculator: "calculator",
+  plusMinus: "plus-minus",
+  divide: "divide",
+  equal: "equals",
+  notEqual: "not-equal",
+  greaterThan: "greater-than",
+  lessThan: "less-than",
+  infinity: "infinity",
+  
+  // Arrows special
+  arrowLeftRight: "arrows-alt-h",
+  arrowUpDown: "arrows-alt-v",
+  arrowsAlt: "arrows",
+  maximize2: "arrows-maximize",
+  minimize2: "arrows-minimize",
+  
 } as const;
 
 export type IconName = keyof typeof icons;
 
 interface IconProps {
   name: IconName;
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   className?: string;
 }
 
 const sizeClasses = {
-  xs: "text-xs",     // 12px
-  sm: "text-sm",     // 14px
-  md: "text-base",   // 16px
-  lg: "text-lg",     // 18px
-  xl: "text-xl",     // 20px
-  "2xl": "text-2xl", // 24px
-  "3xl": "text-3xl", // 30px
+  xs: "text-xs",      // 12px
+  sm: "text-sm",      // 14px
+  md: "text-base",    // 16px
+  lg: "text-lg",      // 18px
+  xl: "text-xl",      // 20px
+  "2xl": "text-2xl",  // 24px
+  "3xl": "text-3xl",  // 30px
+  "4xl": "text-4xl",  // 36px
 };
 
 export function Icon({ name, size = "md", className }: IconProps) {
+  const iconClass = icons[name];
+  if (!iconClass) {
+    console.warn(`Icon "${name}" not found`);
+    return null;
+  }
+  
   return (
     <i 
       className={cn(
         "fi",
-        `fi-sr-${icons[name]}`,
+        `fi-sr-${iconClass}`,
         sizeClasses[size],
         "leading-none inline-flex items-center justify-center",
         className
@@ -264,5 +552,5 @@ export function Icon({ name, size = "md", className }: IconProps) {
   );
 }
 
-// Export icon names for autocomplete
+// Export for type checking
 export { icons as iconNames };

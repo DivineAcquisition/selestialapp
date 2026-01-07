@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 
 interface DialogContextValue {
   open: boolean;
@@ -140,7 +140,7 @@ const DialogContent = React.forwardRef<
           )}
           onClick={() => onOpenChange(false)}
         >
-          <X className="h-4 w-4" />
+          <Icon name="close" size="sm" />
           <span className="sr-only">Close</span>
         </button>
       </div>

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -124,7 +124,7 @@ function Calendar({
             "h-7 w-7 p-0"
           )}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <Icon name="chevronLeft" size="sm" />
         </button>
         <div className="font-medium text-sm text-gray-900">
           {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
@@ -136,7 +136,7 @@ function Calendar({
             "h-7 w-7 p-0"
           )}
         >
-          <ChevronRight className="h-4 w-4" />
+          <Icon name="chevronRight" size="sm" />
         </button>
       </div>
 

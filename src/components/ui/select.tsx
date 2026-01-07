@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 
 interface SelectContextValue {
   open: boolean;
@@ -126,7 +126,7 @@ const SelectTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform duration-200", open && "rotate-180")} />
+      <Icon name="chevronDown" size="sm" className={cn("text-gray-400 transition-transform duration-200", open && "rotate-180")} />
     </button>
   );
 });
@@ -216,7 +216,7 @@ const SelectItem = React.forwardRef<
       {...props}
     >
       <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
-        {isSelected && <Check className="h-4 w-4" />}
+        {isSelected && <Icon name="check" size="sm" />}
       </span>
       {children}
     </div>

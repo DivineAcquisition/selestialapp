@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronRight, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/ui/icon";
 
 interface DropdownMenuContextValue {
   open: boolean;
@@ -120,7 +120,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <Icon name="chevronRight" size="sm" className="ml-auto" />
   </div>
 ));
 DropdownMenuSubTrigger.displayName = "DropdownMenuSubTrigger";
@@ -245,7 +245,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     {...props}
   >
     <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
-      {checked && <Check className="h-4 w-4" />}
+      {checked && <Icon name="check" size="sm" />}
     </span>
     {children}
   </div>
@@ -266,7 +266,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     {...props}
   >
     <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
-      <Circle className="h-2 w-2 fill-current" />
+      <Icon name="circle" size="xs" />
     </span>
     {children}
   </div>
