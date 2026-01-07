@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
@@ -25,6 +24,27 @@ const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+
+// Simple Slot implementation for asChild pattern
+interface SlotProps extends React.HTMLAttributes<HTMLElement> {
+  children?: React.ReactNode
+}
+
+const Slot = React.forwardRef<HTMLElement, SlotProps>(
+  ({ children, ...props }, ref) => {
+    if (React.isValidElement(children)) {
+      const childProps = children.props as Record<string, unknown>
+      return React.cloneElement(children, {
+        ...props,
+        ...childProps,
+        ref,
+        className: cn(props.className as string, childProps.className as string),
+      } as React.HTMLAttributes<HTMLElement>)
+    }
+    return <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>{children}</span>
+  }
+)
+Slot.displayName = "Slot"
 
 type SidebarContext = {
   state: "expanded" | "collapsed"
@@ -436,7 +456,7 @@ const SidebarGroupLabel = React.forwardRef<
 
   return (
     <Comp
-      ref={ref}
+      ref={ref as React.Ref<HTMLDivElement>}
       data-sidebar="group-label"
       className={cn(
         "duration-200 flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
@@ -457,7 +477,7 @@ const SidebarGroupAction = React.forwardRef<
 
   return (
     <Comp
-      ref={ref}
+      ref={ref as React.Ref<HTMLButtonElement>}
       data-sidebar="group-action"
       className={cn(
         "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
@@ -558,7 +578,7 @@ const SidebarMenuButton = React.forwardRef<
 
     const button = (
       <Comp
-        ref={ref}
+        ref={ref as React.Ref<HTMLButtonElement>}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
@@ -603,7 +623,7 @@ const SidebarMenuAction = React.forwardRef<
 
   return (
     <Comp
-      ref={ref}
+      ref={ref as React.Ref<HTMLButtonElement>}
       data-sidebar="menu-action"
       className={cn(
         "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
@@ -717,7 +737,7 @@ const SidebarMenuSubButton = React.forwardRef<
 
   return (
     <Comp
-      ref={ref}
+      ref={ref as React.Ref<HTMLAnchorElement>}
       data-sidebar="menu-sub-button"
       data-size={size}
       data-active={isActive}
