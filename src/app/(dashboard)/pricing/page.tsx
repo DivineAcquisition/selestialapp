@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import Link from "next/link";
-import { Icon, IconName } from "@/components/ui/icon";
 import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -18,24 +14,54 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Icon, IconName } from "@/components/ui/icon";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   INDUSTRIES,
   REGIONAL_MULTIPLIERS,
-  CONVERSION_INSIGHTS,
   getIndustryBySlug,
-  getRecommendedPricingModel,
-  type IndustryPricing,
   type ServicePricing,
-  type PricingModel,
   type RetentionModel,
 } from "@/lib/pricing/pricing-data";
-import { usePricingWizard } from "@/hooks/usePricingWizard";
 
 // ============================================================================
 // TYPES
 // ============================================================================
+
+interface WizardConfig {
+  // Step 1: Business
+  industry: string;
+  zipCode: string;
+  yearsInBusiness: "new" | "growing" | "established" | "expert";
+  
+  // Step 2: Operations
+  teamSize: "solo" | "small" | "medium" | "large";
+  avgJobDuration: number;
+  jobsPerDay: number;
+  
+  // Step 3: Costs
+  hourlyLaborCost: number;
+  avgMaterialCost: number;
+  monthlyOverhead: number;
+  
+  // Step 4: Goals
+  targetMargin: number;
+  monthlyRevenueGoal: number;
+  pricingStrategy: "value" | "competitive" | "premium" | "penetration";
+  
+  // Meta
+  completedAt?: string;
+  lastUpdatedAt?: string;
+}
 
 interface EnabledService extends ServicePricing {
   id: string;
@@ -52,36 +78,25 @@ interface PriceRule {
   enabled: boolean;
 }
 
-interface PriceConfig {
-  industry: string;
-  region: string;
-  pricingModel: string;
-  services: EnabledService[];
-  rules: PriceRule[];
-  retentionPlan: string | null;
-}
-
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-const INDUSTRY_ICONS: Record<string, IconName> = {
-  cleaning: "sparkles",
-  hvac: "thermometer",
-  plumbing: "wrench",
-  electrical: "bolt",
-  landscaping: "leaf",
-  pest_control: "bug",
-  roofing: "home",
-  painting: "paintBrush",
-  handyman: "hammer",
-  pressure_washing: "droplet",
-  pool_spa: "waves",
-  flooring: "grid",
-  garage_door: "car",
-  locksmith: "lock",
-  window_cleaning: "sparkles",
-  appliance: "plug",
+const STORAGE_KEY = "selestial_pricing_wizard";
+
+const DEFAULT_WIZARD_CONFIG: WizardConfig = {
+  industry: "",
+  zipCode: "",
+  yearsInBusiness: "growing",
+  teamSize: "solo",
+  avgJobDuration: 2,
+  jobsPerDay: 3,
+  hourlyLaborCost: 25,
+  avgMaterialCost: 50,
+  monthlyOverhead: 2000,
+  targetMargin: 45,
+  monthlyRevenueGoal: 10000,
+  pricingStrategy: "competitive",
 };
 
 const DEFAULT_RULES: PriceRule[] = [
@@ -95,9 +110,86 @@ const DEFAULT_RULES: PriceRule[] = [
   { id: "8", name: "Senior Discount", type: "percentage", value: -10, condition: "65+ customers", enabled: false },
 ];
 
+const EXPERIENCE_LEVELS = [
+  { value: "new", label: "New (< 1 year)", description: "Just getting started", multiplier: 0.85 },
+  { value: "growing", label: "Growing (1-3 years)", description: "Building reputation", multiplier: 0.95 },
+  { value: "established", label: "Established (3-7 years)", description: "Proven track record", multiplier: 1.0 },
+  { value: "expert", label: "Expert (7+ years)", description: "Industry leader", multiplier: 1.15 },
+] as const;
+
+const TEAM_SIZES = [
+  { value: "solo", label: "Solo", description: "Just me", capacity: 1 },
+  { value: "small", label: "Small (2-3)", description: "Small team", capacity: 2.5 },
+  { value: "medium", label: "Medium (4-8)", description: "Growing team", capacity: 6 },
+  { value: "large", label: "Large (9+)", description: "Full crew", capacity: 12 },
+] as const;
+
+const PRICING_STRATEGIES = [
+  { value: "penetration", label: "Entry/Penetration", description: "Lower prices to gain market share", icon: "trendDown" },
+  { value: "value", label: "Value", description: "Balanced quality and price", icon: "scale" },
+  { value: "competitive", label: "Competitive", description: "Match market rates", icon: "target" },
+  { value: "premium", label: "Premium", description: "Higher prices, premium service", icon: "crown" },
+] as const;
+
+const INDUSTRY_ICONS: Record<string, IconName> = {
+  cleaning: "sparkles",
+  hvac: "thermometer",
+  plumbing: "wrench",
+  electrical: "bolt",
+  landscaping: "leaf",
+  pest_control: "bug",
+  roofing: "home",
+  painting: "paintBrush",
+  handyman: "hammer",
+  pressure_washing: "droplet",
+  pool_spa: "waves",
+};
+
+type TabId = "setup" | "services" | "rules" | "retention" | "calculator";
+
+const TABS: { id: TabId; label: string; icon: IconName }[] = [
+  { id: "setup", label: "Setup", icon: "settings" },
+  { id: "services", label: "Services", icon: "layers" },
+  { id: "rules", label: "Price Rules", icon: "tag" },
+  { id: "retention", label: "Retention", icon: "refresh" },
+  { id: "calculator", label: "Calculator", icon: "calculator" },
+];
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
+
+function getInitialConfig(): { wizard: WizardConfig; region: string; rules: PriceRule[]; retentionPlan: string | null } {
+  if (typeof window === "undefined") {
+    return { wizard: DEFAULT_WIZARD_CONFIG, region: "Baseline", rules: DEFAULT_RULES, retentionPlan: null };
+  }
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return {
+        wizard: parsed.wizard || DEFAULT_WIZARD_CONFIG,
+        region: parsed.region || "Baseline",
+        rules: parsed.rules || DEFAULT_RULES,
+        retentionPlan: parsed.retentionPlan || null,
+      };
+    } catch {
+      console.warn("Failed to parse pricing wizard config");
+    }
+  }
+  return { wizard: DEFAULT_WIZARD_CONFIG, region: "Baseline", rules: DEFAULT_RULES, retentionPlan: null };
+}
+
+function calculateHourlyRate(config: WizardConfig): number {
+  const baseRate = config.hourlyLaborCost / (1 - config.targetMargin / 100);
+  const experienceMultiplier = EXPERIENCE_LEVELS.find(e => e.value === config.yearsInBusiness)?.multiplier || 1;
+  return baseRate * experienceMultiplier;
+}
+
+function calculateJobPrice(config: WizardConfig): number {
+  const hourlyRate = calculateHourlyRate(config);
+  return hourlyRate * config.avgJobDuration + config.avgMaterialCost;
+}
 
 function formatPrice(price: number, unit: string): string {
   if (unit === "sqft" || unit === "linear_ft" || unit === "each") {
@@ -108,20 +200,10 @@ function formatPrice(price: number, unit: string): string {
 
 function getUnitLabel(unit: string): string {
   const labels: Record<string, string> = {
-    flat: "",
-    sqft: "/sq ft",
-    linear_ft: "/linear ft",
-    each: "/each",
-    hour: "/hour",
-    room: "/room",
-    window: "/window",
-    visit: "/visit",
-    week: "/week",
-    month: "/month",
-    quarter: "/quarter",
-    square: "/square",
-    cubic_yard: "/cu yd",
-    lb: "/lb",
+    flat: "", sqft: "/sq ft", linear_ft: "/linear ft", each: "/each",
+    hour: "/hour", room: "/room", window: "/window", visit: "/visit",
+    week: "/week", month: "/month", quarter: "/quarter", square: "/square",
+    cubic_yard: "/cu yd", lb: "/lb",
   };
   return labels[unit] || "";
 }
@@ -130,250 +212,530 @@ function getUnitLabel(unit: string): string {
 // SUB-COMPONENTS
 // ============================================================================
 
-function IndustrySelector({
-  selected,
-  onSelect,
+function SetupPanel({
+  config,
+  region,
+  onConfigChange,
+  onRegionChange,
+  onReset,
 }: {
-  selected: string;
-  onSelect: (slug: string) => void;
+  config: WizardConfig;
+  region: string;
+  onConfigChange: (updates: Partial<WizardConfig>) => void;
+  onRegionChange: (region: string) => void;
+  onReset: () => void;
 }) {
+  const hourlyRate = calculateHourlyRate(config);
+  const jobPrice = calculateJobPrice(config);
+  const teamCapacity = TEAM_SIZES.find(t => t.value === config.teamSize)?.capacity || 1;
+  const monthlyRevenue = jobPrice * config.jobsPerDay * teamCapacity * 22;
+  const breakEvenJobs = Math.ceil(config.monthlyOverhead / (jobPrice * (config.targetMargin / 100)));
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-      {INDUSTRIES.map((industry) => {
-        const isSelected = selected === industry.slug;
-        const iconName = INDUSTRY_ICONS[industry.slug] || "briefcase";
-        
-        return (
-          <button
-            key={industry.slug}
-            onClick={() => onSelect(industry.slug)}
-            className={cn(
-              "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-              isSelected
-                ? "border-primary bg-primary/5 shadow-md"
-                : "border-border hover:border-primary/50 hover:bg-muted/50"
-            )}
-          >
-            <div className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center",
-              isSelected ? "bg-primary/20" : "bg-muted"
-            )}>
-              <Icon 
-                name={iconName} 
-                size="xl" 
-                className={isSelected ? "text-primary" : "text-muted-foreground"} 
+    <div className="space-y-6">
+      {/* Results Summary */}
+      {config.industry && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <Card className="p-4 bg-gradient-to-br from-primary/10 to-transparent">
+            <p className="text-xs text-muted-foreground">Target Hourly Rate</p>
+            <p className="text-2xl font-bold text-primary">${hourlyRate.toFixed(0)}/hr</p>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-emerald-500/10 to-transparent">
+            <p className="text-xs text-muted-foreground">Avg Job Price</p>
+            <p className="text-2xl font-bold text-emerald-600">${jobPrice.toFixed(0)}</p>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-transparent">
+            <p className="text-xs text-muted-foreground">Monthly Potential</p>
+            <p className="text-2xl font-bold text-purple-600">${monthlyRevenue.toLocaleString()}</p>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-transparent">
+            <p className="text-xs text-muted-foreground">Break-Even</p>
+            <p className="text-2xl font-bold text-amber-600">{breakEvenJobs} jobs/mo</p>
+          </Card>
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Left Column - Business & Operations */}
+        <div className="space-y-6">
+          {/* Industry Selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Industry *</label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {INDUSTRIES.slice(0, 12).map((industry) => {
+                const isSelected = config.industry === industry.slug;
+                const iconName = INDUSTRY_ICONS[industry.slug] || "briefcase";
+                return (
+                  <button
+                    key={industry.slug}
+                    onClick={() => onConfigChange({ industry: industry.slug })}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
+                      isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <Icon name={iconName} size="lg" className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                    <span className={cn("text-xs font-medium text-center", isSelected && "text-primary")}>
+                      {industry.name.split(" ")[0]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Region & ZIP */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Market Region</label>
+              <Select value={region} onValueChange={onRegionChange}>
+                <SelectTrigger className="h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIONAL_MULTIPLIERS.map((r) => (
+                    <SelectItem key={r.region} value={r.region}>{r.region}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">ZIP Code</label>
+              <Input
+                type="text"
+                placeholder="12345"
+                value={config.zipCode}
+                onChange={(e) => onConfigChange({ zipCode: e.target.value.replace(/\D/g, "").slice(0, 5) })}
+                className="h-10 rounded-xl"
+                maxLength={5}
               />
             </div>
-            <span className={cn(
-              "text-sm font-medium text-center",
-              isSelected ? "text-primary" : "text-foreground"
-            )}>
-              {industry.name}
-            </span>
-            {isSelected && (
-              <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                Selected
+          </div>
+
+          {/* Experience */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Experience Level</label>
+            <div className="grid grid-cols-2 gap-2">
+              {EXPERIENCE_LEVELS.map((level) => {
+                const isSelected = config.yearsInBusiness === level.value;
+                return (
+                  <button
+                    key={level.value}
+                    onClick={() => onConfigChange({ yearsInBusiness: level.value as WizardConfig["yearsInBusiness"] })}
+                    className={cn(
+                      "p-3 rounded-xl border-2 text-left transition-all",
+                      isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <p className={cn("font-medium text-sm", isSelected && "text-primary")}>{level.label}</p>
+                    <p className="text-xs text-muted-foreground">{level.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Team Size */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Team Size</label>
+            <div className="grid grid-cols-4 gap-2">
+              {TEAM_SIZES.map((size) => {
+                const isSelected = config.teamSize === size.value;
+                return (
+                  <button
+                    key={size.value}
+                    onClick={() => onConfigChange({ teamSize: size.value as WizardConfig["teamSize"] })}
+                    className={cn(
+                      "p-3 rounded-xl border-2 text-center transition-all",
+                      isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <p className={cn("font-medium text-sm", isSelected && "text-primary")}>{size.label}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Costs & Goals */}
+        <div className="space-y-6">
+          {/* Job Duration & Jobs Per Day */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Avg Job Duration: {config.avgJobDuration} hrs</label>
+            <input
+              type="range"
+              min={0.5}
+              max={8}
+              step={0.5}
+              value={config.avgJobDuration}
+              onChange={(e) => onConfigChange({ avgJobDuration: Number(e.target.value) })}
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Jobs Per Day (per worker): {config.jobsPerDay}</label>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              step={1}
+              value={config.jobsPerDay}
+              onChange={(e) => onConfigChange({ jobsPerDay: Number(e.target.value) })}
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+          </div>
+
+          {/* Costs */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Labor Cost/hr</label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="number"
+                  value={config.hourlyLaborCost || ""}
+                  onChange={(e) => onConfigChange({ hourlyLaborCost: Number(e.target.value) || 0 })}
+                  className="pl-6 h-10 rounded-xl"
+                  min={0}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Materials/job</label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="number"
+                  value={config.avgMaterialCost || ""}
+                  onChange={(e) => onConfigChange({ avgMaterialCost: Number(e.target.value) || 0 })}
+                  className="pl-6 h-10 rounded-xl"
+                  min={0}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Monthly Overhead</label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="number"
+                  value={config.monthlyOverhead || ""}
+                  onChange={(e) => onConfigChange({ monthlyOverhead: Number(e.target.value) || 0 })}
+                  className="pl-6 h-10 rounded-xl"
+                  min={0}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Target Margin */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Target Profit Margin: {config.targetMargin}%</label>
+              <Badge variant="secondary" className={cn(
+                "text-xs",
+                config.targetMargin < 30 ? "bg-amber-100 text-amber-700" :
+                config.targetMargin > 55 ? "bg-purple-100 text-purple-700" :
+                "bg-emerald-100 text-emerald-700"
+              )}>
+                {config.targetMargin < 30 ? "Value" : config.targetMargin > 55 ? "Premium" : "Competitive"}
               </Badge>
-            )}
-          </button>
-        );
-      })}
+            </div>
+            <input
+              type="range"
+              min={20}
+              max={70}
+              step={5}
+              value={config.targetMargin}
+              onChange={(e) => onConfigChange({ targetMargin: Number(e.target.value) })}
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+          </div>
+
+          {/* Revenue Goal */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monthly Revenue Goal</label>
+            <div className="relative max-w-xs">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+              <Input
+                type="number"
+                value={config.monthlyRevenueGoal || ""}
+                onChange={(e) => onConfigChange({ monthlyRevenueGoal: Number(e.target.value) || 0 })}
+                className="pl-6 h-10 rounded-xl"
+                min={0}
+                step={1000}
+              />
+            </div>
+          </div>
+
+          {/* Pricing Strategy */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Pricing Strategy</label>
+            <div className="grid grid-cols-2 gap-2">
+              {PRICING_STRATEGIES.map((strategy) => {
+                const isSelected = config.pricingStrategy === strategy.value;
+                return (
+                  <button
+                    key={strategy.value}
+                    onClick={() => onConfigChange({ pricingStrategy: strategy.value as WizardConfig["pricingStrategy"] })}
+                    className={cn(
+                      "p-3 rounded-xl border-2 text-left transition-all",
+                      isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon name={strategy.icon as IconName} size="sm" className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                      <p className={cn("font-medium text-sm", isSelected && "text-primary")}>{strategy.label}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Reset Button */}
+      <div className="pt-4 border-t flex justify-end">
+        <Button variant="outline" onClick={onReset} className="gap-2 text-muted-foreground">
+          <Icon name="refresh" size="sm" />
+          Reset All Settings
+        </Button>
+      </div>
     </div>
   );
 }
 
-function ServiceRow({
-  service,
+function ServicesPanel({
+  services,
   regionMultiplier,
   onToggle,
   onPriceChange,
 }: {
-  service: EnabledService;
+  services: EnabledService[];
   regionMultiplier: number;
-  onToggle: () => void;
-  onPriceChange: (price: number) => void;
+  onToggle: (id: string) => void;
+  onPriceChange: (id: string, price: number) => void;
 }) {
-  const adjustedAvg = Math.round(service.avgPrice * regionMultiplier);
-  const adjustedLow = Math.round(service.lowPrice * regionMultiplier);
-  const adjustedHigh = Math.round(service.highPrice * regionMultiplier);
-  const currentPrice = service.customPrice ?? adjustedAvg;
-  const unit = getUnitLabel(service.pricingUnit);
+  const enabledCount = services.filter(s => s.enabled).length;
+  const categories = useMemo(() => {
+    return services.reduce((acc, service) => {
+      if (!acc[service.category]) acc[service.category] = [];
+      acc[service.category].push(service);
+      return acc;
+    }, {} as Record<string, EnabledService[]>);
+  }, [services]);
 
   return (
-    <div className={cn(
-      "flex items-center gap-4 p-4 rounded-xl border transition-all",
-      service.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
-    )}>
-      <Switch
-        checked={service.enabled}
-        onCheckedChange={onToggle}
-        className="data-[state=checked]:bg-primary"
-      />
-      
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{service.name}</p>
-        <p className="text-xs text-muted-foreground">
-          {service.category} • Range: {formatPrice(adjustedLow, service.pricingUnit)} - {formatPrice(adjustedHigh, service.pricingUnit)}{unit}
-        </p>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="font-semibold">Services & Pricing</h3>
+          <p className="text-sm text-muted-foreground">Toggle services and customize prices</p>
+        </div>
+        <Badge variant="outline">{enabledCount} of {services.length} enabled</Badge>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground text-sm">$</span>
-        <Input
-          type="number"
-          value={currentPrice}
-          onChange={(e) => onPriceChange(e.target.value === '' ? adjustedAvg : Number(e.target.value))}
-          disabled={!service.enabled}
-          className="w-24 h-9 text-right"
-          min={0}
-          step={service.pricingUnit === "sqft" || service.pricingUnit === "linear_ft" ? 0.01 : 1}
-        />
-        <span className="text-sm text-muted-foreground w-16">{unit}</span>
-      </div>
+      {Object.entries(categories).map(([category, categoryServices]) => (
+        <div key={category} className="mb-6">
+          <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+            <Icon name="folder" size="sm" />
+            {category}
+          </h4>
+          <div className="space-y-2">
+            {categoryServices.map((service) => {
+              const adjustedAvg = Math.round(service.avgPrice * regionMultiplier);
+              const adjustedLow = Math.round(service.lowPrice * regionMultiplier);
+              const adjustedHigh = Math.round(service.highPrice * regionMultiplier);
+              const currentPrice = service.customPrice ?? adjustedAvg;
+              const unit = getUnitLabel(service.pricingUnit);
+
+              return (
+                <div
+                  key={service.id}
+                  className={cn(
+                    "flex items-center gap-4 p-4 rounded-xl border transition-all",
+                    service.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
+                  )}
+                >
+                  <Switch
+                    checked={service.enabled}
+                    onCheckedChange={() => onToggle(service.id)}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{service.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Range: {formatPrice(adjustedLow, service.pricingUnit)} - {formatPrice(adjustedHigh, service.pricingUnit)}{unit}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">$</span>
+                    <Input
+                      type="number"
+                      value={currentPrice}
+                      onChange={(e) => onPriceChange(service.id, e.target.value === "" ? adjustedAvg : Number(e.target.value))}
+                      disabled={!service.enabled}
+                      className="w-24 h-9 text-right"
+                      min={0}
+                      step={service.pricingUnit === "sqft" || service.pricingUnit === "linear_ft" ? 0.01 : 1}
+                    />
+                    <span className="text-sm text-muted-foreground w-16">{unit}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function RuleRow({
-  rule,
+function RulesPanel({
+  rules,
   onToggle,
-  onUpdate,
   onDelete,
+  onAdd,
 }: {
-  rule: PriceRule;
-  onToggle: () => void;
-  onUpdate: (updates: Partial<PriceRule>) => void;
-  onDelete: () => void;
+  rules: PriceRule[];
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+  onAdd: () => void;
 }) {
-  const formatValue = () => {
+  const formatValue = (rule: PriceRule) => {
     if (rule.type === "multiplier") return `${rule.value}x`;
     if (rule.type === "percentage") return `${rule.value > 0 ? "+" : ""}${rule.value}%`;
     return `${rule.value > 0 ? "+$" : "-$"}${Math.abs(rule.value)}`;
   };
 
   return (
-    <div className={cn(
-      "flex items-center gap-4 p-4 rounded-xl border transition-all",
-      rule.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
-    )}>
-      <Switch
-        checked={rule.enabled}
-        onCheckedChange={onToggle}
-        className="data-[state=checked]:bg-primary"
-      />
-      
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{rule.name}</p>
-        <p className="text-xs text-muted-foreground">{rule.condition}</p>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="font-semibold">Price Rules</h3>
+          <p className="text-sm text-muted-foreground">Automatic adjustments for rush, discounts, surcharges</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onAdd} className="gap-2 rounded-xl">
+          <Icon name="plus" size="sm" />
+          Add Rule
+        </Button>
       </div>
 
-      <Badge className={cn(
-        "text-xs",
-        rule.value > 0 || rule.type === "multiplier"
-          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-      )}>
-        {formatValue()}
-      </Badge>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onDelete}
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-      >
-        <Icon name="trash" size="sm" />
-      </Button>
+      <div className="space-y-2">
+        {rules.map((rule) => (
+          <div
+            key={rule.id}
+            className={cn(
+              "flex items-center gap-4 p-4 rounded-xl border transition-all",
+              rule.enabled ? "bg-card border-border" : "bg-muted/30 border-transparent opacity-60"
+            )}
+          >
+            <Switch
+              checked={rule.enabled}
+              onCheckedChange={() => onToggle(rule.id)}
+              className="data-[state=checked]:bg-primary"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">{rule.name}</p>
+              <p className="text-xs text-muted-foreground">{rule.condition}</p>
+            </div>
+            <Badge className={cn(
+              "text-xs",
+              rule.value > 0 || rule.type === "multiplier"
+                ? "bg-amber-100 text-amber-700"
+                : "bg-emerald-100 text-emerald-700"
+            )}>
+              {formatValue(rule)}
+            </Badge>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(rule.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+              <Icon name="trash" size="sm" />
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function RetentionPlanCard({
-  plan,
-  isSelected,
+function RetentionPanel({
+  plans,
+  selected,
   onSelect,
 }: {
-  plan: RetentionModel;
-  isSelected: boolean;
-  onSelect: () => void;
+  plans: RetentionModel[];
+  selected: string | null;
+  onSelect: (name: string | null) => void;
 }) {
+  if (plans.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Icon name="info" size="xl" className="mx-auto mb-2 opacity-50" />
+        <p>No retention models available for this industry yet.</p>
+      </div>
+    );
+  }
+
   return (
-    <button
-      onClick={onSelect}
-      className={cn(
-        "text-left p-4 rounded-xl border-2 transition-all",
-        isSelected
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/50"
-      )}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="font-semibold text-sm">{plan.name}</h4>
-        <Badge variant={isSelected ? "default" : "secondary"} className="text-xs">
-          {plan.frequency}
-        </Badge>
+    <div>
+      <div className="mb-4">
+        <h3 className="font-semibold">Retention Programs</h3>
+        <p className="text-sm text-muted-foreground">Recurring plans increase LTV by up to 5x</p>
       </div>
-      <p className="text-lg font-bold text-primary mb-2">
-        ${plan.priceRange.low} - ${plan.priceRange.high}
-      </p>
-      <ul className="space-y-1">
-        {plan.includes.slice(0, 3).map((item, i) => (
-          <li key={i} className="text-xs text-muted-foreground flex items-center gap-1">
-            <Icon name="check" size="xs" className="text-emerald-500" />
-            {item}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">Retention lift:</span>
-        <span className="font-medium text-emerald-600">+{plan.retentionLift}%</span>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {plans.map((plan, i) => {
+          const isSelected = selected === plan.name;
+          return (
+            <button
+              key={i}
+              onClick={() => onSelect(isSelected ? null : plan.name)}
+              className={cn(
+                "text-left p-4 rounded-xl border-2 transition-all",
+                isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              )}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-sm">{plan.name}</h4>
+                <Badge variant={isSelected ? "default" : "secondary"} className="text-xs">{plan.frequency}</Badge>
+              </div>
+              <p className="text-lg font-bold text-primary mb-2">${plan.priceRange.low} - ${plan.priceRange.high}</p>
+              <ul className="space-y-1">
+                {plan.includes.slice(0, 3).map((item, j) => (
+                  <li key={j} className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Icon name="check" size="xs" className="text-emerald-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Retention lift:</span>
+                <span className="font-medium text-emerald-600">+{plan.retentionLift}%</span>
+              </div>
+            </button>
+          );
+        })}
       </div>
-    </button>
+    </div>
   );
 }
 
-function IndustryBenchmarks({ industry }: { industry: IndustryPricing }) {
-  return (
-    <Card className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
-      <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-        <Icon name="chart" size="sm" className="text-primary" />
-        Industry Benchmarks
-      </h3>
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <p className="text-muted-foreground text-xs">Avg Ticket</p>
-          <p className="font-semibold">${industry.avgTicket.avg}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Conversion Rate</p>
-          <p className="font-semibold">{industry.conversionRate}%</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Gross Margin</p>
-          <p className="font-semibold">{industry.grossMargin.low}-{industry.grossMargin.high}%</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Net Margin (Top)</p>
-          <p className="font-semibold text-emerald-600">{industry.netMargin.top}%</p>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function QuoteCalculator({
+function CalculatorPanel({
   services,
   rules,
   regionMultiplier,
+  wizardJobPrice,
 }: {
   services: EnabledService[];
   rules: PriceRule[];
   regionMultiplier: number;
+  wizardJobPrice: number;
 }) {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  
+  const [applyRules, setApplyRules] = useState(true);
   const enabledServices = services.filter(s => s.enabled);
-  
+
   const subtotal = useMemo(() => {
     return selectedServices.reduce((sum, id) => {
       const service = enabledServices.find(s => s.id === id);
@@ -384,8 +746,9 @@ function QuoteCalculator({
   }, [selectedServices, enabledServices, regionMultiplier]);
 
   const enabledRules = rules.filter(r => r.enabled);
-  
+
   const adjustments = useMemo(() => {
+    if (!applyRules) return [];
     return enabledRules.map(rule => {
       let amount = 0;
       if (rule.type === "multiplier") {
@@ -397,20 +760,40 @@ function QuoteCalculator({
       }
       return { name: rule.name, amount };
     });
-  }, [enabledRules, subtotal]);
+  }, [enabledRules, subtotal, applyRules]);
 
   const total = subtotal + adjustments.reduce((sum, a) => sum + a.amount, 0);
 
   return (
-    <Card className="p-5 rounded-xl">
-      <h3 className="font-semibold mb-4 flex items-center gap-2">
-        <Icon name="calculator" size="sm" className="text-primary" />
-        Quote Calculator
-      </h3>
+    <div>
+      <div className="mb-4">
+        <h3 className="font-semibold">Quote Calculator</h3>
+        <p className="text-sm text-muted-foreground">Test your pricing by building sample quotes</p>
+      </div>
 
-      <div className="space-y-2 mb-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2">Select services:</p>
-        <div className="max-h-48 overflow-auto space-y-1">
+      {/* Wizard Price Reference */}
+      {wizardJobPrice > 0 && (
+        <Card className="p-4 mb-4 bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="wand" size="sm" className="text-primary" />
+              <span className="text-sm font-medium">Wizard calculated job price:</span>
+            </div>
+            <span className="text-xl font-bold text-primary">${wizardJobPrice.toFixed(0)}</span>
+          </div>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">Select services:</p>
+          <label className="flex items-center gap-2 text-sm">
+            <Switch checked={applyRules} onCheckedChange={setApplyRules} />
+            Apply price rules
+          </label>
+        </div>
+        
+        <div className="max-h-64 overflow-auto space-y-1 border rounded-xl p-2">
           {enabledServices.map(service => {
             const price = service.customPrice ?? Math.round(service.avgPrice * regionMultiplier);
             const isSelected = selectedServices.includes(service.id);
@@ -421,7 +804,7 @@ function QuoteCalculator({
                   isSelected ? prev.filter(id => id !== service.id) : [...prev, service.id]
                 )}
                 className={cn(
-                  "w-full flex items-center justify-between p-2 rounded-lg text-sm transition-colors",
+                  "w-full flex items-center justify-between p-3 rounded-lg text-sm transition-colors",
                   isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
                 )}
               >
@@ -434,289 +817,130 @@ function QuoteCalculator({
             );
           })}
         </div>
-      </div>
 
-      {selectedServices.length > 0 && (
-        <div className="border-t pt-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
-            <span className="font-medium">${subtotal.toFixed(0)}</span>
-          </div>
-          
-          {adjustments.filter(a => a.amount !== 0).map((adj, i) => (
-            <div key={i} className={cn(
-              "flex justify-between text-sm",
-              adj.amount > 0 ? "text-amber-600" : "text-emerald-600"
-            )}>
-              <span className="pl-2">{adj.name}</span>
-              <span>{adj.amount > 0 ? "+" : ""}{adj.amount.toFixed(0)}</span>
-            </div>
-          ))}
-
-          <div className="flex justify-between text-lg font-bold pt-2 border-t">
-            <span>Total</span>
-            <span className="text-primary">${total.toFixed(0)}</span>
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function AISuggestionsPanel({
-  industry,
-  services,
-  regionMultiplier,
-  onClose,
-  onApplySuggestion,
-}: {
-  industry: IndustryPricing;
-  services: EnabledService[];
-  regionMultiplier: number;
-  onClose: () => void;
-  onApplySuggestion: (suggestion: string, data?: Record<string, unknown>) => void;
-}) {
-  const enabledCount = services.filter(s => s.enabled).length;
-  const totalServices = services.length;
-  const recommendedModel = getRecommendedPricingModel(industry);
-
-  // Calculate average price vs benchmark
-  const avgEnabledPrice = services
-    .filter(s => s.enabled)
-    .reduce((sum, s) => sum + (s.customPrice ?? s.avgPrice * regionMultiplier), 0) / Math.max(enabledCount, 1);
-
-  const suggestions = [
-    {
-      id: "enable-high-margin",
-      icon: "trendUp" as IconName,
-      iconColor: "text-emerald-500",
-      title: "Enable High-Margin Services",
-      description: `You have ${totalServices - enabledCount} services disabled. Consider enabling services with ${industry.grossMargin.high}%+ margins.`,
-      action: "Enable Suggested",
-      show: enabledCount < totalServices * 0.7,
-    },
-    {
-      id: "pricing-model",
-      icon: "target" as IconName,
-      iconColor: "text-blue-500",
-      title: `Switch to ${recommendedModel.name}`,
-      description: `${recommendedModel.prevalence}% of ${industry.name} businesses use this model. It has +${recommendedModel.conversionImpact}% conversion impact.`,
-      action: "Learn More",
-      show: true,
-    },
-    {
-      id: "retention",
-      icon: "refresh" as IconName,
-      iconColor: "text-purple-500",
-      title: "Add Retention Program",
-      description: industry.retentionModels[0] 
-        ? `A ${industry.retentionModels[0].name} could increase LTV by ${industry.retentionModels[0].ltv_multiplier}x.`
-        : "Add a maintenance plan to increase customer lifetime value.",
-      action: "Configure Plan",
-      show: industry.retentionModels.length > 0,
-    },
-    {
-      id: "emergency-pricing",
-      icon: "alertCircle" as IconName,
-      iconColor: "text-amber-500",
-      title: "Enable Emergency Pricing",
-      description: `Industry standard is ${industry.emergencyMultiplier.afterHours}x for after-hours, ${industry.emergencyMultiplier.weekend}x weekends, ${industry.emergencyMultiplier.holiday}x holidays.`,
-      action: "Enable Rules",
-      show: true,
-    },
-  ].filter(s => s.show);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <Card className="w-full max-w-lg p-6 m-4 max-h-[90vh] overflow-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center">
-              <Icon name="sparkles" size="lg" className="text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold">AI Pricing Suggestions</h3>
-              <p className="text-xs text-muted-foreground">Based on {industry.name} benchmarks</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
-            <Icon name="close" size="lg" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {suggestions.map((suggestion) => (
-            <div key={suggestion.id} className="p-4 rounded-xl border bg-card">
-              <div className="flex items-start gap-3">
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center bg-muted", suggestion.iconColor)}>
-                  <Icon name={suggestion.icon} size="sm" />
+        {selectedServices.length > 0 && (
+          <Card className="p-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span className="font-medium">${subtotal.toFixed(0)}</span>
+              </div>
+              
+              {adjustments.filter(a => a.amount !== 0).map((adj, i) => (
+                <div key={i} className={cn(
+                  "flex justify-between text-sm",
+                  adj.amount > 0 ? "text-amber-600" : "text-emerald-600"
+                )}>
+                  <span className="pl-2">{adj.name}</span>
+                  <span>{adj.amount > 0 ? "+" : ""}{adj.amount.toFixed(0)}</span>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm">{suggestion.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{suggestion.description}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 h-8 text-xs"
-                    onClick={() => onApplySuggestion(suggestion.id)}
-                  >
-                    {suggestion.action}
-                  </Button>
-                </div>
+              ))}
+
+              <div className="flex justify-between text-xl font-bold pt-3 border-t">
+                <span>Total</span>
+                <span className="text-primary">${total.toFixed(0)}</span>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Conversion Insights */}
-        <div className="mt-6 pt-6 border-t">
-          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-            <Icon name="lightbulb" size="sm" className="text-amber-500" />
-            Conversion Insights
-          </h4>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-muted-foreground">Flat rate preference</p>
-              <p className="font-bold text-lg">{CONVERSION_INSIGHTS.flatRatePreference}%</p>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-muted-foreground">Middle tier selection</p>
-              <p className="font-bold text-lg">{CONVERSION_INSIGHTS.tieredPricing.middleTierSelection}%</p>
-            </div>
-          </div>
-        </div>
-      </Card>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
 
 // ============================================================================
-// TABS CONFIG
-// ============================================================================
-
-type TabId = "industry" | "services" | "rules" | "retention" | "preview";
-
-interface Tab {
-  id: TabId;
-  label: string;
-  icon: IconName;
-}
-
-const TABS: Tab[] = [
-  { id: "industry", label: "Industry", icon: "briefcase" },
-  { id: "services", label: "Services", icon: "layers" },
-  { id: "rules", label: "Price Rules", icon: "settings" },
-  { id: "retention", label: "Retention", icon: "refresh" },
-  { id: "preview", label: "Calculator", icon: "calculator" },
-];
-
-// ============================================================================
 // MAIN PAGE COMPONENT
 // ============================================================================
 
-export default function PriceBuilderPage() {
+export default function PricingWizardPage() {
   const { toast } = useToast();
-  const { 
-    config: wizardConfig, 
-    isConfigured: isWizardConfigured,
-    hourlyRate: wizardHourlyRate,
-    insights: wizardInsights,
-    isLoaded: isWizardLoaded,
-  } = usePricingWizard();
-  
-  // State
-  const [activeTab, setActiveTab] = useState<TabId>("industry");
-  const [config, setConfig] = useState<PriceConfig>({
-    industry: "cleaning",
-    region: "Baseline",
-    pricingModel: "flat_rate",
-    services: [],
-    rules: DEFAULT_RULES,
-    retentionPlan: null,
-  });
-  const [showAISuggestions, setShowAISuggestions] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>("setup");
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Apply wizard configuration when available
-  useEffect(() => {
-    if (isWizardLoaded && isWizardConfigured && wizardConfig.industry) {
-      setConfig(prev => ({
-        ...prev,
-        industry: wizardConfig.industry,
-      }));
-    }
-  }, [isWizardLoaded, isWizardConfigured, wizardConfig.industry]);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Derived state
+  // Load initial state
+  const [wizardConfig, setWizardConfig] = useState<WizardConfig>(DEFAULT_WIZARD_CONFIG);
+  const [region, setRegion] = useState("Baseline");
+  const [rules, setRules] = useState<PriceRule[]>(DEFAULT_RULES);
+  const [retentionPlan, setRetentionPlan] = useState<string | null>(null);
+  const [services, setServices] = useState<EnabledService[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const initial = getInitialConfig();
+    setWizardConfig(initial.wizard);
+    setRegion(initial.region);
+    setRules(initial.rules);
+    setRetentionPlan(initial.retentionPlan);
+    setIsLoaded(true);
+  }, []);
+
+  // Get industry data
   const selectedIndustry = useMemo(() => 
-    getIndustryBySlug(config.industry),
-    [config.industry]
+    getIndustryBySlug(wizardConfig.industry),
+    [wizardConfig.industry]
   );
 
+  // Region multiplier
   const regionMultiplier = useMemo(() => {
-    const region = REGIONAL_MULTIPLIERS.find(r => r.region === config.region);
-    return region ? (region.multiplier.low + region.multiplier.high) / 2 : 1;
-  }, [config.region]);
+    const r = REGIONAL_MULTIPLIERS.find(r => r.region === region);
+    return r ? (r.multiplier.low + r.multiplier.high) / 2 : 1;
+  }, [region]);
+
+  // Calculate wizard values
+  const jobPrice = calculateJobPrice(wizardConfig);
 
   // Initialize services when industry changes
   useEffect(() => {
     if (selectedIndustry) {
-      const services: EnabledService[] = selectedIndustry.services.map((service, index) => ({
+      const newServices: EnabledService[] = selectedIndustry.services.map((service, index) => ({
         ...service,
         id: `${selectedIndustry.slug}-${index}`,
-        enabled: index < 8, // Enable first 8 by default
+        enabled: index < 8,
       }));
-      setConfig(prev => ({ ...prev, services }));
+      setServices(newServices);
     }
   }, [selectedIndustry]);
 
-  // Track changes
+  // Save to localStorage when config changes
   useEffect(() => {
-    setHasChanges(true);
-  }, [config.services, config.rules, config.retentionPlan]);
+    if (isLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        wizard: wizardConfig,
+        region,
+        rules,
+        retentionPlan,
+      }));
+      setHasChanges(true);
+    }
+  }, [wizardConfig, region, rules, retentionPlan, isLoaded]);
 
   // Handlers
-  const handleIndustryChange = useCallback((slug: string) => {
-    setConfig(prev => ({ ...prev, industry: slug }));
-    setActiveTab("services");
+  const handleWizardConfigChange = useCallback((updates: Partial<WizardConfig>) => {
+    setWizardConfig(prev => ({ ...prev, ...updates, lastUpdatedAt: new Date().toISOString() }));
   }, []);
 
-  const handleServiceToggle = useCallback((serviceId: string) => {
-    setConfig(prev => ({
-      ...prev,
-      services: prev.services.map(s =>
-        s.id === serviceId ? { ...s, enabled: !s.enabled } : s
-      ),
-    }));
+  const handleServiceToggle = useCallback((id: string) => {
+    setServices(prev => prev.map(s => s.id === id ? { ...s, enabled: !s.enabled } : s));
+    setHasChanges(true);
   }, []);
 
-  const handleServicePriceChange = useCallback((serviceId: string, price: number) => {
-    setConfig(prev => ({
-      ...prev,
-      services: prev.services.map(s =>
-        s.id === serviceId ? { ...s, customPrice: price } : s
-      ),
-    }));
+  const handleServicePriceChange = useCallback((id: string, price: number) => {
+    setServices(prev => prev.map(s => s.id === id ? { ...s, customPrice: price } : s));
+    setHasChanges(true);
   }, []);
 
-  const handleRuleToggle = useCallback((ruleId: string) => {
-    setConfig(prev => ({
-      ...prev,
-      rules: prev.rules.map(r =>
-        r.id === ruleId ? { ...r, enabled: !r.enabled } : r
-      ),
-    }));
+  const handleRuleToggle = useCallback((id: string) => {
+    setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
   }, []);
 
-  const handleRuleDelete = useCallback((ruleId: string) => {
-    setConfig(prev => ({
-      ...prev,
-      rules: prev.rules.filter(r => r.id !== ruleId),
-    }));
+  const handleRuleDelete = useCallback((id: string) => {
+    setRules(prev => prev.filter(r => r.id !== id));
   }, []);
 
-  const handleAddRule = useCallback(() => {
+  const handleRuleAdd = useCallback(() => {
     const newRule: PriceRule = {
       id: `rule-${Date.now()}`,
       name: "New Rule",
@@ -725,64 +949,43 @@ export default function PriceBuilderPage() {
       condition: "Custom condition",
       enabled: true,
     };
-    setConfig(prev => ({
-      ...prev,
-      rules: [...prev.rules, newRule],
-    }));
+    setRules(prev => [...prev, newRule]);
   }, []);
+
+  const handleReset = useCallback(() => {
+    setWizardConfig(DEFAULT_WIZARD_CONFIG);
+    setRegion("Baseline");
+    setRules(DEFAULT_RULES);
+    setRetentionPlan(null);
+    setServices([]);
+    localStorage.removeItem(STORAGE_KEY);
+    setShowResetDialog(false);
+    setActiveTab("setup");
+    toast({ title: "Wizard reset", description: "All settings have been cleared." });
+  }, [toast]);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
     try {
-      // TODO: Save to Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mark as completed
+      setWizardConfig(prev => ({ ...prev, completedAt: new Date().toISOString() }));
+      await new Promise(resolve => setTimeout(resolve, 500));
       setHasChanges(false);
-      toast({
-        title: "Saved successfully",
-        description: "Your pricing configuration has been saved.",
-      });
+      toast({ title: "Saved successfully", description: "Your pricing configuration has been saved." });
     } catch {
-      toast({
-        title: "Error saving",
-        description: "Failed to save your configuration. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error saving", variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
   }, [toast]);
 
-  const handleApplySuggestion = useCallback((suggestionId: string) => {
-    switch (suggestionId) {
-      case "enable-high-margin":
-        setConfig(prev => ({
-          ...prev,
-          services: prev.services.map(s => ({ ...s, enabled: true })),
-        }));
-        toast({ title: "All services enabled" });
-        break;
-      case "emergency-pricing":
-        setConfig(prev => ({
-          ...prev,
-          rules: prev.rules.map(r => 
-            ["3", "4", "5"].includes(r.id) ? { ...r, enabled: true } : r
-          ),
-        }));
-        toast({ title: "Emergency rules enabled" });
-        break;
-      default:
-        toast({ title: "Suggestion applied" });
-    }
-    setShowAISuggestions(false);
-  }, [toast]);
-
   // Stats
-  const enabledServicesCount = config.services.filter(s => s.enabled).length;
-  const enabledRulesCount = config.rules.filter(r => r.enabled).length;
+  const enabledServicesCount = services.filter(s => s.enabled).length;
+  const enabledRulesCount = rules.filter(r => r.enabled).length;
 
-  if (!selectedIndustry) {
+  if (!isLoaded) {
     return (
-      <Layout title="Price Builder">
+      <Layout title="Pricing Wizard">
         <div className="flex items-center justify-center py-12">
           <Icon name="spinner" size="xl" className="animate-spin text-muted-foreground" />
         </div>
@@ -791,130 +994,32 @@ export default function PriceBuilderPage() {
   }
 
   return (
-    <Layout title="Price Builder">
+    <Layout title="Pricing Wizard">
       <div className="space-y-6">
-        {/* Pricing Wizard CTA */}
-        {isWizardConfigured ? (
-          <Card className="p-4 rounded-xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-50/50">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <Icon name="checkCircle" size="lg" className="text-emerald-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Pricing Wizard configured</p>
-                  <p className="text-sm text-muted-foreground">
-                    Target: ${wizardHourlyRate.toFixed(0)}/hr • {wizardConfig.targetMargin}% margin • {wizardConfig.pricingStrategy} strategy
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link href="/pricing/wizard">
-                  <Button 
-                    variant="outline" 
-                    className="gap-2 border-emerald-300 hover:bg-emerald-50 whitespace-nowrap"
-                  >
-                    <Icon name="edit" size="sm" />
-                    Edit Settings
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <Card className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-[#9D96FF]/5">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Icon name="wand" size="lg" className="text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Configure your pricing strategy</p>
-                  <p className="text-sm text-muted-foreground">Use the Pricing Wizard to set up costs, margins, and goals</p>
-                </div>
-              </div>
-              <Link href="/pricing/wizard">
-                <Button 
-                  variant="outline" 
-                  className="gap-2 border-primary/30 hover:bg-primary/10 whitespace-nowrap"
-                >
-                  <Icon name="wand" size="sm" />
-                  Start Wizard
-                  <Icon name="arrowRight" size="sm" />
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        )}
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <Icon name="dollar" size="xl" className="text-white" />
+              <Icon name="wand" size="xl" className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Price Builder
-              </h1>
+              <h1 className="text-2xl font-bold">Pricing Wizard</h1>
               <p className="text-muted-foreground">
-                Configure pricing for {selectedIndustry.name}
+                {selectedIndustry ? `Configure pricing for ${selectedIndustry.name}` : "Set up your pricing strategy"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowAISuggestions(true)}
-              className="gap-2 rounded-xl"
-            >
-              <Icon name="sparkles" size="sm" />
-              AI Suggestions
+            <Button variant="outline" onClick={() => setShowResetDialog(true)} className="gap-2 rounded-xl text-muted-foreground">
+              <Icon name="refresh" size="sm" />
+              Reset
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || isSaving}
-              className="gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
-            >
-              {isSaving ? (
-                <Icon name="spinner" size="sm" className="animate-spin" />
-              ) : (
-                <Icon name="save" size="sm" />
-              )}
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving} className="gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]">
+              {isSaving ? <Icon name="spinner" size="sm" className="animate-spin" /> : <Icon name="save" size="sm" />}
               Save Changes
             </Button>
           </div>
         </div>
-
-        {/* Region Selector */}
-        <Card className="p-4 rounded-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center gap-3">
-              <Icon name="mapPin" size="lg" className="text-muted-foreground" />
-              <div>
-                <p className="font-medium text-sm">Market Region</p>
-                <p className="text-xs text-muted-foreground">Adjusts all prices automatically</p>
-              </div>
-            </div>
-            <div className="flex-1 max-w-xs">
-              <Select value={config.region} onValueChange={(v) => setConfig(prev => ({ ...prev, region: v }))}>
-                <SelectTrigger className="h-10 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGIONAL_MULTIPLIERS.map((region) => (
-                    <SelectItem key={region.region} value={region.region}>
-                      {region.region} ({((region.multiplier.low + region.multiplier.high) / 2 * 100).toFixed(0)}%)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              {regionMultiplier > 1 ? "+" : ""}{((regionMultiplier - 1) * 100).toFixed(0)}% adjustment
-            </Badge>
-          </div>
-        </Card>
 
         {/* Tabs */}
         <div className="flex gap-1 p-1 bg-muted/50 rounded-xl w-fit overflow-x-auto">
@@ -922,25 +1027,23 @@ export default function PriceBuilderPage() {
             let count: number | undefined;
             if (tab.id === "services") count = enabledServicesCount;
             if (tab.id === "rules") count = enabledRulesCount;
+            const isDisabled = tab.id !== "setup" && !wizardConfig.industry;
             
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => !isDisabled && setActiveTab(tab.id)}
+                disabled={isDisabled}
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap",
-                  activeTab === tab.id
-                    ? "bg-background text-primary shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                  activeTab === tab.id ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  isDisabled && "opacity-50 cursor-not-allowed"
                 )}
               >
                 <Icon name={tab.icon} size="sm" />
                 {tab.label}
                 {count !== undefined && (
-                  <Badge variant="secondary" className={cn(
-                    "text-xs",
-                    activeTab === tab.id && "bg-primary/10"
-                  )}>
+                  <Badge variant="secondary" className={cn("text-xs", activeTab === tab.id && "bg-primary/10")}>
                     {count}
                   </Badge>
                 )}
@@ -953,201 +1056,119 @@ export default function PriceBuilderPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <Card className="p-6 rounded-2xl">
-              {/* Industry Tab */}
-              {activeTab === "industry" && (
-                <div>
-                  <div className="mb-6">
-                    <h2 className="font-semibold text-lg mb-1">Select Your Industry</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Choose your industry to load pre-configured services and benchmarks
-                    </p>
-                  </div>
-                  <IndustrySelector
-                    selected={config.industry}
-                    onSelect={handleIndustryChange}
-                  />
-                </div>
+              {activeTab === "setup" && (
+                <SetupPanel
+                  config={wizardConfig}
+                  region={region}
+                  onConfigChange={handleWizardConfigChange}
+                  onRegionChange={setRegion}
+                  onReset={() => setShowResetDialog(true)}
+                />
               )}
-
-              {/* Services Tab */}
-              {activeTab === "services" && (
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="font-semibold text-lg mb-1">Services & Pricing</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Toggle services and customize prices for your market
-                      </p>
-                    </div>
-                    <Badge variant="outline">
-                      {enabledServicesCount} of {config.services.length} enabled
-                    </Badge>
-                  </div>
-
-                  {/* Group by category */}
-                  {Object.entries(
-                    config.services.reduce((acc, service) => {
-                      if (!acc[service.category]) acc[service.category] = [];
-                      acc[service.category].push(service);
-                      return acc;
-                    }, {} as Record<string, EnabledService[]>)
-                  ).map(([category, services]) => (
-                    <div key={category} className="mb-6">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                        <Icon name="folder" size="sm" />
-                        {category}
-                      </h3>
-                      <div className="space-y-2">
-                        {services.map((service) => (
-                          <ServiceRow
-                            key={service.id}
-                            service={service}
-                            regionMultiplier={regionMultiplier}
-                            onToggle={() => handleServiceToggle(service.id)}
-                            onPriceChange={(price) => handleServicePriceChange(service.id, price)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {activeTab === "services" && selectedIndustry && (
+                <ServicesPanel
+                  services={services}
+                  regionMultiplier={regionMultiplier}
+                  onToggle={handleServiceToggle}
+                  onPriceChange={handleServicePriceChange}
+                />
               )}
-
-              {/* Rules Tab */}
               {activeTab === "rules" && (
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="font-semibold text-lg mb-1">Price Rules</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Automatic adjustments for rush, discounts, and surcharges
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleAddRule} className="gap-2 rounded-xl">
-                      <Icon name="plus" size="sm" />
-                      Add Rule
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {config.rules.map((rule) => (
-                      <RuleRow
-                        key={rule.id}
-                        rule={rule}
-                        onToggle={() => handleRuleToggle(rule.id)}
-                        onUpdate={(updates) => {
-                          setConfig(prev => ({
-                            ...prev,
-                            rules: prev.rules.map(r =>
-                              r.id === rule.id ? { ...r, ...updates } : r
-                            ),
-                          }));
-                        }}
-                        onDelete={() => handleRuleDelete(rule.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <RulesPanel
+                  rules={rules}
+                  onToggle={handleRuleToggle}
+                  onDelete={handleRuleDelete}
+                  onAdd={handleRuleAdd}
+                />
               )}
-
-              {/* Retention Tab */}
-              {activeTab === "retention" && (
-                <div>
-                  <div className="mb-6">
-                    <h2 className="font-semibold text-lg mb-1">Retention Programs</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Recurring service plans increase customer lifetime value by up to 5x
-                    </p>
-                  </div>
-
-                  {selectedIndustry.retentionModels.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {selectedIndustry.retentionModels.map((plan, i) => (
-                        <RetentionPlanCard
-                          key={i}
-                          plan={plan}
-                          isSelected={config.retentionPlan === plan.name}
-                          onSelect={() => setConfig(prev => ({
-                            ...prev,
-                            retentionPlan: prev.retentionPlan === plan.name ? null : plan.name,
-                          }))}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Icon name="info" size="xl" className="mx-auto mb-2 opacity-50" />
-                      <p>No retention models available for this industry yet.</p>
-                    </div>
-                  )}
-                </div>
+              {activeTab === "retention" && selectedIndustry && (
+                <RetentionPanel
+                  plans={selectedIndustry.retentionModels}
+                  selected={retentionPlan}
+                  onSelect={setRetentionPlan}
+                />
               )}
-
-              {/* Preview/Calculator Tab */}
-              {activeTab === "preview" && (
-                <div>
-                  <div className="mb-6">
-                    <h2 className="font-semibold text-lg mb-1">Quote Calculator</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Test your pricing by building sample quotes
-                    </p>
-                  </div>
-                  <QuoteCalculator
-                    services={config.services}
-                    rules={config.rules}
-                    regionMultiplier={regionMultiplier}
-                  />
-                </div>
+              {activeTab === "calculator" && (
+                <CalculatorPanel
+                  services={services}
+                  rules={rules}
+                  regionMultiplier={regionMultiplier}
+                  wizardJobPrice={jobPrice}
+                />
               )}
             </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
-            <IndustryBenchmarks industry={selectedIndustry} />
-
-            {/* Pricing Model Info */}
-            <Card className="p-4 rounded-xl">
-              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                <Icon name="lightbulb" size="sm" className="text-amber-500" />
-                Recommended Model
-              </h3>
-              {selectedIndustry.pricingModels.length > 0 && (
-                <div className="space-y-2">
-                  {selectedIndustry.pricingModels.slice(0, 2).map((model, i) => (
-                    <div key={i} className={cn(
-                      "p-3 rounded-lg text-sm",
-                      i === 0 ? "bg-primary/5 border border-primary/20" : "bg-muted/50"
-                    )}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">{model.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {model.prevalence}%
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{model.description}</p>
-                      {model.conversionImpact > 0 && (
-                        <p className="text-xs text-emerald-600 mt-1">
-                          +{model.conversionImpact}% conversion
-                        </p>
-                      )}
-                    </div>
-                  ))}
+            {/* Industry Benchmarks */}
+            {selectedIndustry && (
+              <Card className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Icon name="chart" size="sm" className="text-primary" />
+                  Industry Benchmarks
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Avg Ticket</p>
+                    <p className="font-semibold">${selectedIndustry.avgTicket.avg}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Conversion Rate</p>
+                    <p className="font-semibold">{selectedIndustry.conversionRate}%</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Gross Margin</p>
+                    <p className="font-semibold">{selectedIndustry.grossMargin.low}-{selectedIndustry.grossMargin.high}%</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Net Margin (Top)</p>
+                    <p className="font-semibold text-emerald-600">{selectedIndustry.netMargin.top}%</p>
+                  </div>
                 </div>
-              )}
-            </Card>
+              </Card>
+            )}
 
-            {/* Quick Stats */}
+            {/* Recommended Model */}
+            {selectedIndustry && selectedIndustry.pricingModels.length > 0 && (
+              <Card className="p-4 rounded-xl">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Icon name="lightbulb" size="sm" className="text-amber-500" />
+                  Recommended Model
+                </h3>
+                {selectedIndustry.pricingModels.slice(0, 2).map((model, i) => (
+                  <div key={i} className={cn(
+                    "p-3 rounded-lg text-sm mb-2",
+                    i === 0 ? "bg-primary/5 border border-primary/20" : "bg-muted/50"
+                  )}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium">{model.name}</span>
+                      <Badge variant="secondary" className="text-xs">{model.prevalence}%</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{model.description}</p>
+                    {model.conversionImpact > 0 && (
+                      <p className="text-xs text-emerald-600 mt-1">+{model.conversionImpact}% conversion</p>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            )}
+
+            {/* Your Configuration */}
             <Card className="p-4 rounded-xl">
               <h3 className="font-semibold text-sm mb-3">Your Configuration</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Industry</span>
-                  <span className="font-medium">{selectedIndustry.name}</span>
+                  <span className="font-medium">{selectedIndustry?.name || "Not set"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Region</span>
-                  <span className="font-medium">{config.region}</span>
+                  <span className="font-medium">{region}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Target Margin</span>
+                  <span className="font-medium">{wizardConfig.targetMargin}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Services</span>
@@ -1157,28 +1178,58 @@ export default function PriceBuilderPage() {
                   <span className="text-muted-foreground">Price Rules</span>
                   <span className="font-medium">{enabledRulesCount} active</span>
                 </div>
-                {config.retentionPlan && (
+                {retentionPlan && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Retention</span>
-                    <span className="font-medium text-emerald-600">{config.retentionPlan}</span>
+                    <span className="font-medium text-emerald-600">{retentionPlan}</span>
                   </div>
                 )}
               </div>
+            </Card>
+
+            {/* Tips */}
+            <Card className="p-4 rounded-xl bg-muted/50">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Icon name="info" size="sm" className="text-primary" />
+                Tips
+              </h3>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500 mt-0.5 shrink-0" />
+                  <span>Set your labor cost to include benefits and taxes</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500 mt-0.5 shrink-0" />
+                  <span>Industry standard margins are 35-50%</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="checkCircle" size="xs" className="text-emerald-500 mt-0.5 shrink-0" />
+                  <span>Enable retention plans to boost customer LTV</span>
+                </li>
+              </ul>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* AI Suggestions Modal */}
-      {showAISuggestions && (
-        <AISuggestionsPanel
-          industry={selectedIndustry}
-          services={config.services}
-          regionMultiplier={regionMultiplier}
-          onClose={() => setShowAISuggestions(false)}
-          onApplySuggestion={handleApplySuggestion}
-        />
-      )}
+      {/* Reset Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Pricing Wizard?</DialogTitle>
+            <DialogDescription>
+              This will clear all your settings including services, rules, and retention plans. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleReset} className="gap-2">
+              <Icon name="trash" size="sm" />
+              Reset Everything
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

@@ -465,7 +465,7 @@ export default function NewQuotePage() {
                         Wizard price: <strong>${wizardJobPrice.toFixed(0)}</strong> ({wizardConfig.targetMargin}% margin)
                       </span>
                     </div>
-                    <Link href="/pricing/wizard" className="text-xs text-emerald-600 hover:underline">
+                    <Link href="/pricing" className="text-xs text-emerald-600 hover:underline">
                       Edit wizard
                     </Link>
                   </div>
@@ -601,7 +601,7 @@ export default function NewQuotePage() {
                       <p>Job price: ${wizardJobPrice.toFixed(0)}</p>
                       <p>Margin: {wizardConfig.targetMargin}%</p>
                     </div>
-                    <Link href="/pricing/wizard" className="text-xs text-emerald-600 hover:underline mt-2 block">
+                    <Link href="/pricing" className="text-xs text-emerald-600 hover:underline mt-2 block">
                       Edit settings →
                     </Link>
                   </Card>
@@ -614,7 +614,7 @@ export default function NewQuotePage() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Configure your costs and margins for smarter pricing suggestions
                     </p>
-                    <Link href="/pricing/wizard">
+                    <Link href="/pricing">
                       <Button variant="outline" size="sm" className="w-full gap-2 rounded-xl border-primary/30 hover:bg-primary/10">
                         <Icon name="arrowRight" size="xs" />
                         Configure Now

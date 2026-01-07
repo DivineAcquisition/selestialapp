@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 // ============================================================================
 // TYPES
@@ -30,15 +30,6 @@ export interface WizardConfig {
   // Meta
   completedAt?: string;
   lastUpdatedAt?: string;
-}
-
-export interface ServiceRecommendation {
-  serviceName: string;
-  recommendedPrice: number;
-  priceRange: { min: number; max: number };
-  marketPosition: "below" | "competitive" | "premium";
-  reasoning: string;
-  margin: number;
 }
 
 export interface PricingInsight {
@@ -96,6 +87,7 @@ export const PRICING_STRATEGIES = [
 // ============================================================================
 
 export function calculateHourlyRate(config: WizardConfig): number {
+  if (config.targetMargin >= 100) return 0;
   const baseRate = config.hourlyLaborCost / (1 - config.targetMargin / 100);
   const experienceMultiplier = EXPERIENCE_LEVELS.find(e => e.value === config.yearsInBusiness)?.multiplier || 1;
   return baseRate * experienceMultiplier;
@@ -113,7 +105,7 @@ export function calculateInsights(config: WizardConfig): PricingInsight[] {
   const dailyRevenue = jobPrice * config.jobsPerDay * teamCapacity;
   const monthlyRevenue = dailyRevenue * 22;
   const profitPerJob = jobPrice * (config.targetMargin / 100);
-  const breakEvenJobs = Math.ceil(config.monthlyOverhead / profitPerJob);
+  const breakEvenJobs = profitPerJob > 0 ? Math.ceil(config.monthlyOverhead / profitPerJob) : 0;
 
   return [
     {
@@ -173,26 +165,12 @@ function getInitialConfig(): WizardConfig {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      return parsed.config || DEFAULT_CONFIG;
+      return parsed.wizard || DEFAULT_CONFIG;
     } catch {
       console.warn("Failed to parse pricing wizard config");
     }
   }
   return DEFAULT_CONFIG;
-}
-
-function getInitialStep(): number {
-  if (typeof window === "undefined") return 1;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (parsed.config?.completedAt) return 5;
-    } catch {
-      // ignore
-    }
-  }
-  return 1;
 }
 
 // ============================================================================
@@ -202,14 +180,22 @@ function getInitialStep(): number {
 export function usePricingWizard() {
   const [config, setConfig] = useState<WizardConfig>(getInitialConfig);
   const [isLoaded] = useState(typeof window !== "undefined");
-  const [currentStep, setCurrentStep] = useState<number>(getInitialStep);
 
   // Save to localStorage when config changes
   useEffect(() => {
     if (isLoaded && typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ config, currentStep }));
+      const stored = localStorage.getItem(STORAGE_KEY);
+      let existing = { wizard: config, region: "Baseline", rules: [], retentionPlan: null };
+      if (stored) {
+        try {
+          existing = JSON.parse(stored);
+        } catch {
+          // ignore
+        }
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, wizard: config }));
     }
-  }, [config, currentStep, isLoaded]);
+  }, [config, isLoaded]);
 
   const updateConfig = useCallback((updates: Partial<WizardConfig>) => {
     setConfig(prev => ({
@@ -219,56 +205,23 @@ export function usePricingWizard() {
     }));
   }, []);
 
-  const completeWizard = useCallback(() => {
-    setConfig(prev => ({
-      ...prev,
-      completedAt: new Date().toISOString(),
-      lastUpdatedAt: new Date().toISOString(),
-    }));
-    setCurrentStep(5);
-  }, []);
-
   const resetWizard = useCallback(() => {
     setConfig(DEFAULT_CONFIG);
-    setCurrentStep(1);
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, []);
 
-  const goToStep = useCallback((step: number) => {
-    if (step >= 1 && step <= 5) {
-      setCurrentStep(step);
-    }
-  }, []);
-
-  const nextStep = useCallback(() => {
-    if (currentStep < 5) {
-      setCurrentStep(prev => prev + 1);
-    }
-  }, [currentStep]);
-
-  const prevStep = useCallback(() => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    }
-  }, [currentStep]);
-
   const isConfigured = Boolean(config.completedAt && config.industry);
 
-  const hourlyRate = calculateHourlyRate(config);
-  const jobPrice = calculateJobPrice(config);
-  const insights = calculateInsights(config);
+  const hourlyRate = useMemo(() => calculateHourlyRate(config), [config]);
+  const jobPrice = useMemo(() => calculateJobPrice(config), [config]);
+  const insights = useMemo(() => calculateInsights(config), [config]);
 
   return {
     config,
     updateConfig,
     resetWizard,
-    completeWizard,
-    currentStep,
-    setCurrentStep: goToStep,
-    nextStep,
-    prevStep,
     isLoaded,
     isConfigured,
     hourlyRate,
