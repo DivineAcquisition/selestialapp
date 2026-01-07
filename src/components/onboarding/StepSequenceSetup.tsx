@@ -4,7 +4,7 @@ import OnboardingLayout from './OnboardingLayout';
 import { Card } from '@/components/ui/card';
 import { DEFAULT_SEQUENCE_STEPS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { Check, Clock, MessageSquare, Sparkles } from 'lucide-react';
+import { Check, Clock, MessageSquare, Star } from 'lucide-react';
 
 export default function StepSequenceSetup() {
   const { data, updateData, setCanGoNext } = useOnboarding();
@@ -58,7 +58,7 @@ export default function StepSequenceSetup() {
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-foreground">Standard Follow-Up</h3>
                   <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
+                    <Star className="h-3 w-3" />
                     Recommended
                   </span>
                 </div>

@@ -6,7 +6,28 @@ import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useF
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
-const Form = FormProvider;
+// Simple Form component for use with Field components
+interface SimpleFormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+  children: React.ReactNode;
+}
+
+const Form = React.forwardRef<HTMLFormElement, SimpleFormProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <form
+        ref={ref}
+        className={cn("space-y-6", className)}
+        {...props}
+      >
+        {children}
+      </form>
+    );
+  }
+);
+Form.displayName = "Form";
+
+// React Hook Form Provider (renamed to avoid conflict)
+const FormProvider_ = FormProvider;
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
@@ -126,4 +147,14 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
 );
 FormMessage.displayName = "FormMessage";
 
-export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField };
+export { 
+  useFormField, 
+  Form, 
+  FormProvider_ as FormProvider,
+  FormItem, 
+  FormLabel, 
+  FormControl, 
+  FormDescription, 
+  FormMessage, 
+  FormField 
+};

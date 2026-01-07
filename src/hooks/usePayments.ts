@@ -115,12 +115,38 @@ export function usePayments() {
     [payments]
   );
 
+  const [creating, setCreating] = useState(false);
+
+  const createPaymentLink = async (quoteId: string) => {
+    setCreating(true);
+    try {
+      const res = await fetch('/api/payments/create-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quoteId }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error);
+      
+      return data.paymentLink;
+    } catch (err) {
+      console.error('Create payment link error:', err);
+      throw err;
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return {
     payments,
     loading,
     error,
+    creating,
     refetch: fetchPayments,
     getPaymentStats,
     getPaymentByQuoteId,
+    createPaymentLink,
   };
 }

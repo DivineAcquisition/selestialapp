@@ -12,10 +12,28 @@ import PhoneSetup from '@/components/settings/PhoneSetup';
 import ReviewSettings from '@/components/settings/ReviewSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import AISettings from '@/components/settings/AISettings';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBusiness, useAuth } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Bell, Clock, Phone, Send, Loader2, Star, CreditCard, Sparkles } from 'lucide-react';
+import { 
+  Bell, 
+  Clock, 
+  Phone, 
+  Loader2, 
+  CreditCard, 
+  Sparkles,
+  Building2,
+  Settings2,
+  Shield,
+  Globe,
+  Zap,
+  Mail,
+  MessageSquare,
+  BarChart3,
+} from 'lucide-react';
+import { NavigationCard } from '@/components/ui/interactive-card';
 import type { Business } from '@/types';
 
 function SettingsContent() {
@@ -24,8 +42,8 @@ function SettingsContent() {
   const { signOut } = useAuth();
   const { business, loading, updateBusiness } = useBusiness();
   
-  // Handle tab from URL param (for Stripe Connect redirects)
-  const defaultTab = searchParams.get('tab') || 'profile';
+  const defaultTab = searchParams.get('tab') || 'general';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   
   const [notificationSettings, setNotificationSettings] = useState({
     emailOnWon: true,
@@ -41,7 +59,6 @@ function SettingsContent() {
     days: [1, 2, 3, 4, 5],
   });
   
-  // Sync settings from business
   useEffect(() => {
     if (business) {
       setNotificationSettings({
@@ -59,14 +76,13 @@ function SettingsContent() {
     }
   }, [business]);
   
-  // Transform DB business to the Business type expected by form
   const transformedBusiness: Business | null = business ? {
     id: business.id,
     name: business.name,
     owner_name: business.owner_name,
     phone: business.phone,
     email: business.email,
-    industry: business.industry as any,
+    industry: business.industry as Business['industry'],
     timezone: business.timezone,
     default_sequence_id: business.default_sequence_id || undefined,
     auto_start_sequence: business.auto_start_sequence,
@@ -81,15 +97,11 @@ function SettingsContent() {
       industry: updatedBusiness.industry,
     });
     
-    if (error) {
-      console.error('Failed to update business:', error);
-      throw error;
-    }
+    if (error) throw error;
   };
   
   const handleNotificationChange = async (settings: typeof notificationSettings) => {
     setNotificationSettings(settings);
-    
     await updateBusiness({
       notify_email_won: settings.emailOnWon,
       notify_email_lost: settings.emailOnLost,
@@ -100,7 +112,6 @@ function SettingsContent() {
   
   const handleBusinessHoursChange = async (settings: typeof businessHours) => {
     setBusinessHours(settings);
-    
     await updateBusiness({
       business_hours_enabled: settings.enabled,
       business_hours_start: settings.start,
@@ -109,11 +120,9 @@ function SettingsContent() {
     });
   };
   
-  
   const handleDeleteAccount = async () => {
     if (!business) return;
     
-    // Delete business (cascades to all related data)
     const { error } = await supabase
       .from('businesses')
       .delete()
@@ -124,7 +133,6 @@ function SettingsContent() {
       return;
     }
     
-    // Sign out
     await signOut();
     router.push('/login');
   };
@@ -132,86 +140,182 @@ function SettingsContent() {
   if (loading || !transformedBusiness) {
     return (
       <Layout title="Settings">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     );
   }
   
-  
   return (
     <Layout title="Settings">
-      <div className="max-w-3xl">
-        <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="h-4 w-4 hidden sm:block" />
-              Profile
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
+            <Settings2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <p className="text-gray-500">
+              Manage your business preferences and configurations
+            </p>
+          </div>
+        </div>
+
+        {/* Tabs Layout */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-gray-100/80 p-1 h-auto flex-wrap rounded-xl">
+            <TabsTrigger value="general" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Building2 className="h-4 w-4" />
+              General
             </TabsTrigger>
-            <TabsTrigger value="phone" className="gap-2">
-              <Phone className="h-4 w-4 hidden sm:block" />
-              Phone
+            <TabsTrigger value="ai" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Sparkles className="h-4 w-4" />
+              AI Assistant
+              <Badge className="text-[10px] ml-1 bg-primary/10 text-primary border-0">
+                New
+              </Badge>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
-              <CreditCard className="h-4 w-4 hidden sm:block" />
+            <TabsTrigger value="communications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <MessageSquare className="h-4 w-4" />
+              Communications
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <CreditCard className="h-4 w-4" />
               Payments
             </TabsTrigger>
-            <TabsTrigger value="ai" className="gap-2">
-              <Sparkles className="h-4 w-4 hidden sm:block" />
-              AI
-            </TabsTrigger>
-            <TabsTrigger value="quote-alerts" className="gap-2">
-              <Send className="h-4 w-4 hidden sm:block" />
-              Quotes
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="gap-2">
-              <Star className="h-4 w-4 hidden sm:block" />
-              Reviews
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2">
-              <Bell className="h-4 w-4 hidden sm:block" />
-              Alerts
-            </TabsTrigger>
-            <TabsTrigger value="hours" className="gap-2">
-              <Clock className="h-4 w-4 hidden sm:block" />
-              Hours
+            <TabsTrigger value="notifications" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Bell className="h-4 w-4" />
+              Notifications
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="profile" className="space-y-6">
-            <BusinessProfileForm business={transformedBusiness} onSave={handleSaveBusiness} />
-            <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
+
+          {/* General Tab */}
+          <TabsContent value="general" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Business Profile */}
+              <div className="lg:col-span-2">
+                <BusinessProfileForm business={transformedBusiness} onSave={handleSaveBusiness} />
+              </div>
+              
+              {/* Business Hours */}
+              <Card className="card-elevated p-6 rounded-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Business Hours</h3>
+                    <p className="text-sm text-gray-500">Set when sequences can send messages</p>
+                  </div>
+                </div>
+                <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />
+              </Card>
+
+              {/* Account */}
+              <Card className="card-elevated p-6 rounded-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-red-100 rounded-xl">
+                    <Shield className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Account</h3>
+                    <p className="text-sm text-gray-500">Manage your account settings</p>
+                  </div>
+                </div>
+                <DangerZone businessName={transformedBusiness.name} onDeleteAccount={handleDeleteAccount} />
+              </Card>
+            </div>
           </TabsContent>
-          
-          <TabsContent value="phone">
-            <PhoneSetup />
-          </TabsContent>
-          
-          <TabsContent value="payments">
-            <PaymentSettings />
-          </TabsContent>
-          
-          <TabsContent value="ai">
+
+          {/* AI Tab */}
+          <TabsContent value="ai" className="mt-6">
             <AISettings />
           </TabsContent>
-          
-          <TabsContent value="quote-alerts">
-            <QuoteNotificationSettings />
+
+          {/* Communications Tab */}
+          <TabsContent value="communications" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Phone Setup */}
+              <Card className="card-elevated p-0 overflow-hidden rounded-2xl">
+                <div className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b border-gray-100">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Phone & SMS Setup</h3>
+                      <p className="text-sm text-gray-500">Configure Twilio for SMS messaging</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <PhoneSetup />
+                </div>
+              </Card>
+              
+              {/* Quote Notifications */}
+              <QuoteNotificationSettings />
+              
+              {/* Review Requests */}
+              <ReviewSettings />
+            </div>
           </TabsContent>
-          
-          <TabsContent value="reviews">
-            <ReviewSettings />
+
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="mt-6">
+            <PaymentSettings />
           </TabsContent>
-          
-          <TabsContent value="notifications">
-            <NotificationSettings settings={notificationSettings} onChange={handleNotificationChange} />
-          </TabsContent>
-          
-          <TabsContent value="hours">
-            <BusinessHoursSettings settings={businessHours} onChange={handleBusinessHoursChange} />
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="mt-6">
+            <Card className="card-elevated p-6 rounded-2xl">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-amber-100 rounded-xl">
+                  <Bell className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Notification Preferences</h3>
+                  <p className="text-sm text-gray-500">Choose how you want to be notified</p>
+                </div>
+              </div>
+              <NotificationSettings settings={notificationSettings} onChange={handleNotificationChange} />
+            </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Quick Links */}
+        <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl">
+          <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <NavigationCard 
+              icon={<CreditCard className="h-5 w-5" />}
+              title="Billing"
+              description="Manage subscription"
+              onClick={() => router.push('/billing')}
+            />
+            <NavigationCard 
+              icon={<Globe className="h-5 w-5" />}
+              title="Integrations"
+              description="Connect your tools"
+              badge="3 connected"
+              onClick={() => router.push('/connections')}
+            />
+            <NavigationCard 
+              icon={<Zap className="h-5 w-5" />}
+              title="Sequences"
+              description="Manage automations"
+              onClick={() => router.push('/sequences')}
+            />
+            <NavigationCard 
+              icon={<BarChart3 className="h-5 w-5" />}
+              title="Analytics"
+              description="View performance"
+              onClick={() => router.push('/analytics')}
+            />
+          </div>
+        </Card>
       </div>
     </Layout>
   );
@@ -221,8 +325,8 @@ export default function SettingsPage() {
   return (
     <Suspense fallback={
       <Layout title="Settings">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     }>

@@ -16,7 +16,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
-  Star, 
+  ThumbsUp, 
   Loader2, 
   Check, 
   ExternalLink,
@@ -98,8 +98,8 @@ export default function ReviewSettings() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-yellow-100">
-            <Star className="h-5 w-5 text-yellow-600" />
+          <div className="p-2 rounded-lg bg-amber-100">
+            <ThumbsUp className="h-5 w-5 text-amber-600" />
           </div>
           <CardTitle>Review Requests</CardTitle>
         </div>

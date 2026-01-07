@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Zap, MessageSquare, Mail, Edit2, Trash2, Star } from 'lucide-react';
+import { Zap, MessageSquare, Mail, Edit2, Trash2, Crown } from 'lucide-react';
 
 interface SequenceCardProps {
   sequence: Sequence;
@@ -39,8 +39,8 @@ export default function SequenceCard({
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-foreground">{sequence.name}</h3>
               {sequence.is_default && (
-                <Badge variant="secondary" className="gap-1">
-                  <Star className="h-3 w-3" />
+                <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700 border-0">
+                  <Crown className="h-3 w-3" />
                   Default
                 </Badge>
               )}

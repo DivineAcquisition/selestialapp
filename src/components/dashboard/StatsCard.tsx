@@ -12,24 +12,30 @@ interface StatsCardProps {
     isPositive: boolean;
   };
   accentColor?: 'default' | 'success' | 'warning' | 'danger';
+  onClick?: () => void;
+  glow?: boolean;
 }
 
 const accentStyles = {
   default: {
-    bg: 'bg-indigo-100',
-    text: 'text-indigo-600',
+    iconBg: 'bg-primary/10',
+    iconText: 'text-primary',
+    glow: 'glow-border',
   },
   success: {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-600',
+    iconBg: 'bg-green-100 dark:bg-green-900/30',
+    iconText: 'text-green-600',
+    glow: '',
   },
   warning: {
-    bg: 'bg-amber-100',
-    text: 'text-amber-600',
+    iconBg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    iconText: 'text-yellow-600',
+    glow: '',
   },
   danger: {
-    bg: 'bg-red-100',
-    text: 'text-red-600',
+    iconBg: 'bg-red-100 dark:bg-red-900/30',
+    iconText: 'text-red-600',
+    glow: '',
   },
 };
 
@@ -40,37 +46,52 @@ export default function StatsCard({
   icon: Icon,
   trend,
   accentColor = 'default',
+  onClick,
+  glow = false,
 }: StatsCardProps) {
   const accent = accentStyles[accentColor];
   
   return (
-    <Card className="p-5">
+    <Card 
+      className={cn(
+        "p-5 card-glow",
+        onClick && "cursor-pointer",
+        glow && accent.glow
+      )}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold">{value}</p>
+            {trend && (
+              <div className={cn(
+                "flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full",
+                trend.isPositive 
+                  ? "text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400" 
+                  : "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
+              )}>
+                {trend.isPositive ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {trend.value}%
+              </div>
+            )}
+          </div>
           
           {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-          
-          {trend && (
-            <div className={cn(
-              "flex items-center gap-1 text-xs font-medium",
-              trend.isPositive ? "text-emerald-600" : "text-red-600"
-            )}>
-              {trend.isPositive ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-              {trend.value}%
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
         
-        <div className={cn("p-2.5 rounded-lg", accent.bg)}>
-          <Icon className={cn("h-5 w-5", accent.text)} />
+        <div className={cn(
+          "flex items-center justify-center w-12 h-12 rounded-xl transition-transform group-hover:scale-105",
+          accent.iconBg
+        )}>
+          <Icon className={cn("h-6 w-6", accent.iconText)} />
         </div>
       </div>
     </Card>

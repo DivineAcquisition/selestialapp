@@ -21,13 +21,26 @@ import {
   Settings, 
   LogOut,
   MessageSquare,
+  Users,
+  Link2,
+  CreditCard,
+  RefreshCw,
+  Megaphone,
+  BarChart3,
+  ChevronRight,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inbox', href: '/inbox', icon: MessageSquare, showBadge: true },
   { name: 'Quotes', href: '/quotes', icon: FileText },
+  { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Sequences', href: '/sequences', icon: Zap },
+  { name: 'Retention', href: '/retention', icon: RefreshCw },
+  { name: 'Campaigns', href: '/campaigns', icon: Megaphone },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Connections', href: '/connections', icon: Link2 },
+  { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -51,29 +64,29 @@ export default function MobileSidebar() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden hover:bg-secondary">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-sidebar border-sidebar-border">
+      <SheetContent side="left" className="w-72 p-0 bg-sidebar-background border-sidebar-border/50">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center gap-3 p-4 border-b border-sidebar-border">
+          <div className="flex items-center gap-3 p-4 border-b border-sidebar-border/50">
             <Image 
               src="/logo-icon-new.png" 
               alt="Selestial" 
-              width={32} 
-              height={32}
-              className="h-8 w-8"
+              width={36} 
+              height={36}
+              className="h-9 w-9 rounded-xl"
             />
             <div>
-              <p className="font-semibold text-sidebar-foreground">Selestial</p>
-              <p className="text-xs text-sidebar-foreground/60">Quote Follow-Up</p>
+              <p className="font-bold text-foreground">Selestial</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Quote Follow-Up</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-2 space-y-1">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
               
@@ -83,21 +96,33 @@ export default function MobileSidebar() {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    'flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
+                    <div className={cn(
+                      "flex items-center justify-center w-8 h-8 rounded-lg transition-colors",
+                      isActive 
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" 
+                        : "bg-sidebar-accent"
+                    )}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
                     {item.name}
                   </div>
-                  {item.showBadge && totalUnread > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-bold bg-destructive text-destructive-foreground rounded-full">
-                      {totalUnread > 99 ? '99+' : totalUnread}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {item.showBadge && totalUnread > 0 && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full">
+                        {totalUnread > 99 ? '99+' : totalUnread}
+                      </span>
+                    )}
+                    {isActive && (
+                      <ChevronRight className="h-4 w-4 text-primary opacity-50" />
+                    )}
+                  </div>
                 </Link>
               );
             })}
@@ -105,16 +130,19 @@ export default function MobileSidebar() {
 
           {/* User section */}
           {business && (
-            <div className="p-4 border-t border-sidebar-border">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                  {initials}
+            <div className="p-3 border-t border-sidebar-border/50">
+              <div className="flex items-center gap-3 p-2 rounded-xl bg-sidebar-accent/50 mb-3">
+                <div className="relative">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20">
+                    {initials}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-sidebar-background" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                  <p className="text-sm font-semibold text-foreground truncate">
                     {business.owner_name}
                   </p>
-                  <p className="text-xs text-sidebar-foreground/60 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {business.name}
                   </p>
                 </div>
@@ -123,7 +151,7 @@ export default function MobileSidebar() {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="w-full justify-start text-sidebar-foreground/80 hover:text-sidebar-foreground"
+                className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out

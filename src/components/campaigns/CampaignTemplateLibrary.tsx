@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useCampaigns, CampaignTemplate } from '@/hooks/useCampaigns';
-import { Loader2, Sparkles, Calendar, Tag, ArrowRight } from 'lucide-react';
+import { Loader2, Layout, Calendar, Tag, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CampaignTemplateLibraryProps {
@@ -64,7 +64,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+            <Layout className="w-5 h-5 text-primary" />
             Campaign Templates
           </DialogTitle>
           <DialogDescription>
