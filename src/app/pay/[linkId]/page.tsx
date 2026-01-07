@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Image from "next/image";
-import { Icon, IconName } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
 
 // ============================================================================
 // TYPES
@@ -23,34 +24,10 @@ interface PaymentLinkData {
   status: "pending" | "paid" | "expired" | "cancelled";
   expiresAt: string | null;
   createdAt: string;
+  checkoutUrl?: string;
 }
 
-type PaymentStatus = "idle" | "processing" | "success" | "error";
-
-// ============================================================================
-// MOCK DATA (would come from API in real implementation)
-// ============================================================================
-
-const MOCK_PAYMENT_DATA: PaymentLinkData = {
-  id: "1",
-  linkId: "pay_abc123xyz",
-  businessName: "Sparkle Clean Co.",
-  businessLogo: undefined,
-  businessEmail: "hello@sparkleclean.com",
-  businessPhone: "(555) 123-4567",
-  customerName: "Sarah Johnson",
-  customerEmail: "sarah@example.com",
-  amount: 275,
-  description: "Deep Cleaning - 3BR Home",
-  services: [
-    { name: "Deep Cleaning", price: 225, quantity: 1 },
-    { name: "Inside Refrigerator", price: 35, quantity: 1 },
-    { name: "Inside Oven", price: 15, quantity: 1 },
-  ],
-  status: "pending",
-  expiresAt: "2026-01-14T00:00:00Z",
-  createdAt: "2026-01-07T10:30:00Z",
-};
+type PaymentStatus = "idle" | "processing" | "success" | "error" | "loading";
 
 // ============================================================================
 // HELPERS
@@ -91,45 +68,6 @@ function ServiceLineItem({ service }: { service: { name: string; price: number; 
         </div>
       </div>
       <p className="font-medium">{formatCurrency(service.price * service.quantity)}</p>
-    </div>
-  );
-}
-
-function CardInput({
-  label,
-  placeholder,
-  type = "text",
-  value,
-  onChange,
-  maxLength,
-  iconName,
-}: {
-  label: string;
-  placeholder: string;
-  type?: string;
-  value: string;
-  onChange: (value: string) => void;
-  maxLength?: number;
-  iconName?: IconName;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
-      <div className="relative">
-        {iconName && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2">
-            <Icon name={iconName} size="lg" className="text-gray-400" />
-          </div>
-        )}
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className={`w-full rounded-lg border border-gray-300 bg-white py-3 pr-4 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 ${iconName ? "pl-11" : "pl-4"}`}
-        />
-      </div>
     </div>
   );
 }
@@ -220,60 +158,32 @@ function CancelledPage({ data }: { data: PaymentLinkData }) {
   );
 }
 
-function SuccessPage({ data }: { data: PaymentLinkData }) {
+// ============================================================================
+// LOADING PAGE
+// ============================================================================
+
+function LoadingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 to-white p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="text-center">
+        <Icon name="spinner" size="xl" className="animate-spin text-violet-600 mx-auto" />
+        <p className="mt-4 text-gray-600">Loading payment details...</p>
+      </div>
+    </div>
+  );
+}
+
+function NotFoundPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
-          <Icon name="checkCircle" size="xl" className="text-emerald-600" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+          <Icon name="alertCircle" size="xl" className="text-gray-400" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Payment Successful!</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Payment Link Not Found</h1>
         <p className="mt-2 text-gray-600">
-          Thank you for your payment. A receipt has been sent to your email.
+          This payment link doesn&apos;t exist or may have been removed.
         </p>
-
-        <div className="mt-6 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 text-white">
-          <p className="text-sm opacity-80">Amount Paid</p>
-          <p className="text-3xl font-bold">{formatCurrency(data.amount)}</p>
-        </div>
-
-        <div className="mt-6 space-y-3 text-left">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Paid to</span>
-            <span className="font-medium">{data.businessName}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">For</span>
-            <span className="font-medium">{data.description}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Receipt sent to</span>
-            <span className="font-medium">{data.customerEmail}</span>
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-lg border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">
-            Questions about your service? Contact:
-          </p>
-          <p className="mt-1 font-medium">{data.businessName}</p>
-          <div className="mt-2 flex justify-center gap-4">
-            <a
-              href={`mailto:${data.businessEmail}`}
-              className="flex items-center gap-1 text-sm text-violet-600 hover:text-violet-700"
-            >
-              <Icon name="email" size="sm" />
-              Email
-            </a>
-            <a
-              href={`tel:${data.businessPhone}`}
-              className="flex items-center gap-1 text-sm text-violet-600 hover:text-violet-700"
-            >
-              <Icon name="phone" size="sm" />
-              Call
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -284,64 +194,67 @@ function SuccessPage({ data }: { data: PaymentLinkData }) {
 // ============================================================================
 
 export default function PaymentCheckoutPage() {
-  // In real app, get linkId from URL params and fetch data
-  const [data] = useState<PaymentLinkData>(MOCK_PAYMENT_DATA);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
-
-  // Card form state
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCvc] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [email, setEmail] = useState(data.customerEmail);
+  const params = useParams();
+  const linkId = params.linkId as string;
+  
+  const [data, setData] = useState<PaymentLinkData | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("loading");
+  const [error, setError] = useState<string | null>(null);
 
   const [showDetails, setShowDetails] = useState(true);
 
-  // Format card number with spaces
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
+  // Fetch payment link data
+  useEffect(() => {
+    async function fetchPaymentLink() {
+      try {
+        const response = await fetch(`/api/payments/links/${linkId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("not_found");
+          } else {
+            setError("error");
+          }
+          setPaymentStatus("error");
+          return;
+        }
+        
+        const linkData = await response.json();
+        setData(linkData);
+        setPaymentStatus("idle");
+      } catch (err) {
+        console.error("Failed to fetch payment link:", err);
+        setError("error");
+        setPaymentStatus("error");
+      }
     }
-    return parts.length ? parts.join(" ") : value;
-  };
 
-  // Format expiry as MM/YY
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    if (v.length >= 2) {
-      return v.substring(0, 2) + "/" + v.substring(2, 4);
+    if (linkId) {
+      fetchPaymentLink();
     }
-    return v;
-  };
+  }, [linkId]);
 
   const handlePayment = async () => {
+    if (!data?.checkoutUrl) return;
+    
     setPaymentStatus("processing");
-
-    // Simulate payment processing
-    await new Promise((r) => setTimeout(r, 2500));
-
-    // In real app, call Stripe API here
-    setPaymentStatus("success");
+    
+    // Redirect to Stripe Checkout
+    window.location.href = data.checkoutUrl;
   };
 
-  const isFormValid =
-    cardNumber.replace(/\s/g, "").length === 16 &&
-    cardExpiry.length === 5 &&
-    cardCvc.length >= 3 &&
-    cardName.length > 0 &&
-    email.includes("@");
+  // Handle loading state
+  if (paymentStatus === "loading") {
+    return <LoadingPage />;
+  }
+
+  // Handle not found
+  if (error === "not_found" || !data) {
+    return <NotFoundPage />;
+  }
 
   // Handle different statuses
   if (data.status === "expired") {
     return <ExpiredPage data={data} />;
-  }
-
-  if (paymentStatus === "success") {
-    return <SuccessPage data={data} />;
   }
 
   if (data.status === "paid") {
@@ -379,89 +292,45 @@ export default function PaymentCheckoutPage() {
 
       <main className="mx-auto max-w-2xl px-4 py-8">
         <div className="grid gap-6 lg:grid-cols-5">
-          {/* Left: Payment Form */}
+          {/* Left: Payment Summary & Button */}
           <div className="lg:col-span-3">
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold">Payment Details</h2>
+              <h2 className="text-lg font-semibold">Complete Your Payment</h2>
               <p className="mt-1 text-sm text-gray-500">
-                Enter your card information to complete the payment
+                Click below to securely pay via Stripe
               </p>
 
-              <div className="mt-6 space-y-4">
-                {/* Email */}
-                <CardInput
-                  label="Email"
-                  placeholder="you@example.com"
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  iconName="email"
-                />
+              {/* Amount Display */}
+              <div className="mt-6 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 p-6 text-white text-center">
+                <p className="text-sm opacity-80">Amount Due</p>
+                <p className="text-4xl font-bold mt-1">{formatCurrency(data.amount / 100)}</p>
+                {data.description && (
+                  <p className="text-sm opacity-80 mt-2">{data.description}</p>
+                )}
+              </div>
 
-                {/* Card Number */}
-                <CardInput
-                  label="Card Number"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNumber}
-                  onChange={(v) => setCardNumber(formatCardNumber(v))}
-                  maxLength={19}
-                  iconName="creditCard"
-                />
-
-                {/* Expiry & CVC */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Expiry Date
-                    </label>
-                    <input
-                      type="text"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                      CVC
-                    </label>
-                    <input
-                      type="text"
-                      value={cardCvc}
-                      onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      placeholder="123"
-                      maxLength={4}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                    />
-                  </div>
-                </div>
-
-                {/* Cardholder Name */}
-                <CardInput
-                  label="Cardholder Name"
-                  placeholder="John Smith"
-                  value={cardName}
-                  onChange={setCardName}
-                />
+              {/* Customer Info */}
+              <div className="mt-6 rounded-lg bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Paying as</p>
+                <p className="font-medium">{data.customerName}</p>
+                <p className="text-sm text-gray-500">{data.customerEmail}</p>
               </div>
 
               {/* Pay Button */}
               <button
                 onClick={handlePayment}
-                disabled={!isFormValid || paymentStatus === "processing"}
+                disabled={paymentStatus === "processing"}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 py-4 text-lg font-semibold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {paymentStatus === "processing" ? (
                   <>
                     <Icon name="spinner" size="lg" className="animate-spin" />
-                    Processing...
+                    Redirecting to payment...
                   </>
                 ) : (
                   <>
                     <Icon name="lock" size="lg" />
-                    Pay {formatCurrency(data.amount)}
+                    Pay {formatCurrency(data.amount / 100)}
                   </>
                 )}
               </button>

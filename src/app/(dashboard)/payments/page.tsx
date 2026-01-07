@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -22,35 +24,12 @@ import {
 } from "@/components/ui/dialog";
 import { Icon, IconName } from "@/components/ui/icon";
 import { useToast } from "@/hooks/use-toast";
+import { usePaymentLinks, PaymentLink } from "@/hooks/usePaymentLinks";
 import { cn } from "@/lib/utils";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface PaymentLink {
-  id: string;
-  linkId: string;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  amount: number;
-  description: string;
-  services: { name: string; price: number; quantity: number }[];
-  status: "pending" | "paid" | "expired" | "cancelled";
-  expiresAt: string | null;
-  paidAt: string | null;
-  createdAt: string;
-  stripePaymentIntentId: string | null;
-  metadata: Record<string, unknown>;
-}
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-
-const PAYMENT_DOMAIN = "pay.selestial.com";
 
 const STATUS_CONFIG: Record<PaymentLink["status"], { label: string; color: string; icon: IconName }> = {
   pending: { label: "Pending", color: "amber", icon: "clock" },
@@ -59,86 +38,15 @@ const STATUS_CONFIG: Record<PaymentLink["status"], { label: string; color: strin
   cancelled: { label: "Cancelled", color: "red", icon: "close" },
 };
 
-// Mock data
-const MOCK_LINKS: PaymentLink[] = [
-  {
-    id: "1",
-    linkId: "pay_abc123xyz",
-    customerId: "cust_1",
-    customerName: "Sarah Johnson",
-    customerEmail: "sarah@example.com",
-    customerPhone: "+1 (555) 123-4567",
-    amount: 275,
-    description: "Deep Cleaning - 3BR Home",
-    services: [
-      { name: "Deep Cleaning", price: 225, quantity: 1 },
-      { name: "Inside Refrigerator", price: 35, quantity: 1 },
-      { name: "Inside Oven", price: 15, quantity: 1 },
-    ],
-    status: "pending",
-    expiresAt: "2026-01-14T00:00:00Z",
-    paidAt: null,
-    createdAt: "2026-01-07T10:30:00Z",
-    stripePaymentIntentId: null,
-    metadata: {},
-  },
-  {
-    id: "2",
-    linkId: "pay_def456uvw",
-    customerId: "cust_2",
-    customerName: "Michael Chen",
-    customerEmail: "mike@example.com",
-    customerPhone: "+1 (555) 987-6543",
-    amount: 450,
-    description: "Move-Out Cleaning",
-    services: [
-      { name: "Move-Out Cleaning", price: 350, quantity: 1 },
-      { name: "Carpet Cleaning", price: 100, quantity: 1 },
-    ],
-    status: "paid",
-    expiresAt: null,
-    paidAt: "2026-01-06T14:22:00Z",
-    createdAt: "2026-01-05T09:15:00Z",
-    stripePaymentIntentId: "pi_123abc",
-    metadata: {},
-  },
-  {
-    id: "3",
-    linkId: "pay_ghi789rst",
-    customerId: "cust_3",
-    customerName: "Emily Davis",
-    customerEmail: "emily@example.com",
-    customerPhone: "+1 (555) 456-7890",
-    amount: 125,
-    description: "Standard Cleaning",
-    services: [{ name: "Standard Cleaning", price: 125, quantity: 1 }],
-    status: "expired",
-    expiresAt: "2026-01-01T00:00:00Z",
-    paidAt: null,
-    createdAt: "2025-12-25T11:00:00Z",
-    stripePaymentIntentId: null,
-    metadata: {},
-  },
-];
-
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-const generateLinkId = () => {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "pay_";
-  for (let i = 0; i < 9; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(amount / 100);
 };
 
 const formatDate = (date: string) => {
@@ -156,10 +64,6 @@ const formatDateTime = (date: string) => {
     hour: "numeric",
     minute: "2-digit",
   });
-};
-
-const getPaymentUrl = (linkId: string) => {
-  return `https://${PAYMENT_DOMAIN}/${linkId}`;
 };
 
 // ============================================================================
@@ -213,14 +117,40 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
+function StripeNotConfiguredBanner() {
+  return (
+    <Card className="p-4 border-2 border-dashed border-amber-300 bg-amber-50 dark:bg-amber-950/20">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+            <Icon name="alertCircle" size="lg" className="text-amber-600" />
+          </div>
+          <div>
+            <p className="font-medium text-amber-800">Stripe Connect Required</p>
+            <p className="text-sm text-amber-700">Connect your Stripe account to create and accept payment links</p>
+          </div>
+        </div>
+        <Link href="/connections">
+          <Button className="gap-2 whitespace-nowrap">
+            <Icon name="plug" size="sm" />
+            Connect Stripe
+          </Button>
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
 function CreateLinkModal({
   isOpen,
   onClose,
   onCreate,
+  stripeConfigured,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (link: Partial<PaymentLink>) => void;
+  onCreate: (data: any) => Promise<{ success: boolean; paymentLink?: any }>;
+  stripeConfigured: boolean;
 }) {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -256,32 +186,26 @@ function CreateLinkModal({
   };
 
   const handleCreate = async () => {
+    if (!stripeConfigured) return;
+    
     setIsCreating(true);
 
-    // Compute expiration date
-    const now = new Date();
-    const expiresAt = expiresIn
-      ? new Date(now.getTime() + parseInt(expiresIn) * 24 * 60 * 60 * 1000).toISOString()
-      : null;
-
-    await new Promise((r) => setTimeout(r, 1000));
-
-    onCreate({
-      linkId: generateLinkId(),
+    const result = await onCreate({
       customerName,
       customerEmail,
       customerPhone,
       description,
       services: services.filter((s) => s.name && s.price > 0),
-      amount: total,
-      expiresAt,
-      status: "pending",
-      createdAt: new Date().toISOString(),
+      amount: Math.round(total * 100), // Convert to cents
+      expiresInDays: expiresIn ? parseInt(expiresIn) : 30,
     });
 
     setIsCreating(false);
-    onClose();
-    resetForm();
+    
+    if (result.success) {
+      onClose();
+      resetForm();
+    }
   };
 
   return (
@@ -291,6 +215,15 @@ function CreateLinkModal({
           <DialogTitle>Create Payment Link</DialogTitle>
           <DialogDescription>Create a new payment link to send to your customer</DialogDescription>
         </DialogHeader>
+
+        {!stripeConfigured && (
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+            <div className="flex items-center gap-2">
+              <Icon name="alertCircle" size="sm" />
+              <span>You need to connect Stripe before creating payment links.</span>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4 py-4">
           {/* Customer Info */}
@@ -303,6 +236,7 @@ function CreateLinkModal({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="John Smith"
+                  disabled={!stripeConfigured}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -313,6 +247,7 @@ function CreateLinkModal({
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     placeholder="john@example.com"
+                    disabled={!stripeConfigured}
                   />
                 </div>
                 <div>
@@ -322,6 +257,7 @@ function CreateLinkModal({
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="(555) 123-4567"
+                    disabled={!stripeConfigured}
                   />
                 </div>
               </div>
@@ -332,7 +268,11 @@ function CreateLinkModal({
           <Card className="p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-medium text-muted-foreground">Services</h3>
-              <button onClick={addService} className="text-sm text-primary hover:underline">
+              <button 
+                onClick={addService} 
+                className="text-sm text-primary hover:underline"
+                disabled={!stripeConfigured}
+              >
                 + Add Service
               </button>
             </div>
@@ -344,6 +284,7 @@ function CreateLinkModal({
                     onChange={(e) => updateService(index, "name", e.target.value)}
                     placeholder="Service name"
                     className="flex-1"
+                    disabled={!stripeConfigured}
                   />
                   <div className="relative w-24">
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
@@ -353,6 +294,7 @@ function CreateLinkModal({
                       onChange={(e) => updateService(index, "price", Number(e.target.value))}
                       placeholder="0"
                       className="pl-6"
+                      disabled={!stripeConfigured}
                     />
                   </div>
                   {services.length > 1 && (
@@ -361,6 +303,7 @@ function CreateLinkModal({
                       size="icon"
                       onClick={() => removeService(index)}
                       className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                      disabled={!stripeConfigured}
                     >
                       <Icon name="trash" size="sm" />
                     </Button>
@@ -377,18 +320,18 @@ function CreateLinkModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Deep cleaning for 3BR home"
+              disabled={!stripeConfigured}
             />
           </div>
 
           {/* Expiration */}
           <div>
             <label className="mb-1 block text-sm font-medium">Link expires in</label>
-            <Select value={expiresIn} onValueChange={setExpiresIn}>
+            <Select value={expiresIn} onValueChange={setExpiresIn} disabled={!stripeConfigured}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Never</SelectItem>
                 <SelectItem value="1">1 day</SelectItem>
                 <SelectItem value="3">3 days</SelectItem>
                 <SelectItem value="7">7 days</SelectItem>
@@ -402,7 +345,7 @@ function CreateLinkModal({
           <Card className="p-4 bg-primary/5 border-primary/20">
             <div className="flex items-center justify-between">
               <span className="font-medium">Total Amount</span>
-              <span className="text-2xl font-bold text-primary">{formatCurrency(total)}</span>
+              <span className="text-2xl font-bold text-primary">${total.toFixed(2)}</span>
             </div>
           </Card>
         </div>
@@ -413,7 +356,7 @@ function CreateLinkModal({
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={!customerName || !customerEmail || total <= 0 || isCreating}
+            disabled={!customerName || !customerEmail || total <= 0 || isCreating || !stripeConfigured}
             className="gap-2"
           >
             {isCreating ? (
@@ -438,30 +381,21 @@ function SendLinkModal({
   isOpen,
   onClose,
   link,
+  onSend,
 }: {
   isOpen: boolean;
   onClose: () => void;
   link: PaymentLink | null;
+  onSend: (linkId: string, method: "email" | "sms" | "both") => Promise<{ success: boolean }>;
 }) {
-  const { toast } = useToast();
   const [sendMethod, setSendMethod] = useState<"sms" | "email" | "both">("both");
   const [isSending, setIsSending] = useState(false);
-  const [customMessage, setCustomMessage] = useState("");
-
-  const paymentUrl = link ? getPaymentUrl(link.linkId) : "";
-
-  const defaultMessage = link
-    ? `Hi ${link.customerName.split(" ")[0]}, here's your payment link for ${link.description || "your service"}: ${formatCurrency(link.amount)}\n\n${paymentUrl}`
-    : "";
 
   const handleSend = async () => {
+    if (!link) return;
     setIsSending(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await onSend(link.link_id, sendMethod);
     setIsSending(false);
-    toast({
-      title: "Payment link sent!",
-      description: `Sent via ${sendMethod === "both" ? "SMS & Email" : sendMethod.toUpperCase()}`,
-    });
     onClose();
   };
 
@@ -472,15 +406,17 @@ function SendLinkModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Send Payment Link</DialogTitle>
-          <DialogDescription>Send the payment link to {link.customerName}</DialogDescription>
+          <DialogDescription>Send the payment link to {link.customer_name}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Recipient */}
           <Card className="p-4">
-            <p className="font-medium">{link.customerName}</p>
-            <p className="text-sm text-muted-foreground">{link.customerEmail}</p>
-            <p className="text-sm text-muted-foreground">{link.customerPhone}</p>
+            <p className="font-medium">{link.customer_name}</p>
+            <p className="text-sm text-muted-foreground">{link.customer_email}</p>
+            {link.customer_phone && (
+              <p className="text-sm text-muted-foreground">{link.customer_phone}</p>
+            )}
           </Card>
 
           {/* Send Method */}
@@ -509,22 +445,11 @@ function SendLinkModal({
             </div>
           </div>
 
-          {/* Message Preview */}
-          <div>
-            <label className="mb-2 block text-sm font-medium">Message Preview</label>
-            <textarea
-              value={customMessage || defaultMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              rows={4}
-              className="w-full rounded-xl border bg-background p-3 text-sm"
-            />
-          </div>
-
           {/* Payment Link */}
           <div className="flex items-center gap-2 rounded-xl bg-muted p-3">
             <Icon name="link" size="sm" className="text-muted-foreground" />
-            <span className="flex-1 truncate text-sm">{paymentUrl}</span>
-            <CopyButton text={paymentUrl} label="Copy" />
+            <span className="flex-1 truncate text-sm">{link.stripe_checkout_url}</span>
+            <CopyButton text={link.stripe_checkout_url} label="Copy" />
           </div>
         </div>
 
@@ -555,18 +480,24 @@ function LinkDetailsModal({
   isOpen,
   onClose,
   link,
-  onResend,
   onCancel,
 }: {
   isOpen: boolean;
   onClose: () => void;
   link: PaymentLink | null;
-  onResend: () => void;
-  onCancel: () => void;
+  onCancel: (linkId: string) => Promise<{ success: boolean }>;
 }) {
-  if (!link) return null;
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const paymentUrl = getPaymentUrl(link.linkId);
+  const handleCancel = async () => {
+    if (!link) return;
+    setIsCancelling(true);
+    await onCancel(link.link_id);
+    setIsCancelling(false);
+    onClose();
+  };
+
+  if (!link) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -589,38 +520,36 @@ function LinkDetailsModal({
           {/* Customer */}
           <Card className="p-4">
             <h3 className="mb-2 text-sm font-medium text-muted-foreground">Customer</h3>
-            <p className="font-medium">{link.customerName}</p>
-            <p className="text-sm text-muted-foreground">{link.customerEmail}</p>
-            <p className="text-sm text-muted-foreground">{link.customerPhone}</p>
+            <p className="font-medium">{link.customer_name}</p>
+            <p className="text-sm text-muted-foreground">{link.customer_email}</p>
+            {link.customer_phone && (
+              <p className="text-sm text-muted-foreground">{link.customer_phone}</p>
+            )}
           </Card>
 
           {/* Services */}
-          <Card className="p-4">
-            <h3 className="mb-2 text-sm font-medium text-muted-foreground">Services</h3>
-            <div className="space-y-2">
-              {link.services.map((service, i) => (
-                <div key={i} className="flex justify-between text-sm">
-                  <span>{service.name}</span>
-                  <span className="font-medium">{formatCurrency(service.price)}</span>
-                </div>
-              ))}
-              <div className="border-t pt-2">
-                <div className="flex justify-between font-medium">
-                  <span>Total</span>
-                  <span>{formatCurrency(link.amount)}</span>
-                </div>
+          {link.services && link.services.length > 0 && (
+            <Card className="p-4">
+              <h3 className="mb-2 text-sm font-medium text-muted-foreground">Services</h3>
+              <div className="space-y-2">
+                {link.services.map((service, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span>{service.name}</span>
+                    <span className="font-medium">${service.price.toFixed(2)}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
 
           {/* Payment Link */}
           <Card className="p-4">
             <h3 className="mb-2 text-sm font-medium text-muted-foreground">Payment Link</h3>
             <div className="flex items-center gap-2">
-              <Input value={paymentUrl} readOnly className="flex-1 bg-muted" />
-              <CopyButton text={paymentUrl} />
+              <Input value={link.stripe_checkout_url} readOnly className="flex-1 bg-muted text-sm" />
+              <CopyButton text={link.stripe_checkout_url} />
               <a
-                href={paymentUrl}
+                href={link.stripe_checkout_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-lg border p-2 hover:bg-muted"
@@ -634,18 +563,18 @@ function LinkDetailsModal({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Created</p>
-              <p className="font-medium">{formatDateTime(link.createdAt)}</p>
+              <p className="font-medium">{formatDateTime(link.created_at)}</p>
             </div>
-            {link.status === "paid" && link.paidAt && (
+            {link.status === "paid" && link.paid_at && (
               <div>
                 <p className="text-muted-foreground">Paid</p>
-                <p className="font-medium text-emerald-600">{formatDateTime(link.paidAt)}</p>
+                <p className="font-medium text-emerald-600">{formatDateTime(link.paid_at)}</p>
               </div>
             )}
-            {link.expiresAt && link.status === "pending" && (
+            {link.expires_at && link.status === "pending" && (
               <div>
                 <p className="text-muted-foreground">Expires</p>
-                <p className="font-medium">{formatDate(link.expiresAt)}</p>
+                <p className="font-medium">{formatDate(link.expires_at)}</p>
               </div>
             )}
           </div>
@@ -653,12 +582,17 @@ function LinkDetailsModal({
           {/* Actions */}
           {link.status === "pending" && (
             <div className="flex gap-3 pt-2">
-              <Button variant="outline" className="flex-1 gap-2" onClick={onResend}>
-                <Icon name="refresh" size="sm" />
-                Resend
-              </Button>
-              <Button variant="outline" className="flex-1 gap-2 border-destructive/50 text-destructive hover:bg-destructive/10" onClick={onCancel}>
-                <Icon name="close" size="sm" />
+              <Button 
+                variant="outline" 
+                className="flex-1 gap-2 border-destructive/50 text-destructive hover:bg-destructive/10" 
+                onClick={handleCancel}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <Icon name="spinner" size="sm" className="animate-spin" />
+                ) : (
+                  <Icon name="close" size="sm" />
+                )}
                 Cancel Link
               </Button>
             </div>
@@ -675,7 +609,8 @@ function LinkDetailsModal({
 
 export default function PaymentLinksPage() {
   const { toast } = useToast();
-  const [links, setLinks] = useState<PaymentLink[]>(MOCK_LINKS);
+  const { links, loading, stripeConfigured, createLink, sendLink, cancelLink, refetch } = usePaymentLinks();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -687,9 +622,9 @@ export default function PaymentLinksPage() {
   const filteredLinks = useMemo(() => {
     return links.filter((link) => {
       const matchesSearch =
-        link.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        link.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        link.description.toLowerCase().includes(searchQuery.toLowerCase());
+        link.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        link.customer_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (link.description || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "all" || link.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -704,34 +639,13 @@ export default function PaymentLinksPage() {
     paidAmount: links.filter((l) => l.status === "paid").reduce((sum, l) => sum + l.amount, 0),
   }), [links]);
 
-  const handleCreateLink = (newLink: Partial<PaymentLink>) => {
-    const link: PaymentLink = {
-      id: String(Date.now()),
-      linkId: newLink.linkId || generateLinkId(),
-      customerId: "",
-      customerName: newLink.customerName || "",
-      customerEmail: newLink.customerEmail || "",
-      customerPhone: newLink.customerPhone || "",
-      amount: newLink.amount || 0,
-      description: newLink.description || "",
-      services: newLink.services || [],
-      status: "pending",
-      expiresAt: newLink.expiresAt || null,
-      paidAt: null,
-      createdAt: new Date().toISOString(),
-      stripePaymentIntentId: null,
-      metadata: {},
-    };
-    setLinks([link, ...links]);
-
-    toast({
-      title: "Payment link created!",
-      description: `Link for ${formatCurrency(link.amount)} is ready to send.`,
-    });
-
-    // Auto-open send modal
-    setSelectedLink(link);
-    setShowSendModal(true);
+  const handleCreateLink = async (data: any) => {
+    const result = await createLink(data);
+    if (result.success && result.paymentLink) {
+      setSelectedLink(null);
+      // Could auto-open send modal here
+    }
+    return result;
   };
 
   const handleSendLink = (link: PaymentLink) => {
@@ -742,14 +656,6 @@ export default function PaymentLinksPage() {
   const handleViewDetails = (link: PaymentLink) => {
     setSelectedLink(link);
     setShowDetailsModal(true);
-  };
-
-  const handleCancelLink = () => {
-    if (selectedLink) {
-      setLinks(links.map(l => l.id === selectedLink.id ? { ...l, status: "cancelled" as const } : l));
-      setShowDetailsModal(false);
-      toast({ title: "Payment link cancelled" });
-    }
   };
 
   return (
@@ -766,11 +672,18 @@ export default function PaymentLinksPage() {
               <p className="text-muted-foreground">Create and manage payment links for your customers</p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+          <Button 
+            onClick={() => setShowCreateModal(true)} 
+            className="gap-2"
+            disabled={!stripeConfigured}
+          >
             <Icon name="plus" size="sm" />
             Create Link
           </Button>
         </div>
+
+        {/* Stripe Not Configured Banner */}
+        {!loading && !stripeConfigured && <StripeNotConfiguredBanner />}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -847,98 +760,111 @@ export default function PaymentLinksPage() {
 
         {/* Links Table */}
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
-                  <th className="px-4 py-3 font-medium">Customer</th>
-                  <th className="px-4 py-3 font-medium">Description</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Created</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredLinks.map((link) => (
-                  <tr key={link.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-4">
-                      <div>
-                        <p className="font-medium">{link.customerName}</p>
-                        <p className="text-sm text-muted-foreground">{link.customerEmail}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="text-sm">{link.description || "-"}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {link.services.length} service{link.services.length !== 1 ? "s" : ""}
-                      </p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="font-semibold">{formatCurrency(link.amount)}</p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={link.status} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <p className="text-sm">{formatDate(link.createdAt)}</p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleViewDetails(link)}
-                          className="h-8 w-8"
-                          title="View Details"
-                        >
-                          <Icon name="eye" size="sm" />
-                        </Button>
-                        <CopyButton text={getPaymentUrl(link.linkId)} />
-                        {link.status === "pending" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleSendLink(link)}
-                            className="h-8 w-8"
-                            title="Send Link"
-                          >
-                            <Icon name="send" size="sm" />
-                          </Button>
-                        )}
-                        <a
-                          href={getPaymentUrl(link.linkId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          title="Open Link"
-                        >
-                          <Icon name="externalLink" size="sm" />
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredLinks.length === 0 && (
+          {loading ? (
             <div className="p-12 text-center">
-              <Icon name="link" size="xl" className="mx-auto text-muted-foreground/30" />
-              <h3 className="mt-4 font-medium">No payment links found</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {searchQuery || statusFilter !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "Create your first payment link to get started"}
-              </p>
-              {!searchQuery && statusFilter === "all" && (
-                <Button onClick={() => setShowCreateModal(true)} className="mt-4 gap-2">
-                  <Icon name="plus" size="sm" />
-                  Create Payment Link
-                </Button>
-              )}
+              <Icon name="spinner" size="xl" className="animate-spin mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">Loading payment links...</p>
             </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b text-left text-sm text-muted-foreground">
+                      <th className="px-4 py-3 font-medium">Customer</th>
+                      <th className="px-4 py-3 font-medium">Description</th>
+                      <th className="px-4 py-3 font-medium">Amount</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Created</th>
+                      <th className="px-4 py-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredLinks.map((link) => (
+                      <tr key={link.id} className="hover:bg-muted/50 transition-colors">
+                        <td className="px-4 py-4">
+                          <div>
+                            <p className="font-medium">{link.customer_name}</p>
+                            <p className="text-sm text-muted-foreground">{link.customer_email}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-sm">{link.description || "-"}</p>
+                          {link.services && link.services.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {link.services.length} service{link.services.length !== 1 ? "s" : ""}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="font-semibold">{formatCurrency(link.amount)}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <StatusBadge status={link.status} />
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-sm">{formatDate(link.created_at)}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleViewDetails(link)}
+                              className="h-8 w-8"
+                              title="View Details"
+                            >
+                              <Icon name="eye" size="sm" />
+                            </Button>
+                            <CopyButton text={link.stripe_checkout_url} />
+                            {link.status === "pending" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleSendLink(link)}
+                                className="h-8 w-8"
+                                title="Send Link"
+                              >
+                                <Icon name="send" size="sm" />
+                              </Button>
+                            )}
+                            <a
+                              href={link.stripe_checkout_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              title="Open Link"
+                            >
+                              <Icon name="externalLink" size="sm" />
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {filteredLinks.length === 0 && (
+                <div className="p-12 text-center">
+                  <Icon name="link" size="xl" className="mx-auto text-muted-foreground/30" />
+                  <h3 className="mt-4 font-medium">No payment links found</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {searchQuery || statusFilter !== "all"
+                      ? "Try adjusting your search or filters"
+                      : stripeConfigured
+                        ? "Create your first payment link to get started"
+                        : "Connect Stripe to start creating payment links"}
+                  </p>
+                  {!searchQuery && statusFilter === "all" && stripeConfigured && (
+                    <Button onClick={() => setShowCreateModal(true)} className="mt-4 gap-2">
+                      <Icon name="plus" size="sm" />
+                      Create Payment Link
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </Card>
       </div>
@@ -948,21 +874,19 @@ export default function PaymentLinksPage() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onCreate={handleCreateLink}
+        stripeConfigured={stripeConfigured}
       />
       <SendLinkModal
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
         link={selectedLink}
+        onSend={sendLink}
       />
       <LinkDetailsModal
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
         link={selectedLink}
-        onResend={() => {
-          setShowDetailsModal(false);
-          if (selectedLink) handleSendLink(selectedLink);
-        }}
-        onCancel={handleCancelLink}
+        onCancel={cancelLink}
       />
     </Layout>
   );
