@@ -1,27 +1,58 @@
+"use client";
+
 import * as React from "react";
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
+import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
 
 import { cn } from "@/lib/utils";
 
-const HoverCard = HoverCardPrimitive.Root;
+const HoverCard = PreviewCardPrimitive.Root;
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger;
+interface HoverCardTriggerProps extends React.HTMLAttributes<HTMLElement> {
+  asChild?: boolean;
+  children?: React.ReactNode;
+}
 
-const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof HoverCardPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <HoverCardPrimitive.Content
-    ref={ref}
-    align={align}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className,
-    )}
-    {...props}
-  />
-));
-HoverCardContent.displayName = HoverCardPrimitive.Content.displayName;
+function HoverCardTrigger({ asChild, children, ...props }: HoverCardTriggerProps) {
+  if (asChild && React.isValidElement(children)) {
+    return (
+      <PreviewCardPrimitive.Trigger
+        data-slot="hover-card-trigger"
+        render={children}
+        {...props}
+      />
+    );
+  }
+  return (
+    <PreviewCardPrimitive.Trigger data-slot="hover-card-trigger" {...props}>
+      {children}
+    </PreviewCardPrimitive.Trigger>
+  );
+}
+
+interface HoverCardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  align?: "start" | "center" | "end";
+  sideOffset?: number;
+  side?: "top" | "bottom" | "left" | "right";
+  children?: React.ReactNode;
+}
+
+const HoverCardContent = React.forwardRef<HTMLDivElement, HoverCardContentProps>(
+  ({ className, align = "center", sideOffset = 4, side = "bottom", ...props }, ref) => (
+    <PreviewCardPrimitive.Portal>
+      <PreviewCardPrimitive.Positioner align={align} sideOffset={sideOffset} side={side}>
+        <PreviewCardPrimitive.Popup
+          ref={ref}
+          className={cn(
+            "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none transition-[opacity,transform] data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:scale-95 data-starting-style:scale-95",
+            className
+          )}
+          data-slot="hover-card-content"
+          {...props}
+        />
+      </PreviewCardPrimitive.Positioner>
+    </PreviewCardPrimitive.Portal>
+  )
+);
+HoverCardContent.displayName = "HoverCardContent";
 
 export { HoverCard, HoverCardTrigger, HoverCardContent };

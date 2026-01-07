@@ -114,7 +114,7 @@ export default function RetentionStepEditor({
               />
               <span className="text-sm text-muted-foreground">hours</span>
             </div>
-            <Select value={step.channel} onValueChange={(value: 'sms' | 'email') => onChange({ channel: value })}>
+            <Select value={step.channel} onValueChange={(value) => onChange({ channel: value as 'sms' | 'email' })}>
               <SelectTrigger className="w-24 h-8">
                 <SelectValue />
               </SelectTrigger>
