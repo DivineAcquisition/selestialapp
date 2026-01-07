@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @layer base {
   :root {
@@ -112,6 +115,18 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-skeleton: skeleton 2s -1s infinite linear;
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  @keyframes skeleton {
+  to {
+    background-position: -200% 0;
+    }
+  }
 }
 
 @layer base {
@@ -388,7 +403,7 @@
   .animate-text-reveal { animation: text-reveal 0.8s ease forwards; }
   .animate-subtle-pulse { animation: subtle-pulse 3s ease-in-out infinite; }
   .animate-scale-fade { animation: scale-fade 0.4s ease-out forwards; }
-  
+
   /* AI Button animations */
   .animate-border-spin { 
     background-size: 200% 200%;
@@ -397,7 +412,7 @@
   .animate-float-particle-1 { animation: float-particle-1 4s ease-in-out infinite; }
   .animate-float-particle-2 { animation: float-particle-2 5s ease-in-out infinite 1s; }
   .animate-float-particle-3 { animation: float-particle-3 6s ease-in-out infinite 2s; }
-  
+
   /* Advanced animations */
   .animate-aurora { animation: aurora 15s ease infinite; }
   .animate-spotlight { animation: spotlight 2s ease 0.75s 1 forwards; }
@@ -438,14 +453,14 @@
   .hover-lift:hover {
     @apply -translate-y-1 shadow-lg;
   }
-  
+
   .hover-scale {
     @apply transition-transform duration-300;
   }
   .hover-scale:hover {
     @apply scale-[1.02];
   }
-  
+
   .hover-glow {
     @apply transition-shadow duration-300;
   }
@@ -454,35 +469,35 @@
   }
 
   /* ==================== GLOW EFFECTS ==================== */
-  
+
   .glow {
     box-shadow: 0 0 20px rgba(85, 0, 255, 0.3), 0 0 40px rgba(85, 0, 255, 0.1);
   }
-  
+
   .glow-sm {
     box-shadow: 0 0 10px rgba(85, 0, 255, 0.2), 0 0 20px rgba(85, 0, 255, 0.1);
   }
-  
+
   .glow-lg {
     box-shadow: 0 0 30px rgba(85, 0, 255, 0.4), 0 0 60px rgba(85, 0, 255, 0.2);
   }
-  
+
   .glow-border {
     @apply border border-primary/30;
     box-shadow: 0 0 15px rgba(85, 0, 255, 0.2), inset 0 0 15px rgba(85, 0, 255, 0.05);
   }
-  
+
   .glow-border-hover:hover {
     @apply border-primary/50;
     box-shadow: 0 0 20px rgba(85, 0, 255, 0.3), inset 0 0 20px rgba(85, 0, 255, 0.08);
   }
 
   /* ==================== GRADIENT UTILITIES ==================== */
-  
+
   .gradient-text {
     @apply bg-gradient-to-r from-primary via-[#9D96FF] to-primary bg-clip-text text-transparent;
   }
-  
+
   .gradient-border {
     position: relative;
     background: white;
@@ -500,45 +515,45 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
   }
-  
+
   .gradient-bg {
     @apply bg-gradient-to-br from-primary/5 via-transparent to-primary/5;
   }
-  
+
   .gradient-bg-radial {
     background: radial-gradient(circle at 50% 0%, rgba(85, 0, 255, 0.08) 0%, transparent 50%);
   }
 
   /* ==================== GLASS EFFECTS ==================== */
-  
+
   .glass {
     @apply bg-white/80 backdrop-blur-md border border-white/20;
   }
-  
+
   .glass-elevated {
     @apply bg-white/90 backdrop-blur-xl border border-white/30 shadow-xl;
   }
-  
+
   .glass-subtle {
     @apply bg-white/60 backdrop-blur-sm border border-white/10;
   }
 
   /* ==================== CARD STYLES ==================== */
-  
+
   .card-elevated {
     @apply bg-white rounded-xl border border-gray-200/60 shadow-sm;
     @apply transition-all duration-300;
     @apply hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20;
     @apply hover:-translate-y-1;
   }
-  
+
   .card-interactive {
     @apply bg-white rounded-xl border border-gray-200/60 p-5;
     @apply transition-all duration-300 cursor-pointer;
     @apply hover:shadow-lg hover:border-primary/30;
     @apply hover:bg-gradient-to-br hover:from-white hover:to-primary/[0.02];
   }
-  
+
   .card-feature {
     @apply relative overflow-hidden rounded-2xl bg-white border border-gray-200/60;
     @apply transition-all duration-500 ease-out;
@@ -553,7 +568,7 @@
   .card-feature:hover::before {
     @apply opacity-100;
   }
-  
+
   .card-glow {
     @apply transition-all duration-300;
   }
@@ -563,48 +578,48 @@
   }
 
   /* ==================== BENTO GRID ==================== */
-  
+
   .bento-grid {
     @apply grid gap-4;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
-  
+
   .bento-grid-3 {
     @apply grid gap-4;
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .bento-grid-4 {
     @apply grid gap-4;
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .bento-item-span-2 {
     grid-column: span 2;
   }
-  
+
   .bento-item-span-3 {
     grid-column: span 3;
   }
-  
+
   .bento-item-tall {
     grid-row: span 2;
   }
 
   /* ==================== BUTTON STYLES ==================== */
-  
+
   .btn-gradient {
     @apply bg-gradient-to-r from-primary to-[#9D96FF] text-white;
     @apply hover:opacity-90 hover:shadow-lg hover:shadow-primary/30;
     @apply transition-all duration-300 hover:-translate-y-0.5;
   }
-  
+
   .btn-glow {
     @apply bg-primary text-white;
     @apply hover:shadow-[0_0_20px_rgba(85,0,255,0.4)];
     @apply transition-all duration-300 hover:-translate-y-0.5;
   }
-  
+
   .btn-outline-glow {
     @apply border-2 border-gray-200 bg-white text-gray-700;
     @apply hover:border-primary hover:text-primary;
@@ -613,7 +628,7 @@
   }
 
   /* ==================== FOCUS RING ==================== */
-  
+
   .focus-ring {
     @apply outline-none ring-offset-background transition-shadow;
   }
@@ -622,7 +637,7 @@
   }
 
   /* ==================== SCROLLBAR ==================== */
-  
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: rgba(85, 0, 255, 0.2) transparent;
@@ -643,23 +658,23 @@
   }
 
   /* ==================== MISC UTILITIES ==================== */
-  
+
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .backface-hidden {
     backface-visibility: hidden;
   }
-  
+
   .preserve-3d {
     transform-style: preserve-3d;
   }
-  
+
   .shine {
     position: relative;
     overflow: hidden;
@@ -682,7 +697,7 @@
   }
 
   /* ==================== FEATURE CARD ==================== */
-  
+
   .feature-card {
     @apply relative overflow-hidden rounded-xl border bg-card;
     background: linear-gradient(135deg, 
@@ -705,4 +720,14 @@
     @apply border-primary/20;
     box-shadow: 0 0 30px rgba(85, 0, 255, 0.1);
   }
+}
+
+/* Additional semantic colors for COSS UI components - preserving purple primary */
+:root {
+  --info: 217.2 91.2% 59.8%;
+  --info-foreground: 0 0% 100%;
+  --success: 142.1 76.2% 36.3%;
+  --success-foreground: 0 0% 100%;
+  --warning: 45.4 93.4% 47.5%;
+  --warning-foreground: 0 0% 100%;
 }
