@@ -8,9 +8,10 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Form } from '@/components/ui/form';
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -45,13 +46,11 @@ export default function OnboardingClient() {
   
   const [step, setStep] = useState<Step>('welcome');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   // Form data
-  const [businessName, setBusinessName] = useState('');
-  const [ownerName, setOwnerName] = useState('');
-  const [phone, setPhone] = useState('');
   const [industry, setIndustry] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   
   // Pre-fill owner name from user metadata
   useEffect(() => {
@@ -76,7 +75,7 @@ export default function OnboardingClient() {
     }
   }, [business, businessLoading, router]);
   
-  const formatPhone = (value: string) => {
+  const formatPhoneInput = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 10);
     if (digits.length > 6) {
       return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -88,24 +87,29 @@ export default function OnboardingClient() {
     return '';
   };
   
-  const handlePhoneChange = (value: string) => {
-    setPhone(formatPhone(value));
-  };
-  
-  const isBusinessFormValid = () => {
-    return (
-      businessName.trim().length > 0 &&
-      ownerName.trim().length > 0 &&
-      phone.replace(/\D/g, '').length >= 10 &&
-      industry.length > 0
-    );
-  };
-  
-  const handleCreateBusiness = async () => {
+  const handleCreateBusiness = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!user) return;
     
+    const formData = new FormData(e.currentTarget);
+    const businessName = formData.get('businessName') as string;
+    const ownerNameValue = formData.get('ownerName') as string;
+    const phone = formData.get('phone') as string;
+    
+    // Validate
+    const newErrors: Record<string, string> = {};
+    if (!businessName?.trim()) newErrors.businessName = 'Business name is required';
+    if (!ownerNameValue?.trim()) newErrors.ownerName = 'Your name is required';
+    if (!phone || phone.replace(/\D/g, '').length < 10) newErrors.phone = 'Valid phone number required';
+    if (!industry) newErrors.industry = 'Please select an industry';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
     setSaving(true);
-    setError(null);
+    setErrors({});
     
     try {
       // Format phone to E.164
@@ -121,7 +125,7 @@ export default function OnboardingClient() {
         .insert({
           user_id: user.id,
           name: businessName.trim(),
-          owner_name: ownerName.trim(),
+          owner_name: ownerNameValue.trim(),
           email: user.email || '',
           phone: formattedPhone,
           industry: industry,
@@ -157,14 +161,15 @@ export default function OnboardingClient() {
       fetch('/api/email/welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, name: ownerName }),
+        body: JSON.stringify({ email: user.email, name: ownerNameValue }),
       }).catch(() => {});
       
       await refetchBusiness();
+      setOwnerName(ownerNameValue.trim());
       setStep('complete');
     } catch (err) {
       console.error('Create business error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create business');
+      setErrors({ form: err instanceof Error ? err.message : 'Failed to create business' });
     } finally {
       setSaving(false);
     }
@@ -274,70 +279,72 @@ export default function OnboardingClient() {
               </p>
             </div>
             
-            {error && (
+            {errors.form && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center text-red-600">
-                {error}
+                {errors.form}
               </div>
             )}
             
             <Card className="card-elevated p-6 md:p-8 rounded-2xl">
-              <div className="space-y-5">
+              <Form onSubmit={handleCreateBusiness}>
                 {/* Business Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="businessName" className="flex items-center gap-2 text-gray-700">
-                    <Building2 className="w-4 h-4 text-gray-400" />
-                    Business Name
-                  </Label>
-                  <Input
-                    id="businessName"
-                    placeholder="Johnson Plumbing"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    className="h-12 rounded-xl"
-                    autoFocus
-                  />
-                </div>
+                <Field name="businessName">
+                  <FieldLabel required>Business Name</FieldLabel>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      name="businessName"
+                      placeholder="Johnson Plumbing"
+                      className="pl-10 h-12 rounded-xl"
+                      autoFocus
+                    />
+                  </div>
+                  <FieldError show={!!errors.businessName}>{errors.businessName}</FieldError>
+                </Field>
                 
                 {/* Owner Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="ownerName" className="flex items-center gap-2 text-gray-700">
-                    <User className="w-4 h-4 text-gray-400" />
-                    Your Name
-                  </Label>
-                  <Input
-                    id="ownerName"
-                    placeholder="Mike Johnson"
-                    value={ownerName}
-                    onChange={(e) => setOwnerName(e.target.value)}
-                    className="h-12 rounded-xl"
-                  />
-                </div>
+                <Field name="ownerName">
+                  <FieldLabel required>Your Name</FieldLabel>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      name="ownerName"
+                      placeholder="Mike Johnson"
+                      defaultValue={ownerName}
+                      className="pl-10 h-12 rounded-xl"
+                    />
+                  </div>
+                  <FieldDescription>This will be used in follow-up messages</FieldDescription>
+                  <FieldError show={!!errors.ownerName}>{errors.ownerName}</FieldError>
+                </Field>
                 
                 {/* Phone & Industry */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2 text-gray-700">
-                      <Phone className="w-4 h-4 text-gray-400" />
-                      Business Phone
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="(555) 123-4567"
-                      value={phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
-                      className="h-12 rounded-xl"
-                    />
-                  </div>
+                  <Field name="phone">
+                    <FieldLabel required>Business Phone</FieldLabel>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        name="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        onChange={(e) => {
+                          e.target.value = formatPhoneInput(e.target.value);
+                        }}
+                        className="pl-10 h-12 rounded-xl"
+                      />
+                    </div>
+                    <FieldError show={!!errors.phone}>{errors.phone}</FieldError>
+                  </Field>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="industry" className="flex items-center gap-2 text-gray-700">
-                      <Zap className="w-4 h-4 text-gray-400" />
-                      Industry
-                    </Label>
+                  <Field name="industry">
+                    <FieldLabel required>Industry</FieldLabel>
                     <Select value={industry} onValueChange={setIndustry}>
                       <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Select industry" />
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-gray-400" />
+                          <SelectValue placeholder="Select industry" />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         {INDUSTRIES.map((ind) => (
@@ -347,31 +354,32 @@ export default function OnboardingClient() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                    <FieldError show={!!errors.industry}>{errors.industry}</FieldError>
+                  </Field>
                 </div>
-              </div>
+                
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={saving}
+                    className="w-full h-14 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        Complete Setup
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </Form>
             </Card>
-            
-            <div className="flex justify-center">
-              <Button
-                size="lg"
-                onClick={handleCreateBusiness}
-                disabled={!isBusinessFormValid() || saving}
-                className="h-14 px-10 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl shadow-lg shadow-primary/25 group"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    Complete Setup
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </Button>
-            </div>
           </div>
         )}
         

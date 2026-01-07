@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from 'react';
 import { Business, IndustryType } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Form } from '@/components/ui/form';
+import { Field, FieldLabel, FieldError, FieldDescription, FieldGroup } from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -13,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { INDUSTRIES } from '@/lib/constants';
 import { formatPhone } from '@/lib/formatters';
-import { Building2, Save, Loader2 } from 'lucide-react';
+import { Building2, Save, Loader2, User, Mail, Phone } from 'lucide-react';
 
 interface BusinessProfileFormProps {
   business: Business;
@@ -21,17 +24,12 @@ interface BusinessProfileFormProps {
 }
 
 export default function BusinessProfileForm({ business, onSave }: BusinessProfileFormProps) {
-  const [formData, setFormData] = useState({
-    name: business.name,
-    owner_name: business.owner_name,
-    email: business.email,
-    phone: formatPhone(business.phone),
-    industry: business.industry,
-  });
+  const [industry, setIndustry] = useState<IndustryType>(business.industry);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const handlePhoneChange = (value: string) => {
+  const formatPhoneInput = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 10);
     let formatted = digits;
     
@@ -43,21 +41,41 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
       formatted = `(${digits}`;
     }
     
-    setFormData({ ...formData, phone: formatted });
+    return formatted;
   };
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const name = formData.get('businessName') as string;
+    const ownerName = formData.get('ownerName') as string;
+    const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string;
+    
+    // Validate
+    const newErrors: Record<string, string> = {};
+    if (!name?.trim()) newErrors.businessName = 'Business name is required';
+    if (!ownerName?.trim()) newErrors.ownerName = 'Your name is required';
+    if (!email?.trim()) newErrors.email = 'Email is required';
+    if (!phone || phone.replace(/\D/g, '').length < 10) newErrors.phone = 'Valid phone required';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
     setSaving(true);
+    setErrors({});
     
     try {
       await onSave({
         ...business,
-        name: formData.name,
-        owner_name: formData.owner_name,
-        email: formData.email,
-        phone: formData.phone.replace(/\D/g, ''),
-        industry: formData.industry,
+        name: name.trim(),
+        owner_name: ownerName.trim(),
+        email: email.trim(),
+        phone: phone.replace(/\D/g, ''),
+        industry: industry,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -67,87 +85,108 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
   };
   
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
+    <Card className="card-elevated p-6 rounded-2xl">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="p-3 bg-primary/10 rounded-xl">
           <Building2 className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Business Profile</h3>
-          <p className="text-sm text-muted-foreground">Your business information for quotes and messages</p>
+          <h3 className="font-semibold text-gray-900">Business Profile</h3>
+          <p className="text-sm text-gray-500">Your business information for quotes and messages</p>
         </div>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="business-name">Business Name</Label>
-            <Input
-              id="business-name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Johnson Plumbing LLC"
-            />
-          </div>
+      <Form onSubmit={handleSubmit}>
+        <FieldGroup>
+          <Field name="businessName">
+            <FieldLabel required>Business Name</FieldLabel>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                name="businessName"
+                defaultValue={business.name}
+                placeholder="Johnson Plumbing LLC"
+                className="pl-10 h-11 rounded-xl"
+              />
+            </div>
+            <FieldError show={!!errors.businessName}>{errors.businessName}</FieldError>
+          </Field>
           
-          <div className="space-y-1.5">
-            <Label htmlFor="owner-name">Your Name</Label>
-            <Input
-              id="owner-name"
-              value={formData.owner_name}
-              onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-              placeholder="Mike Johnson"
-            />
-          </div>
-        </div>
+          <Field name="ownerName">
+            <FieldLabel required>Your Name</FieldLabel>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                name="ownerName"
+                defaultValue={business.owner_name}
+                placeholder="Mike Johnson"
+                className="pl-10 h-11 rounded-xl"
+              />
+            </div>
+            <FieldError show={!!errors.ownerName}>{errors.ownerName}</FieldError>
+          </Field>
+        </FieldGroup>
         
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="mike@johnsonplumbing.com"
-            />
-          </div>
+        <FieldGroup className="mt-4">
+          <Field name="email">
+            <FieldLabel required>Email</FieldLabel>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                name="email"
+                type="email"
+                defaultValue={business.email}
+                placeholder="mike@johnsonplumbing.com"
+                className="pl-10 h-11 rounded-xl"
+              />
+            </div>
+            <FieldError show={!!errors.email}>{errors.email}</FieldError>
+          </Field>
           
-          <div className="space-y-1.5">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-              placeholder="(555) 123-4567"
-            />
-          </div>
-        </div>
+          <Field name="phone">
+            <FieldLabel required>Phone Number</FieldLabel>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                name="phone"
+                type="tel"
+                defaultValue={formatPhone(business.phone)}
+                placeholder="(555) 123-4567"
+                onChange={(e) => {
+                  e.target.value = formatPhoneInput(e.target.value);
+                }}
+                className="pl-10 h-11 rounded-xl"
+              />
+            </div>
+            <FieldError show={!!errors.phone}>{errors.phone}</FieldError>
+          </Field>
+        </FieldGroup>
         
-        <div className="space-y-1.5">
-          <Label>Industry</Label>
-          <Select
-            value={formData.industry}
-            onValueChange={(value) => setFormData({ ...formData, industry: value as IndustryType })}
-          >
-            <SelectTrigger>
+        <Field name="industry" className="mt-4">
+          <FieldLabel required>Industry</FieldLabel>
+          <Select value={industry} onValueChange={(value) => setIndustry(value as IndustryType)}>
+            <SelectTrigger className="h-11 rounded-xl">
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
             <SelectContent>
-              {INDUSTRIES.map((industry) => (
-                <SelectItem key={industry.value} value={industry.value}>
-                  {industry.label}
+              {INDUSTRIES.map((ind) => (
+                <SelectItem key={ind.value} value={ind.value}>
+                  {ind.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
+          <FieldDescription>
             This determines the service type options when adding quotes
-          </p>
-        </div>
+          </FieldDescription>
+        </Field>
         
-        <div className="flex items-center gap-3 pt-2">
-          <Button type="submit" disabled={saving} className="gap-2">
+        <div className="flex items-center gap-3 pt-4">
+          <Button 
+            type="submit" 
+            disabled={saving} 
+            className="h-11 gap-2 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
+          >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -156,10 +195,10 @@ export default function BusinessProfileForm({ business, onSave }: BusinessProfil
             {saving ? 'Saving...' : 'Save Changes'}
           </Button>
           {saved && (
-            <span className="text-sm text-emerald-600">Changes saved!</span>
+            <span className="text-sm text-emerald-600 font-medium">✓ Changes saved!</span>
           )}
         </div>
-      </form>
+      </Form>
     </Card>
   );
 }

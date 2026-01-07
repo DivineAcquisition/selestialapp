@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Form } from '@/components/ui/form';
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +27,6 @@ import {
   DollarSign,
   Mail,
   FileText,
-  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,21 +42,11 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
   
   const nameInputRef = useRef<HTMLInputElement>(null);
   
-  // Core fields (always visible)
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [amount, setAmount] = useState('');
-  
-  // Optional fields (expandable)
-  const [showMore, setShowMore] = useState(false);
-  const [email, setEmail] = useState('');
-  const [serviceType, setServiceType] = useState('');
-  const [notes, setNotes] = useState('');
-  
   // State
+  const [showMore, setShowMore] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [addAnother, setAddAnother] = useState(false);
   
   // Get default sequence
@@ -71,15 +63,12 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
   
   // Reset form
   const resetForm = () => {
-    setName('');
-    setPhone('');
-    setAmount('');
-    setEmail('');
-    setServiceType('');
-    setNotes('');
     setShowMore(false);
-    setError(null);
+    setErrors({});
     setSuccess(false);
+    // Reset form fields by resetting the form element
+    const form = document.getElementById('quick-add-quote-form') as HTMLFormElement;
+    if (form) form.reset();
   };
   
   // Handle close
@@ -89,8 +78,8 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
     onClose();
   };
   
-  // Phone formatting
-  const handlePhoneChange = (value: string) => {
+  // Phone formatting helper
+  const formatPhoneInput = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 10);
     let formatted = digits;
     
@@ -102,37 +91,43 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
       formatted = `(${digits}`;
     }
     
-    setPhone(formatted);
-  };
-  
-  // Validate
-  const isValid = () => {
-    if (!name.trim()) return false;
-    if (phone.replace(/\D/g, '').length < 10) return false;
-    if (!amount || parseFloat(amount) <= 0) return false;
-    return true;
+    return formatted;
   };
   
   // Submit
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     
-    if (!isValid()) {
-      setError('Please fill in name, phone, and amount');
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const phone = formData.get('phone') as string;
+    const amount = formData.get('amount') as string;
+    const email = formData.get('email') as string;
+    const serviceType = formData.get('serviceType') as string;
+    const notes = formData.get('notes') as string;
+    
+    // Validate
+    const newErrors: Record<string, string> = {};
+    if (!name?.trim()) newErrors.name = 'Customer name is required';
+    if (!phone || phone.replace(/\D/g, '').length < 10) newErrors.phone = 'Valid phone number required';
+    if (!amount || parseFloat(amount) <= 0) newErrors.amount = 'Valid amount required';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
     
     setSaving(true);
-    setError(null);
+    setErrors({});
     
     try {
       const { error: createError } = await createQuote({
         customer_name: name.trim(),
         customer_phone: toE164(phone),
-        customer_email: email.trim() || null,
-        service_type: serviceType.trim() || 'General Service',
+        customer_email: email?.trim() || null,
+        service_type: serviceType?.trim() || 'General Service',
         quote_amount: parseCurrencyToCents(amount),
-        description: notes.trim() || null,
+        description: notes?.trim() || null,
         sequence_id: defaultSequence?.id || null,
         status: 'new',
       });
@@ -155,7 +150,7 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
       }
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add quote');
+      setErrors({ form: err instanceof Error ? err.message : 'Failed to add quote' });
     } finally {
       setSaving(false);
     }
@@ -164,224 +159,236 @@ export default function QuickAddQuote({ open, onClose, onSuccess }: QuickAddQuot
   // Keyboard shortcut: Cmd/Ctrl + Enter to submit
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      handleSubmit();
+      const form = document.getElementById('quick-add-quote-form') as HTMLFormElement;
+      if (form) form.requestSubmit();
     }
   };
   
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="sm:max-w-md"
+        className="sm:max-w-md rounded-2xl"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-[#9D96FF]/20">
               <Zap className="w-5 h-5 text-primary" />
             </div>
             Quick Add Quote
           </DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Success state */}
-          {success && (
-            <div className="flex flex-col items-center justify-center py-8 animate-scale-in">
-              <div className="w-16 h-16 bg-gradient-to-br from-success/20 to-success/10 rounded-2xl flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-success" />
-              </div>
-              <p className="text-lg font-semibold text-foreground">Quote Added!</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {addAnother ? 'Ready for the next one' : 'Closing...'}
-              </p>
+        {/* Success state */}
+        {success && (
+          <div className="flex flex-col items-center justify-center py-8 animate-scale-fade">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center mb-4">
+              <Check className="w-8 h-8 text-emerald-600" />
             </div>
-          )}
-          
-          {/* Error */}
-          {error && (
-            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm flex items-start gap-3 animate-fade-in">
-              <div className="w-5 h-5 rounded-full bg-destructive/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-xs font-bold">!</span>
-              </div>
-              {error}
+            <p className="text-lg font-semibold text-gray-900">Quote Added!</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {addAnother ? 'Ready for the next one' : 'Closing...'}
+            </p>
+          </div>
+        )}
+        
+        {/* Error */}
+        {errors.form && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-3 animate-fade-in">
+            <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+              <span className="text-xs font-bold">!</span>
             </div>
-          )}
-          
-          {/* Form fields */}
-          {!success && (
-            <>
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="quick-name" className="text-sm font-medium">
-                  Customer Name <span className="text-destructive">*</span>
-                </Label>
+            {errors.form}
+          </div>
+        )}
+        
+        {/* Form */}
+        {!success && (
+          <Form id="quick-add-quote-form" onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <Field name="name">
+              <FieldLabel required>Customer Name</FieldLabel>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   ref={nameInputRef}
-                  id="quick-name"
+                  name="name"
                   placeholder="Sarah Williams"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
                   disabled={saving}
                   autoComplete="off"
+                  className="pl-10 h-11 rounded-xl"
                 />
               </div>
-              
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="quick-phone" className="text-sm font-medium">
-                  Phone <span className="text-destructive">*</span>
-                </Label>
+              <FieldError show={!!errors.name}>{errors.name}</FieldError>
+            </Field>
+            
+            {/* Phone */}
+            <Field name="phone">
+              <FieldLabel required>Phone</FieldLabel>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  id="quick-phone"
+                  name="phone"
                   placeholder="(555) 123-4567"
-                  value={phone}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
                   disabled={saving}
                   type="tel"
                   autoComplete="off"
+                  onChange={(e) => {
+                    e.target.value = formatPhoneInput(e.target.value);
+                  }}
+                  className="pl-10 h-11 rounded-xl"
                 />
               </div>
-              
-              {/* Amount */}
-              <div className="space-y-2">
-                <Label htmlFor="quick-amount" className="text-sm font-medium">
-                  Quote Amount <span className="text-destructive">*</span>
-                </Label>
+              <FieldError show={!!errors.phone}>{errors.phone}</FieldError>
+            </Field>
+            
+            {/* Amount */}
+            <Field name="amount">
+              <FieldLabel required>Quote Amount</FieldLabel>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  id="quick-amount"
+                  name="amount"
                   placeholder="250.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
                   disabled={saving}
                   type="text"
                   inputMode="decimal"
                   autoComplete="off"
+                  className="pl-10 h-11 rounded-xl"
                 />
               </div>
-              
-              {/* Expandable section toggle */}
-              <button
-                type="button"
-                onClick={() => setShowMore(!showMore)}
-                className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors w-full justify-center py-2 rounded-lg",
-                  showMore 
-                    ? "text-primary bg-primary/5" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                )}
-              >
-                {showMore ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-                {showMore ? 'Less options' : 'More options'}
-              </button>
-              
-              {showMore && (
-                <div className="space-y-4 pt-2 animate-fade-in-up">
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="quick-email" className="text-sm font-medium">
-                      Email <span className="text-muted-foreground">(optional)</span>
-                    </Label>
+              <FieldError show={!!errors.amount}>{errors.amount}</FieldError>
+            </Field>
+            
+            {/* Expandable section toggle */}
+            <button
+              type="button"
+              onClick={() => setShowMore(!showMore)}
+              className={cn(
+                "flex items-center gap-2 text-sm font-medium transition-colors w-full justify-center py-2 rounded-xl",
+                showMore 
+                  ? "text-primary bg-primary/5" 
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              )}
+            >
+              {showMore ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+              {showMore ? 'Less options' : 'More options'}
+            </button>
+            
+            {showMore && (
+              <div className="space-y-4 pt-2 animate-fade-in">
+                {/* Email */}
+                <Field name="email">
+                  <FieldLabel>Email</FieldLabel>
+                  <FieldDescription>Optional - for email notifications</FieldDescription>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      id="quick-email"
+                      name="email"
                       type="email"
                       placeholder="sarah@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       disabled={saving}
+                      className="pl-10 h-11 rounded-xl"
                     />
                   </div>
-                  
-                  {/* Service Type */}
-                  <div className="space-y-2">
-                    <Label htmlFor="quick-service" className="text-sm font-medium">
-                      Service Type
-                    </Label>
+                </Field>
+                
+                {/* Service Type */}
+                <Field name="serviceType">
+                  <FieldLabel>Service Type</FieldLabel>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      id="quick-service"
+                      name="serviceType"
                       placeholder="Deep Clean"
-                      value={serviceType}
-                      onChange={(e) => setServiceType(e.target.value)}
                       disabled={saving}
+                      className="pl-10 h-11 rounded-xl"
                     />
                   </div>
-                  
-                  {/* Notes */}
-                  <div className="space-y-2">
-                    <Label htmlFor="quick-notes" className="text-sm font-medium">
-                      Notes
-                    </Label>
-                    <Input
-                      id="quick-notes"
-                      placeholder="Any notes..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* Add Another checkbox */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
-                <Checkbox
-                  id="add-another"
-                  checked={addAnother}
-                  onCheckedChange={(checked) => setAddAnother(checked === true)}
-                />
-                <Label htmlFor="add-another" className="text-sm text-muted-foreground cursor-pointer">
-                  Add another after saving
-                </Label>
+                </Field>
+                
+                {/* Notes */}
+                <Field name="notes">
+                  <FieldLabel>Notes</FieldLabel>
+                  <Input
+                    name="notes"
+                    placeholder="Any notes..."
+                    disabled={saving}
+                    className="h-11 rounded-xl"
+                  />
+                </Field>
               </div>
-            </>
-          )}
-          
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              className="flex-1 h-11"
-              disabled={saving}
-            >
-              {success ? 'Close' : 'Cancel'}
-            </Button>
-            {!success && (
+            )}
+            
+            {/* Add Another checkbox */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200/50">
+              <Checkbox
+                id="add-another"
+                checked={addAnother}
+                onCheckedChange={(checked) => setAddAnother(checked === true)}
+              />
+              <label htmlFor="add-another" className="text-sm text-gray-600 cursor-pointer">
+                Add another after saving
+              </label>
+            </div>
+            
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1 h-11 rounded-xl"
+                disabled={saving}
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
-                className="flex-1"
-                disabled={saving || !isValid()}
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-[#9D96FF]"
+                disabled={saving}
               >
                 {saving ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 mr-2" />
                     Add Quote
                   </>
                 )}
               </Button>
-            )}
-          </div>
-          
-          {/* Keyboard hint */}
-          {!success && (
-            <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+            </div>
+            
+            {/* Keyboard hint */}
+            <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-2">
               Press
-              <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border/50 font-mono text-[10px]">⌘</kbd>
+              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 font-mono text-[10px]">⌘</kbd>
               <span>+</span>
-              <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border/50 font-mono text-[10px]">↵</kbd>
+              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 font-mono text-[10px]">↵</kbd>
               to save
             </p>
-          )}
-        </form>
+          </Form>
+        )}
+        
+        {/* Success state actions */}
+        {success && (
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1 h-11 rounded-xl"
+            >
+              Close
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
