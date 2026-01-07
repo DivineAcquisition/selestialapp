@@ -19,18 +19,21 @@ const usePopover = () => {
   return context;
 };
 
-export interface PopoverProps {
+function Popover({
+  children,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+}: {
   children: React.ReactNode;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-}
-
-function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
+}) {
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isControlled) {
@@ -46,45 +49,36 @@ function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverP
   );
 }
 
-export interface PopoverTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  asChild?: boolean;
-}
+const PopoverTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ className, children, asChild, onClick, ...props }, ref) => {
+  const { open, onOpenChange, triggerRef } = usePopover();
 
-const PopoverTrigger = React.forwardRef<HTMLButtonElement, PopoverTriggerProps>(
-  ({ children, asChild, onClick, ...props }, ref) => {
-    const { open, onOpenChange, triggerRef } = usePopover();
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    onClick?.(e);
+    onOpenChange(!open);
+  };
 
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      onClick?.(e);
-      onOpenChange(!open);
-    };
-
-    if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<{
-        onClick?: (e: React.MouseEvent) => void;
-        ref?: React.Ref<HTMLButtonElement>;
-      }>, {
-        onClick: () => onOpenChange(!open),
-        ref: triggerRef,
-      });
-    }
-
-    return (
-      <button ref={ref || triggerRef} onClick={handleClick} {...props}>
-        {children}
-      </button>
-    );
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
+      onClick: () => onOpenChange(!open),
+    });
   }
-);
-PopoverTrigger.displayName = "PopoverTrigger";
 
-const PopoverAnchor = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={className} {...props} />
-));
-PopoverAnchor.displayName = "PopoverAnchor";
+  return (
+    <button
+      ref={ref || triggerRef}
+      className={className}
+      onClick={handleClick}
+      aria-expanded={open}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+PopoverTrigger.displayName = "PopoverTrigger";
 
 const PopoverContent = React.forwardRef<
   HTMLDivElement,
@@ -100,7 +94,7 @@ const PopoverContent = React.forwardRef<
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-popover-content]')) {
+      if (!target.closest("[data-popover]")) {
         onOpenChange(false);
       }
     };
@@ -122,23 +116,35 @@ const PopoverContent = React.forwardRef<
 
   if (!open) return null;
 
+  const alignStyles: Record<string, string> = {
+    start: "left-0",
+    center: "left-1/2 -translate-x-1/2",
+    end: "right-0",
+  };
+
   return (
     <div
       ref={ref}
-      data-popover-content
+      data-popover
       className={cn(
-        "absolute z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
-        "animate-scale-in",
-        align === "start" && "left-0",
-        align === "center" && "left-1/2 -translate-x-1/2",
-        align === "end" && "right-0",
+        "absolute z-50 w-72 rounded-lg border border-gray-200 bg-white p-4 shadow-lg outline-none",
+        "animate-slide-down",
+        "top-full mt-1",
+        alignStyles[align],
         className
       )}
-      style={{ top: `calc(100% + ${sideOffset}px)` }}
       {...props}
     />
   );
 });
 PopoverContent.displayName = "PopoverContent";
+
+const PopoverAnchor = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={className} {...props} />
+));
+PopoverAnchor.displayName = "PopoverAnchor";
 
 export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };

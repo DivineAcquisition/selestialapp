@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DrawerContextValue {
@@ -18,36 +19,46 @@ const useDrawer = () => {
   return context;
 };
 
-interface DrawerProps {
+function Drawer({
+  children,
+  open,
+  onOpenChange,
+  shouldScaleBackground,
+  ...props
+}: {
   children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   shouldScaleBackground?: boolean;
-}
+}) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
 
-function Drawer({
-  children,
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange,
-}: DrawerProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : uncontrolledOpen;
-  const onOpenChange = isControlled ? controlledOnOpenChange! : setUncontrolledOpen;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(newOpen);
+    }
+    onOpenChange?.(newOpen);
+  };
 
   return (
-    <DrawerContext.Provider value={{ open, onOpenChange }}>
+    <DrawerContext.Provider value={{ open: isOpen, onOpenChange: handleOpenChange }}>
       {children}
     </DrawerContext.Provider>
   );
 }
 
-function DrawerTrigger({
-  children,
-  asChild,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }) {
+const DrawerTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ children, asChild, onClick, ...props }, ref) => {
   const { onOpenChange } = useDrawer();
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    onClick?.(e);
+    onOpenChange(true);
+  };
 
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
@@ -56,36 +67,17 @@ function DrawerTrigger({
   }
 
   return (
-    <button onClick={() => onOpenChange(true)} {...props}>
+    <button ref={ref} onClick={handleClick} {...props}>
       {children}
     </button>
   );
-}
+});
+DrawerTrigger.displayName = "DrawerTrigger";
 
 function DrawerPortal({ children }: { children: React.ReactNode }) {
   const { open } = useDrawer();
   if (!open) return null;
   return <>{children}</>;
-}
-
-function DrawerClose({
-  children,
-  asChild,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }) {
-  const { onOpenChange } = useDrawer();
-
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
-      onClick: () => onOpenChange(false),
-    });
-  }
-
-  return (
-    <button onClick={() => onOpenChange(false)} {...props}>
-      {children}
-    </button>
-  );
 }
 
 const DrawerOverlay = React.forwardRef<
@@ -97,7 +89,7 @@ const DrawerOverlay = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("fixed inset-0 z-50 bg-black/80", className)}
+      className={cn("fixed inset-0 z-50 bg-black/50", "animate-fade-in", className)}
       onClick={() => onOpenChange(false)}
       {...props}
     />
@@ -127,13 +119,13 @@ const DrawerContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-xl border-t border-gray-200 bg-white",
           className
         )}
         onClick={(e) => e.stopPropagation()}
         {...props}
       >
-        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        <div className="mx-auto mt-4 h-1.5 w-12 rounded-full bg-gray-300" />
         {children}
       </div>
     </DrawerPortal>
@@ -167,12 +159,9 @@ const DrawerTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <h2
+  <h3
     ref={ref}
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className
-    )}
+    className={cn("text-lg font-semibold text-gray-900 leading-none tracking-tight", className)}
     {...props}
   />
 ));
@@ -184,11 +173,26 @@ const DrawerDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-gray-500", className)}
     {...props}
   />
 ));
 DrawerDescription.displayName = "DrawerDescription";
+
+const DrawerClose = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ ...props }, ref) => {
+  const { onOpenChange } = useDrawer();
+  return (
+    <button
+      ref={ref}
+      onClick={() => onOpenChange(false)}
+      {...props}
+    />
+  );
+});
+DrawerClose.displayName = "DrawerClose";
 
 export {
   Drawer,

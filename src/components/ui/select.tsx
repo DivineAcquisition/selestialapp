@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SelectContextValue {
@@ -95,7 +95,7 @@ const SelectValue = React.forwardRef<
   const { value } = useSelect();
 
   return (
-    <span ref={ref} className={cn("block truncate", className)} {...props}>
+    <span ref={ref} className={cn("block truncate", !value && "text-gray-400", className)} {...props}>
       {value || placeholder || "Select..."}
     </span>
   );
@@ -113,10 +113,11 @@ const SelectTrigger = React.forwardRef<
       ref={ref || triggerRef}
       type="button"
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-        "placeholder:text-muted-foreground",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-10 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900",
+        "transition-all duration-200",
+        "hover:border-gray-300",
+        "focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20",
+        "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
         "[&>span]:line-clamp-1",
         className
       )}
@@ -125,39 +126,11 @@ const SelectTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform duration-200", open && "rotate-180")} />
     </button>
   );
 });
 SelectTrigger.displayName = "SelectTrigger";
-
-function SelectScrollUpButton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn(
-        "flex cursor-default items-center justify-center py-1",
-        className
-      )}
-      {...props}
-    >
-      <ChevronUp className="h-4 w-4" />
-    </div>
-  );
-}
-
-function SelectScrollDownButton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn(
-        "flex cursor-default items-center justify-center py-1",
-        className
-      )}
-      {...props}
-    >
-      <ChevronDown className="h-4 w-4" />
-    </div>
-  );
-}
 
 const SelectContent = React.forwardRef<
   HTMLDivElement,
@@ -197,8 +170,8 @@ const SelectContent = React.forwardRef<
       ref={ref}
       data-select-content
       className={cn(
-        "absolute z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
-        "animate-scale-in",
+        "absolute z-50 max-h-60 min-w-[8rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg",
+        "animate-slide-down",
         position === "popper" && "w-full top-full mt-1",
         className
       )}
@@ -216,7 +189,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+    className={cn("py-1.5 pl-8 pr-2 text-xs font-medium text-gray-500", className)}
     {...props}
   />
 ));
@@ -233,16 +206,16 @@ const SelectItem = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
-        "hover:bg-accent hover:text-accent-foreground",
-        "focus:bg-accent focus:text-accent-foreground",
+        "relative flex w-full cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-2 text-sm text-gray-700 outline-none",
+        "hover:bg-gray-50",
+        isSelected && "bg-primary/5 text-primary",
         disabled && "pointer-events-none opacity-50",
         className
       )}
       onClick={() => !disabled && onValueChange(value)}
       {...props}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
         {isSelected && <Check className="h-4 w-4" />}
       </span>
       {children}
@@ -257,11 +230,19 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn("-mx-1 my-1 h-px bg-gray-100", className)}
     {...props}
   />
 ));
 SelectSeparator.displayName = "SelectSeparator";
+
+function SelectScrollUpButton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return null;
+}
+
+function SelectScrollDownButton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return null;
+}
 
 export {
   Select,

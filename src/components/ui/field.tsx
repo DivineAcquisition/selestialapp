@@ -20,11 +20,7 @@ export interface FieldProps extends React.HTMLAttributes<HTMLDivElement> {
 const Field = React.forwardRef<HTMLDivElement, FieldProps>(
   ({ className, name, error, children, ...props }, ref) => (
     <FieldContext.Provider value={{ name, error }}>
-      <div
-        ref={ref}
-        className={cn("space-y-2", className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("space-y-2", className)} {...props}>
         {children}
       </div>
     </FieldContext.Provider>
@@ -32,15 +28,12 @@ const Field = React.forwardRef<HTMLDivElement, FieldProps>(
 );
 Field.displayName = "Field";
 
-const FieldGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("space-y-4", className)}
-      {...props}
-    />
-  )
-);
+const FieldGroup = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("space-y-4", className)} {...props} />
+));
 FieldGroup.displayName = "FieldGroup";
 
 export interface FieldLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
@@ -48,37 +41,32 @@ export interface FieldLabelProps extends React.LabelHTMLAttributes<HTMLLabelElem
 }
 
 const FieldLabel = React.forwardRef<HTMLLabelElement, FieldLabelProps>(
-  ({ className, children, required, ...props }, ref) => {
-    const { name } = useField();
-    return (
-      <label
-        ref={ref}
-        htmlFor={name}
-        className={cn(
-          "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </label>
-    );
-  }
+  ({ className, required, children, ...props }, ref) => (
+    <label
+      ref={ref}
+      className={cn(
+        "text-sm font-medium text-gray-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {required && <span className="text-red-500 ml-1">*</span>}
+    </label>
+  )
 );
 FieldLabel.displayName = "FieldLabel";
 
-export interface FieldDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
-
-const FieldDescription = React.forwardRef<HTMLParagraphElement, FieldDescriptionProps>(
-  ({ className, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  )
-);
+const FieldDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-gray-500", className)}
+    {...props}
+  />
+));
 FieldDescription.displayName = "FieldDescription";
 
 export interface FieldErrorProps extends React.HTMLAttributes<HTMLParagraphElement> {
@@ -89,13 +77,13 @@ const FieldError = React.forwardRef<HTMLParagraphElement, FieldErrorProps>(
   ({ className, children, show = true, ...props }, ref) => {
     const { error } = useField();
     const errorMessage = children || error;
-    
+
     if (!errorMessage || !show) return null;
-    
+
     return (
       <p
         ref={ref}
-        className={cn("text-sm font-medium text-destructive", className)}
+        className={cn("text-sm font-medium text-red-500", className)}
         {...props}
       >
         {errorMessage}

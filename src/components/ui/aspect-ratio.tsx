@@ -3,9 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-interface AspectRatioProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AspectRatioProps extends React.HTMLAttributes<HTMLDivElement> {
   ratio?: number;
-  children?: React.ReactNode;
 }
 
 const AspectRatio = React.forwardRef<HTMLDivElement, AspectRatioProps>(
@@ -15,10 +14,9 @@ const AspectRatio = React.forwardRef<HTMLDivElement, AspectRatioProps>(
         ref={ref}
         className={cn("relative w-full", className)}
         style={{
-          paddingBottom: `${100 / ratio}%`,
           ...style,
+          paddingBottom: `${100 / ratio}%`,
         }}
-        data-slot="aspect-ratio"
         {...props}
       >
         <div className="absolute inset-0">{children}</div>

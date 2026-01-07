@@ -47,9 +47,9 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         className={cn("relative flex w-full touch-none select-none items-center", className)}
         {...props}
       >
-        <div className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+        <div className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-100">
           <div
-            className="absolute h-full bg-primary transition-all"
+            className="absolute h-full bg-primary"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -62,14 +62,14 @@ const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
           onChange={handleChange}
           disabled={disabled}
           className={cn(
-            "absolute inset-0 h-full w-full cursor-pointer opacity-0",
+            "absolute inset-0 w-full cursor-pointer opacity-0",
             disabled && "cursor-not-allowed"
           )}
         />
         <div
           className={cn(
-            "absolute h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors",
-            "pointer-events-none",
+            "absolute h-5 w-5 rounded-full border-2 border-primary bg-white shadow-sm transition-colors",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
             disabled && "opacity-50"
           )}
           style={{ left: `calc(${percentage}% - 10px)` }}

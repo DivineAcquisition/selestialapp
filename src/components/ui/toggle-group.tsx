@@ -1,16 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { toggleVariants } from "@/components/ui/toggle";
+import type { VariantProps } from "class-variance-authority";
 
 interface ToggleGroupContextValue {
-  type: "single" | "multiple";
   value: string[];
   onValueChange: (value: string) => void;
-  variant?: VariantProps<typeof toggleVariants>["variant"];
-  size?: VariantProps<typeof toggleVariants>["size"];
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
 }
 
 const ToggleGroupContext = React.createContext<ToggleGroupContextValue | null>(null);
@@ -18,7 +17,7 @@ const ToggleGroupContext = React.createContext<ToggleGroupContextValue | null>(n
 const useToggleGroup = () => {
   const context = React.useContext(ToggleGroupContext);
   if (!context) {
-    throw new Error("ToggleGroupItem must be used within a ToggleGroup");
+    throw new Error("ToggleGroup components must be used within a ToggleGroup");
   }
   return context;
 };
@@ -47,14 +46,12 @@ const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
     },
     ref
   ) => {
-    const normalizeValue = (v: string | string[] | undefined): string[] => {
-      if (v === undefined) return [];
-      return Array.isArray(v) ? v : [v];
+    const normalizeValue = (val?: string | string[]): string[] => {
+      if (!val) return [];
+      return Array.isArray(val) ? val : [val];
     };
 
-    const [internalValue, setInternalValue] = React.useState<string[]>(
-      normalizeValue(defaultValue)
-    );
+    const [internalValue, setInternalValue] = React.useState(normalizeValue(defaultValue));
     const isControlled = value !== undefined;
     const currentValue = isControlled ? normalizeValue(value) : internalValue;
 
@@ -84,11 +81,10 @@ const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
 
     return (
       <ToggleGroupContext.Provider
-        value={{ type, value: currentValue, onValueChange: handleValueChange, variant, size }}
+        value={{ value: currentValue, onValueChange: handleValueChange, variant: variant ?? undefined, size: size ?? undefined }}
       >
         <div
           ref={ref}
-          role="group"
           className={cn("flex items-center justify-center gap-1", className)}
           {...props}
         >
@@ -119,8 +115,8 @@ const ToggleGroupItem = React.forwardRef<HTMLButtonElement, ToggleGroupItemProps
         data-state={isPressed ? "on" : "off"}
         className={cn(
           toggleVariants({
-            variant: variant || context.variant,
-            size: size || context.size,
+            variant: variant ?? context.variant,
+            size: size ?? context.size,
           }),
           className
         )}
