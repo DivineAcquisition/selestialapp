@@ -65,8 +65,14 @@ export default function Sidebar() {
     router.push('/login');
   };
 
+  // Routes that should only match exactly (have sub-routes in nav)
+  const exactMatchRoutes = ['/settings'];
+  
   const NavLink = ({ item }: { item: NavItem }) => {
-    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+    const isExactMatchOnly = exactMatchRoutes.includes(item.href);
+    const isActive = isExactMatchOnly 
+      ? pathname === item.href
+      : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
     
     return (
       <Link
