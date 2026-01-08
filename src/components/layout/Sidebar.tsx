@@ -27,6 +27,7 @@ const mainNavigation: NavItem[] = [
 ];
 
 const manageNavigation: NavItem[] = [
+  { name: 'Bookings', href: '/bookings', icon: 'calendar' },
   { name: 'Quotes', href: '/quotes', icon: 'quote' },
   { name: 'Payment Links', href: '/payments', icon: 'link' },
   { name: 'Customers', href: '/customers', icon: 'users' },

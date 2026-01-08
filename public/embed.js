@@ -2,7 +2,7 @@
   'use strict';
   
   // Configuration
-  var SELESTIAL_URL = 'https://access.selestial.io';
+  var SELESTIAL_URL = 'https://app.selestial.io';
   
   // Initialize when DOM is ready
   function init() {
