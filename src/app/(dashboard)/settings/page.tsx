@@ -273,7 +273,7 @@ function SettingsContent() {
         {/* Quick Links */}
         <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl">
           <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <NavigationCard 
               icon={<Icon name="creditCard" size="lg" />}
               title="Billing"
@@ -298,6 +298,12 @@ function SettingsContent() {
               title="Analytics"
               description="View performance"
               onClick={() => router.push('/analytics')}
+            />
+            <NavigationCard 
+              icon={<Icon name="help" size="lg" />}
+              title="Support"
+              description="Get help"
+              onClick={() => router.push('/settings/support')}
             />
           </div>
         </Card>

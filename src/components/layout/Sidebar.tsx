@@ -46,6 +46,7 @@ const settingsNavigation: NavItem[] = [
   { name: 'Connections', href: '/connections', icon: 'plug' },
   { name: 'Billing', href: '/billing', icon: 'creditCard' },
   { name: 'Settings', href: '/settings', icon: 'settings' },
+  { name: 'Support', href: '/settings/support', icon: 'help' },
 ];
 
 export default function Sidebar() {
