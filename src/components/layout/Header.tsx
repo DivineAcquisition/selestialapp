@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export default function Header({ title, onMenuClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-6 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between px-6 border-b border-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       {/* Left: Menu & Title */}
       <div className="flex items-center gap-4">
         {onMenuClick && (

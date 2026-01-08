@@ -38,7 +38,7 @@ export default function Layout({
   showPattern = true,
 }: LayoutProps) {
   return (
-    <div className="flex min-h-screen bg-gray-50/50">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar - hidden on mobile */}
       <div className="hidden md:block flex-shrink-0">
         <Sidebar />
