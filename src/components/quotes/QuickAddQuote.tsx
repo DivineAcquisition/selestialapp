@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Form } from '@/components/ui/form';
+import { SimpleForm as Form } from '@/components/ui/form';
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
 import {
   Dialog,

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Form } from '@/components/ui/form';
+import { SimpleForm as Form } from '@/components/ui/form';
 import { Field, FieldLabel, FieldError, FieldDescription, FieldGroup } from '@/components/ui/field';
 import {
   Select,

@@ -5,7 +5,7 @@ import { Business, IndustryType } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form } from '@/components/ui/form';
+import { SimpleForm as Form } from '@/components/ui/form';
 import { Field, FieldLabel, FieldError, FieldDescription, FieldGroup } from '@/components/ui/field';
 import {
   Select,
