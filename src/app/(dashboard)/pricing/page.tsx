@@ -159,7 +159,15 @@ const TABS: { id: TabId; label: string; icon: IconName }[] = [
 // HELPER FUNCTIONS
 // ============================================================================
 
-function getInitialConfig(): { wizard: WizardConfig; region: string; rules: PriceRule[]; retentionPlan: string | null } {
+interface StoredConfig {
+  wizard: WizardConfig;
+  region: string;
+  rules: PriceRule[];
+  retentionPlan: string | null;
+  services?: Record<string, { enabled: boolean; customPrice?: number }>;
+}
+
+function getInitialConfig(): StoredConfig {
   if (typeof window === "undefined") {
     return { wizard: DEFAULT_WIZARD_CONFIG, region: "Baseline", rules: DEFAULT_RULES, retentionPlan: null };
   }
@@ -172,6 +180,7 @@ function getInitialConfig(): { wizard: WizardConfig; region: string; rules: Pric
         region: parsed.region || "Baseline",
         rules: parsed.rules || DEFAULT_RULES,
         retentionPlan: parsed.retentionPlan || null,
+        services: parsed.services || {},
       };
     } catch {
       console.warn("Failed to parse pricing wizard config");
@@ -181,6 +190,8 @@ function getInitialConfig(): { wizard: WizardConfig; region: string; rules: Pric
 }
 
 function calculateHourlyRate(config: WizardConfig): number {
+  // Prevent division by zero when margin is 100%
+  if (config.targetMargin >= 100) return 0;
   const baseRate = config.hourlyLaborCost / (1 - config.targetMargin / 100);
   const experienceMultiplier = EXPERIENCE_LEVELS.find(e => e.value === config.yearsInBusiness)?.multiplier || 1;
   return baseRate * experienceMultiplier;
@@ -229,7 +240,8 @@ function SetupPanel({
   const jobPrice = calculateJobPrice(config);
   const teamCapacity = TEAM_SIZES.find(t => t.value === config.teamSize)?.capacity || 1;
   const monthlyRevenue = jobPrice * config.jobsPerDay * teamCapacity * 22;
-  const breakEvenJobs = Math.ceil(config.monthlyOverhead / (jobPrice * (config.targetMargin / 100)));
+  const profitPerJob = jobPrice * (config.targetMargin / 100);
+  const breakEvenJobs = profitPerJob > 0 ? Math.ceil(config.monthlyOverhead / profitPerJob) : 0;
 
   return (
     <div className="space-y-6">
@@ -644,7 +656,9 @@ function RulesPanel({
             </div>
             <Badge className={cn(
               "text-xs",
-              rule.value > 0 || rule.type === "multiplier"
+              (rule.type === "multiplier" && rule.value > 1) || 
+              (rule.type === "percentage" && rule.value > 0) ||
+              (rule.type === "flat" && rule.value > 0)
                 ? "bg-amber-100 text-amber-700"
                 : "bg-emerald-100 text-emerald-700"
             )}>
@@ -794,28 +808,36 @@ function CalculatorPanel({
         </div>
         
         <div className="max-h-64 overflow-auto space-y-1 border rounded-xl p-2">
-          {enabledServices.map(service => {
-            const price = service.customPrice ?? Math.round(service.avgPrice * regionMultiplier);
-            const isSelected = selectedServices.includes(service.id);
-            return (
-              <button
-                key={service.id}
-                onClick={() => setSelectedServices(prev =>
-                  isSelected ? prev.filter(id => id !== service.id) : [...prev, service.id]
-                )}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-lg text-sm transition-colors",
-                  isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  {isSelected && <Icon name="check" size="sm" />}
-                  {service.name}
-                </span>
-                <span className="font-medium">{formatPrice(price, service.pricingUnit)}</span>
-              </button>
-            );
-          })}
+          {enabledServices.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Icon name="layers" size="xl" className="mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No services enabled</p>
+              <p className="text-xs">Enable services in the Services tab first</p>
+            </div>
+          ) : (
+            enabledServices.map(service => {
+              const price = service.customPrice ?? Math.round(service.avgPrice * regionMultiplier);
+              const isSelected = selectedServices.includes(service.id);
+              return (
+                <button
+                  key={service.id}
+                  onClick={() => setSelectedServices(prev =>
+                    isSelected ? prev.filter(id => id !== service.id) : [...prev, service.id]
+                  )}
+                  className={cn(
+                    "w-full flex items-center justify-between p-3 rounded-lg text-sm transition-colors",
+                    isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    {isSelected && <Icon name="check" size="sm" />}
+                    {service.name}
+                  </span>
+                  <span className="font-medium">{formatPrice(price, service.pricingUnit)}</span>
+                </button>
+              );
+            })
+          )}
         </div>
 
         {selectedServices.length > 0 && (
@@ -865,6 +887,7 @@ export default function PricingWizardPage() {
   const [rules, setRules] = useState<PriceRule[]>(DEFAULT_RULES);
   const [retentionPlan, setRetentionPlan] = useState<string | null>(null);
   const [services, setServices] = useState<EnabledService[]>([]);
+  const [savedServiceSettings, setSavedServiceSettings] = useState<Record<string, { enabled: boolean; customPrice?: number }>>({});
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -874,7 +897,10 @@ export default function PricingWizardPage() {
     setRegion(initial.region);
     setRules(initial.rules);
     setRetentionPlan(initial.retentionPlan);
+    setSavedServiceSettings(initial.services || {});
     setIsLoaded(true);
+    // Reset hasChanges after a tick to avoid showing "unsaved" on initial load
+    setTimeout(() => setHasChanges(false), 100);
   }, []);
 
   // Get industry data
@@ -895,27 +921,39 @@ export default function PricingWizardPage() {
   // Initialize services when industry changes
   useEffect(() => {
     if (selectedIndustry) {
-      const newServices: EnabledService[] = selectedIndustry.services.map((service, index) => ({
-        ...service,
-        id: `${selectedIndustry.slug}-${index}`,
-        enabled: index < 8,
-      }));
+      const newServices: EnabledService[] = selectedIndustry.services.map((service, index) => {
+        const serviceId = `${selectedIndustry.slug}-${index}`;
+        const savedSettings = savedServiceSettings[serviceId];
+        return {
+          ...service,
+          id: serviceId,
+          enabled: savedSettings?.enabled ?? index < 8, // Default: first 8 enabled
+          customPrice: savedSettings?.customPrice,
+        };
+      });
       setServices(newServices);
     }
-  }, [selectedIndustry]);
+  }, [selectedIndustry, savedServiceSettings]);
 
   // Save to localStorage when config changes
   useEffect(() => {
     if (isLoaded) {
+      // Build services settings map
+      const servicesMap: Record<string, { enabled: boolean; customPrice?: number }> = {};
+      services.forEach(s => {
+        servicesMap[s.id] = { enabled: s.enabled, customPrice: s.customPrice };
+      });
+      
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         wizard: wizardConfig,
         region,
         rules,
         retentionPlan,
+        services: servicesMap,
       }));
       setHasChanges(true);
     }
-  }, [wizardConfig, region, rules, retentionPlan, isLoaded]);
+  }, [wizardConfig, region, rules, retentionPlan, services, isLoaded]);
 
   // Handlers
   const handleWizardConfigChange = useCallback((updates: Partial<WizardConfig>) => {
