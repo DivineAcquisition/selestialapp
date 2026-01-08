@@ -229,12 +229,18 @@ function SetupPanel({
   onConfigChange,
   onRegionChange,
   onReset,
+  onAIConfigure,
+  isGeneratingAI,
+  isAiConfigured,
 }: {
   config: WizardConfig;
   region: string;
   onConfigChange: (updates: Partial<WizardConfig>) => void;
   onRegionChange: (region: string) => void;
   onReset: () => void;
+  onAIConfigure: () => void;
+  isGeneratingAI: boolean;
+  isAiConfigured: boolean;
 }) {
   const hourlyRate = calculateHourlyRate(config);
   const jobPrice = calculateJobPrice(config);
@@ -509,12 +515,81 @@ function SetupPanel({
         </div>
       </div>
 
-      {/* Reset Button */}
-      <div className="pt-4 border-t flex justify-end">
-        <Button variant="outline" onClick={onReset} className="gap-2 text-muted-foreground">
-          <Icon name="refresh" size="sm" />
-          Reset All Settings
-        </Button>
+      {/* Action Buttons */}
+      <div className="pt-6 border-t">
+        {/* AI Configuration CTA */}
+        {config.industry && (
+          <Card className={cn(
+            "p-4 mb-4 transition-all",
+            isAiConfigured 
+              ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+              : "bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border-primary/30"
+          )}>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center",
+                  isAiConfigured ? "bg-emerald-100 dark:bg-emerald-900/50" : "bg-gradient-to-br from-primary to-purple-500"
+                )}>
+                  <Icon 
+                    name={isAiConfigured ? "checkCircle" : "wand"} 
+                    size="lg" 
+                    className={isAiConfigured ? "text-emerald-600" : "text-white"} 
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">
+                    {isAiConfigured ? "AI Configuration Applied" : "Ready for AI Configuration"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isAiConfigured 
+                      ? "Services, pricing, and retention plans optimized"
+                      : "Let AI optimize your services, pricing & retention offers"}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={onAIConfigure}
+                disabled={isGeneratingAI}
+                className={cn(
+                  "gap-2 rounded-xl whitespace-nowrap",
+                  isAiConfigured 
+                    ? "bg-emerald-600 hover:bg-emerald-700" 
+                    : "bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
+                )}
+              >
+                {isGeneratingAI ? (
+                  <>
+                    <Icon name="spinner" size="sm" className="animate-spin" />
+                    Generating...
+                  </>
+                ) : isAiConfigured ? (
+                  <>
+                    <Icon name="refresh" size="sm" />
+                    Reconfigure
+                  </>
+                ) : (
+                  <>
+                    <Icon name="sparkles" size="sm" />
+                    Auto-Configure with AI
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        <div className="flex justify-between items-center">
+          <p className="text-xs text-muted-foreground">
+            {config.industry 
+              ? "Configure your setup, then let AI optimize your services and pricing"
+              : "Select an industry to get started"}
+          </p>
+          <Button variant="outline" onClick={onReset} className="gap-2 text-muted-foreground">
+            <Icon name="refresh" size="sm" />
+            Reset All
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -874,12 +949,22 @@ function CalculatorPanel({
 // MAIN PAGE COMPONENT
 // ============================================================================
 
+interface AIInsights {
+  projectedMonthlyRevenue: number;
+  projectedAvgTicket: number;
+  conversionTips: string[];
+  warningsOrSuggestions: string[];
+}
+
 export default function PricingWizardPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabId>("setup");
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
+  const [isAiConfigured, setIsAiConfigured] = useState(false);
 
   // Load initial state
   const [wizardConfig, setWizardConfig] = useState<WizardConfig>(DEFAULT_WIZARD_CONFIG);
@@ -955,9 +1040,105 @@ export default function PricingWizardPage() {
     }
   }, [wizardConfig, region, rules, retentionPlan, services, isLoaded]);
 
+  // AI Auto-Configuration
+  const handleAIConfiguration = useCallback(async () => {
+    if (!wizardConfig.industry) {
+      toast({ title: "Select an industry first", variant: "destructive" });
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    try {
+      const response = await fetch('/api/ai/pricing-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wizardConfig, region }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate configuration');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Apply AI-suggested services
+        if (data.services && selectedIndustry) {
+          const newServices: EnabledService[] = selectedIndustry.services.map((service, index) => {
+            const aiService = data.services.find((s: { serviceIndex: number }) => s.serviceIndex === index);
+            return {
+              ...service,
+              id: `${selectedIndustry.slug}-${index}`,
+              enabled: aiService?.enabled ?? index < 8,
+              customPrice: aiService?.suggestedPrice,
+            };
+          });
+          setServices(newServices);
+          
+          // Update saved settings
+          const servicesMap: Record<string, { enabled: boolean; customPrice?: number }> = {};
+          newServices.forEach(s => {
+            servicesMap[s.id] = { enabled: s.enabled, customPrice: s.customPrice };
+          });
+          setSavedServiceSettings(servicesMap);
+        }
+
+        // Apply AI-suggested price rules
+        if (data.priceRules) {
+          const newRules: PriceRule[] = data.priceRules.map((rule: { name: string; type: 'multiplier' | 'percentage' | 'flat'; value: number; condition: string; enabled: boolean }, index: number) => ({
+            id: `rule-${index}`,
+            name: rule.name,
+            type: rule.type,
+            value: rule.value,
+            condition: rule.condition,
+            enabled: rule.enabled,
+          }));
+          setRules(newRules);
+        }
+
+        // Apply AI-suggested retention plan
+        if (data.retentionPlans) {
+          const recommended = data.retentionPlans.find((p: { recommended: boolean }) => p.recommended);
+          if (recommended) {
+            setRetentionPlan(recommended.planName);
+          }
+        }
+
+        // Store insights
+        if (data.insights) {
+          setAiInsights(data.insights);
+        }
+
+        setIsAiConfigured(true);
+        setHasChanges(true);
+
+        toast({
+          title: data.aiGenerated ? "AI Configuration Complete" : "Configuration Applied",
+          description: data.aiGenerated 
+            ? "Services, pricing, and retention plans have been optimized by AI."
+            : "Default configuration applied based on your business profile.",
+        });
+
+        // Auto-navigate to services tab to show results
+        setActiveTab("services");
+      }
+    } catch (error) {
+      console.error('AI config error:', error);
+      toast({
+        title: "Configuration failed",
+        description: "Could not generate AI configuration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  }, [wizardConfig, region, selectedIndustry, toast]);
+
   // Handlers
   const handleWizardConfigChange = useCallback((updates: Partial<WizardConfig>) => {
     setWizardConfig(prev => ({ ...prev, ...updates, lastUpdatedAt: new Date().toISOString() }));
+    // Reset AI configured state when setup changes
+    setIsAiConfigured(false);
   }, []);
 
   const handleServiceToggle = useCallback((id: string) => {
@@ -1101,6 +1282,9 @@ export default function PricingWizardPage() {
                   onConfigChange={handleWizardConfigChange}
                   onRegionChange={setRegion}
                   onReset={() => setShowResetDialog(true)}
+                  onAIConfigure={handleAIConfiguration}
+                  isGeneratingAI={isGeneratingAI}
+                  isAiConfigured={isAiConfigured}
                 />
               )}
               {activeTab === "services" && selectedIndustry && (
@@ -1192,9 +1376,62 @@ export default function PricingWizardPage() {
               </Card>
             )}
 
+            {/* AI Insights */}
+            {aiInsights && (
+              <Card className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-primary/5 border-purple-500/20">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Icon name="sparkles" size="sm" className="text-purple-500" />
+                  AI Insights
+                </h3>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-white/50 dark:bg-black/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Projected Revenue</p>
+                      <p className="font-bold text-emerald-600">${aiInsights.projectedMonthlyRevenue.toLocaleString()}/mo</p>
+                    </div>
+                    <div className="p-2 bg-white/50 dark:bg-black/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Avg Ticket</p>
+                      <p className="font-bold">${aiInsights.projectedAvgTicket}</p>
+                    </div>
+                  </div>
+                  
+                  {aiInsights.conversionTips.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-1 text-purple-600">Conversion Tips</p>
+                      <ul className="space-y-1">
+                        {aiInsights.conversionTips.slice(0, 3).map((tip, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
+                            <Icon name="checkCircle" size="xs" className="text-emerald-500 mt-0.5 shrink-0" />
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {aiInsights.warningsOrSuggestions.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-1 text-amber-600">Suggestions</p>
+                      <ul className="space-y-1">
+                        {aiInsights.warningsOrSuggestions.map((warning, i) => (
+                          <li key={i} className="text-xs text-amber-700 dark:text-amber-400 flex items-start gap-1">
+                            <Icon name="alertCircle" size="xs" className="mt-0.5 shrink-0" />
+                            <span>{warning}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
             {/* Your Configuration */}
             <Card className="p-4 rounded-xl">
-              <h3 className="font-semibold text-sm mb-3">Your Configuration</h3>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                {isAiConfigured && <Icon name="sparkles" size="xs" className="text-purple-500" />}
+                Your Configuration
+              </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Industry</span>
@@ -1220,6 +1457,14 @@ export default function PricingWizardPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Retention</span>
                     <span className="font-medium text-emerald-600">{retentionPlan}</span>
+                  </div>
+                )}
+                {isAiConfigured && (
+                  <div className="pt-2 mt-2 border-t">
+                    <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs">
+                      <Icon name="sparkles" size="xs" className="mr-1" />
+                      AI Optimized
+                    </Badge>
                   </div>
                 )}
               </div>
