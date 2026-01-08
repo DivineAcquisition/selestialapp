@@ -100,14 +100,7 @@ export default function AuthLayout({
               alt="Selestial" 
               width={32} 
               height={32} 
-              className="rounded-lg dark:hidden"
-            />
-            <Image 
-              src="/logo-icon-white.png" 
-              alt="Selestial" 
-              width={32} 
-              height={32} 
-              className="rounded-lg hidden dark:block"
+              className="rounded-lg"
             />
             <span className="text-xl font-bold text-primary">Selestial</span>
           </Link>

@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
@@ -56,7 +55,6 @@ export default function Sidebar() {
   const { business } = useBusiness();
   const { user, signOut } = useAuth();
   const { totalUnread } = useConversations();
-  const { theme, setTheme } = useTheme();
   
   const initials = business?.owner_name
     ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -65,10 +63,6 @@ export default function Sidebar() {
   const handleSignOut = async () => {
     await signOut();
     router.push('/login');
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   // Routes that should only match exactly (have sub-routes in nav)
@@ -127,36 +121,20 @@ export default function Sidebar() {
 
   return (
     <div className="flex h-screen w-60 flex-col bg-card border-r border-border">
-      {/* Header with Business Selector */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-border">
+      {/* Header with Logo */}
+      <div className="flex items-center h-14 px-4 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5">
-          {/* Light mode: colored logo, Dark mode: white logo */}
           <Image 
             src="/logo-icon-new.png" 
             alt="Selestial" 
             width={28} 
             height={28} 
-            className="rounded-lg dark:hidden" 
-          />
-          <Image 
-            src="/logo-icon-white.png" 
-            alt="Selestial" 
-            width={28} 
-            height={28} 
-            className="rounded-lg hidden dark:block" 
+            className="rounded-lg" 
           />
           <span className="text-base font-semibold text-foreground">
             Selestial
           </span>
         </Link>
-        <button 
-          onClick={toggleTheme}
-          className="p-1.5 rounded-lg hover:bg-accent transition-colors"
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          <Icon name="sun" size="sm" className="text-muted-foreground hidden dark:block" />
-          <Icon name="moon" size="sm" className="text-muted-foreground dark:hidden" />
-        </button>
       </div>
       
       {/* Search */}
