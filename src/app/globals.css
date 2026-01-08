@@ -178,6 +178,20 @@
   50% { opacity: 0.5; }
 }
 
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
 @layer utilities {
   .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
   .animate-fade-out { animation: fade-out 0.2s ease-out forwards; }
@@ -187,6 +201,9 @@
   .animate-scale-out { animation: scale-out 0.15s ease-out forwards; }
   .animate-spin { animation: spin 1s linear infinite; }
   .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .animate-shimmer { animation: shimmer 2s infinite; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
 
   /* Scrollbar */
   .scrollbar-thin {
