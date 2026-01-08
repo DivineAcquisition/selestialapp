@@ -585,6 +585,12 @@ export default function BookingsPage() {
               <Icon name="code" size="sm" className="mr-2" />
               Embed Widget
             </Button>
+            <Button variant="outline" asChild>
+              <a href="/bookings/customize">
+                <Icon name="settings" size="sm" className="mr-2" />
+                Customize
+              </a>
+            </Button>
             <Button asChild>
               <a href={`/embed/${business?.id}/book`} target="_blank" rel="noopener noreferrer">
                 <Icon name="externalLink" size="sm" className="mr-2" />
