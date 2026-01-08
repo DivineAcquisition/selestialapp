@@ -187,8 +187,8 @@ function HeroSection() {
                       
                       <p className="text-center text-xs text-gray-500 mt-6">
                         By signing up, you agree to our{' '}
-                        <a href="#" className="text-primary hover:underline">Terms</a> and{' '}
-                        <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                        <a href="https://selestial.io/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms</a> and{' '}
+                        <a href="https://selestial.io/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy Policy</a>
                       </p>
                     </motion.div>
                   ) : (
@@ -618,6 +618,197 @@ function FeaturesSection() {
 }
 
 // ============================================================================
+// SEQUENCES SHOWCASE
+// ============================================================================
+
+const sequenceCategories = [
+  {
+    id: 'speed-to-lead',
+    name: 'Speed-to-Lead',
+    icon: 'bolt' as IconName,
+    color: 'red',
+    description: 'Respond instantly to new leads',
+    sequences: [
+      { name: 'Speed-to-Lead', metric: '< 60 sec', description: 'Instant response to new inquiries' },
+      { name: 'Missed Call Recovery', metric: '40% recovery', description: 'Text back when you miss a call' },
+      { name: 'After Hours Response', metric: '24/7 capture', description: 'Never miss a lead overnight' },
+      { name: 'Hot Lead Fast Track', metric: '5 touches/24hr', description: 'Aggressive follow-up for urgent buyers' },
+    ],
+  },
+  {
+    id: 'quote-followup',
+    name: 'Quote Follow-Up',
+    icon: 'fileText' as IconName,
+    color: 'blue',
+    description: 'Convert estimates to booked jobs',
+    sequences: [
+      { name: 'Quote Follow-Up', metric: '21-day nurture', description: '6+ touchpoints until conversion' },
+      { name: 'Estimate Expiry', metric: 'Urgency trigger', description: 'Create FOMO before quote expires' },
+      { name: 'Pipeline Nurture', metric: '60-day drip', description: 'Stay top of mind for big projects' },
+      { name: 'Good-Better-Best', metric: 'Option follow-up', description: 'Help customers decide on package' },
+      { name: 'Financing Follow-Up', metric: 'Payment plans', description: 'Close deals with financing options' },
+      { name: 'Second Estimate', metric: 'Competitive', description: 'Win against competitor quotes' },
+    ],
+  },
+  {
+    id: 'booking-service',
+    name: 'Booking & Service',
+    icon: 'calendar' as IconName,
+    color: 'green',
+    description: 'Reduce no-shows and get reviews',
+    sequences: [
+      { name: 'Booking Reminder', metric: '< 5% no-show', description: 'Multi-touch confirmation sequence' },
+      { name: 'Post-Service Thank You', metric: 'Same-day', description: 'Build goodwill immediately after service' },
+      { name: 'Review Request', metric: '30% response', description: 'Automated 5-star review collection' },
+      { name: 'Referral Request', metric: 'Day 7', description: 'Ask happy customers for referrals' },
+    ],
+  },
+  {
+    id: 'retention',
+    name: 'Customer Retention',
+    icon: 'heart' as IconName,
+    color: 'purple',
+    description: 'Keep customers coming back',
+    sequences: [
+      { name: 'At-Risk Intervention', metric: 'Churn prevention', description: 'Detect and save at-risk customers' },
+      { name: 'Rebooking Reminder', metric: 'Service intervals', description: 'Proactive scheduling for recurring' },
+      { name: 'Win-Back Campaign', metric: 'Lapsed customers', description: 'Re-engage inactive accounts' },
+      { name: 'VIP Nurture', metric: 'High-value', description: 'Special treatment for top customers' },
+      { name: 'Subscription Conversion', metric: 'Recurring revenue', description: 'Convert one-time to recurring' },
+      { name: 'Contract Renewal', metric: '30-day notice', description: 'Renew annual agreements' },
+    ],
+  },
+  {
+    id: 'seasonal',
+    name: 'Seasonal Campaigns',
+    icon: 'sun' as IconName,
+    color: 'orange',
+    description: 'Industry-specific campaigns',
+    sequences: [
+      { name: 'HVAC Seasonal', metric: 'Spring/Fall', description: 'AC tune-up & furnace prep' },
+      { name: 'Pest Quarterly', metric: 'Q1-Q4', description: 'Seasonal pest prevention' },
+      { name: 'Holiday Prep', metric: 'Nov-Dec', description: 'Deep cleaning before holidays' },
+      { name: 'Pool Opening', metric: 'Spring', description: 'Seasonal pool service' },
+      { name: 'Storm Damage', metric: 'Weather events', description: 'Proactive outreach after storms' },
+      { name: 'Annual Maintenance', metric: 'Yearly service', description: 'Preventive maintenance reminders' },
+    ],
+  },
+];
+
+function SequencesSection() {
+  const [activeCategory, setActiveCategory] = useState('speed-to-lead');
+  
+  const currentCategory = sequenceCategories.find(c => c.id === activeCategory);
+  
+  const colorClasses: Record<string, { bg: string; border: string; text: string }> = {
+    red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+    blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
+    green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600' },
+    purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-600' },
+    orange: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-600' },
+  };
+
+  return (
+    <section className="py-24 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
+            34+ Automation Workflows
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Pre-built sequences for every scenario
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Deploy battle-tested automation workflows in minutes. From speed-to-lead to customer retention, 
+            we&apos;ve built sequences that work for home service businesses.
+          </p>
+        </motion.div>
+        
+        {/* Category Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          {sequenceCategories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all",
+                activeCategory === category.id
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+              )}
+            >
+              <Icon name={category.icon} size="sm" />
+              <span className="text-sm font-medium">{category.name}</span>
+            </button>
+          ))}
+        </div>
+        
+        {/* Sequences Grid */}
+        {currentCategory && (
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {currentCategory.sequences.map((sequence, i) => {
+              const colors = colorClasses[currentCategory.color];
+              return (
+                <motion.div
+                  key={sequence.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={cn(
+                    "p-5 rounded-xl border-2 bg-white transition-all hover:shadow-lg",
+                    colors.border
+                  )}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900">{sequence.name}</h3>
+                    <span className={cn(
+                      "px-2 py-1 rounded-md text-xs font-medium",
+                      colors.bg,
+                      colors.text
+                    )}>
+                      {sequence.metric}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">{sequence.description}</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+        
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-12 text-center"
+        >
+          <p className="text-gray-500 mb-4">
+            Every sequence is fully customizable and integrates with your existing workflow.
+          </p>
+          <Link href="/signup">
+            <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+              <Icon name="play" size="sm" className="mr-2" />
+              Start Using Sequences Free
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
 // INTERACTIVE PRICING WIZARD
 // ============================================================================
 
@@ -988,6 +1179,7 @@ export default function LandingPage() {
     <>
       <HeroSection />
       <FeaturesSection />
+      <SequencesSection />
       <PricingWizardDemo />
       <TestimonialsSection />
       <CTASection />

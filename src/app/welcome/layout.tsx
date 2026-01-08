@@ -98,8 +98,9 @@ export default function MarketingLayout({
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-4">Legal</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Terms</a></li>
+                <li><a href="https://selestial.io/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Privacy</a></li>
+                <li><a href="https://selestial.io/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Terms</a></li>
+                <li><a href="https://selestial.io/disclaimer" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Disclaimer</a></li>
               </ul>
             </div>
           </div>
