@@ -29,11 +29,11 @@ export default function MarketingLayout({
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Features
             </a>
+            <a href="#sequences" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+              Workflows
+            </a>
             <a href="#demo" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Demo
-            </a>
-            <a href="#pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-              Pricing
             </a>
           </div>
           
@@ -81,8 +81,8 @@ export default function MarketingLayout({
               <h4 className="text-sm font-semibold text-gray-900 mb-4">Product</h4>
               <ul className="space-y-3">
                 <li><a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Features</a></li>
-                <li><a href="#demo" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Demo</a></li>
-                <li><a href="#pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
+                <li><a href="#sequences" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Workflows</a></li>
+                <li><a href="#demo" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Pricing Demo</a></li>
               </ul>
             </div>
             

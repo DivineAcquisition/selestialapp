@@ -709,7 +709,7 @@ function SequencesSection() {
   };
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section id="sequences" className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -718,14 +718,14 @@ function SequencesSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
-            34+ Automation Workflows
+            Built-in Automation Library
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Pre-built sequences for every scenario
+            34+ ready-to-deploy workflows
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Deploy battle-tested automation workflows in minutes. From speed-to-lead to customer retention, 
-            we&apos;ve built sequences that work for home service businesses.
+            Every Selestial account includes our complete library of automation sequences. 
+            Install with one click from the <span className="font-medium text-gray-900">Sequences → Templates</span> page in your dashboard.
           </p>
         </motion.div>
         
@@ -748,43 +748,76 @@ function SequencesSection() {
           ))}
         </div>
         
-        {/* Sequences Grid */}
-        {currentCategory && (
-          <motion.div
-            key={activeCategory}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {currentCategory.sequences.map((sequence, i) => {
-              const colors = colorClasses[currentCategory.color];
-              return (
+        {/* App Preview Frame */}
+        <div className="relative max-w-5xl mx-auto">
+          <div className="absolute -inset-4 bg-gradient-to-r from-primary/5 via-violet-500/5 to-primary/5 rounded-3xl blur-2xl" />
+          
+          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-2xl shadow-gray-200/50 overflow-hidden">
+            {/* Browser chrome */}
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 bg-gray-50">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="px-4 py-1 bg-white border border-gray-200 rounded-lg text-xs text-gray-500 flex items-center gap-2">
+                  <Icon name="lock" size="xs" className="text-green-500" />
+                  access.selestial.io/sequences/templates
+                </div>
+              </div>
+            </div>
+            
+            {/* Sequences Grid */}
+            <div className="p-6">
+              {currentCategory && (
                 <motion.div
-                  key={sequence.name}
+                  key={activeCategory}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={cn(
-                    "p-5 rounded-xl border-2 bg-white transition-all hover:shadow-lg",
-                    colors.border
-                  )}
+                  className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">{sequence.name}</h3>
-                    <span className={cn(
-                      "px-2 py-1 rounded-md text-xs font-medium",
-                      colors.bg,
-                      colors.text
-                    )}>
-                      {sequence.metric}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500">{sequence.description}</p>
+                  {currentCategory.sequences.map((sequence, i) => {
+                    const colors = colorClasses[currentCategory.color];
+                    return (
+                      <motion.div
+                        key={sequence.name}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className={cn(
+                          "p-5 rounded-xl border-2 bg-white transition-all hover:shadow-lg cursor-pointer group",
+                          colors.border
+                        )}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-semibold text-gray-900">{sequence.name}</h3>
+                          <span className={cn(
+                            "px-2 py-1 rounded-md text-xs font-medium",
+                            colors.bg,
+                            colors.text
+                          )}>
+                            {sequence.metric}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-3">{sequence.description}</p>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="sm" variant="outline" className="text-xs h-7">
+                            Preview
+                          </Button>
+                          <Button size="sm" className="text-xs h-7 bg-primary hover:bg-primary/90">
+                            <Icon name="download" size="xs" className="mr-1" />
+                            Install
+                          </Button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
+              )}
+            </div>
+          </div>
+        </div>
         
         {/* Bottom CTA */}
         <motion.div
@@ -793,13 +826,24 @@ function SequencesSection() {
           viewport={{ once: true }}
           className="mt-12 text-center"
         >
-          <p className="text-gray-500 mb-4">
-            Every sequence is fully customizable and integrates with your existing workflow.
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-6">
+            <div className="flex items-center gap-2">
+              <Icon name="check" size="sm" className="text-green-500" />
+              <span>One-click install</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="check" size="sm" className="text-green-500" />
+              <span>Fully customizable</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="check" size="sm" className="text-green-500" />
+              <span>Industry-optimized</span>
+            </div>
+          </div>
           <Link href="/signup">
-            <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
-              <Icon name="play" size="sm" className="mr-2" />
-              Start Using Sequences Free
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+              <Icon name="sparkles" size="sm" className="mr-2" />
+              Get Access to All Workflows
             </Button>
           </Link>
         </motion.div>
