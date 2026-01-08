@@ -532,7 +532,7 @@ function SetupPanel({
                   isAiConfigured ? "bg-emerald-100 dark:bg-emerald-900/50" : "bg-gradient-to-br from-primary to-purple-500"
                 )}>
                   <Icon 
-                    name={isAiConfigured ? "checkCircle" : "wand"} 
+                    name={isAiConfigured ? "checkCircle" : "sparkles"} 
                     size="lg" 
                     className={isAiConfigured ? "text-emerald-600" : "text-white"} 
                   />
@@ -865,7 +865,7 @@ function CalculatorPanel({
         <Card className="p-4 mb-4 bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Icon name="wand" size="sm" className="text-primary" />
+              <Icon name="sparkles" size="sm" className="text-primary" />
               <span className="text-sm font-medium">Wizard calculated job price:</span>
             </div>
             <span className="text-xl font-bold text-primary">${wizardJobPrice.toFixed(0)}</span>
@@ -1219,7 +1219,7 @@ export default function PricingWizardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <Icon name="wand" size="xl" className="text-white" />
+              <Icon name="sparkles" size="xl" className="text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Pricing Wizard</h1>

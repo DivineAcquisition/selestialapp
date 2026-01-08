@@ -39,7 +39,7 @@ const engageNavigation: NavItem[] = [
 
 const analyzeNavigation: NavItem[] = [
   { name: 'Analytics', href: '/analytics', icon: 'chart' },
-  { name: 'Pricing Wizard', href: '/pricing', icon: 'wand' },
+  { name: 'Pricing Wizard', href: '/pricing', icon: 'sparkles' },
 ];
 
 const settingsNavigation: NavItem[] = [
