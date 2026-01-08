@@ -50,13 +50,13 @@ export default function Layout({
         {showPattern && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <GridPattern 
-              className="opacity-40" 
+              className="opacity-40 dark:opacity-20" 
               squares={[[1, 1], [3, 3], [5, 2], [7, 4]]} 
             />
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.01]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.01] dark:from-primary/[0.03] dark:to-primary/[0.02]" />
             {/* Top glow */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl" />
           </div>
         )}
         

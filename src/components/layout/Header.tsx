@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 
@@ -16,11 +15,11 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-4">
         {onMenuClick && (
           <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden h-9 w-9">
-            <Icon name="menu" size="lg" className="text-gray-600" />
+            <Icon name="menu" size="lg" className="text-muted-foreground" />
           </Button>
         )}
         {title && (
-          <h1 className="text-base font-semibold text-gray-900">{title}</h1>
+          <h1 className="text-base font-semibold text-foreground">{title}</h1>
         )}
       </div>
       
@@ -29,7 +28,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
         {/* Create Button */}
         <Button 
           size="sm"
-          className="h-9 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          className="h-9 px-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
         >
           <Icon name="plus" size="sm" className="mr-1.5" />
           Create
@@ -39,9 +38,9 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative h-9 w-9 rounded-lg hover:bg-gray-100 transition-colors"
+          className="relative h-9 w-9 rounded-lg hover:bg-accent transition-colors"
         >
-          <Icon name="bell" size="lg" className="text-gray-600" />
+          <Icon name="bell" size="lg" className="text-muted-foreground" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
         </Button>
       </div>

@@ -69,7 +69,14 @@ export default function MobileSidebar() {
               alt="Selestial" 
               width={36} 
               height={36}
-              className="h-9 w-9 rounded-xl"
+              className="h-9 w-9 rounded-xl dark:hidden"
+            />
+            <Image 
+              src="/logo-icon-white.png" 
+              alt="Selestial" 
+              width={36} 
+              height={36}
+              className="h-9 w-9 rounded-xl hidden dark:block"
             />
             <div>
               <p className="font-bold text-foreground">Selestial</p>

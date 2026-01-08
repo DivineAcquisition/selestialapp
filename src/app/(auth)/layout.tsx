@@ -28,11 +28,11 @@ export default function AuthLayout({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image 
-              src="/logo-icon-new.png" 
+              src="/logo-icon-white.png" 
               alt="Selestial" 
               width={44} 
               height={44} 
-              className="rounded-xl shadow-lg"
+              className="drop-shadow-lg"
             />
             <span className="text-2xl font-bold text-white">Selestial</span>
           </Link>
@@ -69,7 +69,7 @@ export default function AuthLayout({
             {/* Testimonial */}
             <div className="mt-8 p-6 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
               <p className="text-white/90 italic leading-relaxed">
-                "Selestial helped us close 40% more quotes in our first month. The AI responses are so good, customers think they're talking to me!"
+                &quot;Selestial helped us close 40% more quotes in our first month. The AI responses are so good, customers think they&apos;re talking to me!&quot;
               </p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
@@ -100,7 +100,14 @@ export default function AuthLayout({
               alt="Selestial" 
               width={32} 
               height={32} 
-              className="rounded-lg"
+              className="rounded-lg dark:hidden"
+            />
+            <Image 
+              src="/logo-icon-white.png" 
+              alt="Selestial" 
+              width={32} 
+              height={32} 
+              className="rounded-lg hidden dark:block"
             />
             <span className="text-xl font-bold text-primary">Selestial</span>
           </Link>

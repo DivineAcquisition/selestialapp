@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
@@ -55,6 +56,7 @@ export default function Sidebar() {
   const { business } = useBusiness();
   const { user, signOut } = useAuth();
   const { totalUnread } = useConversations();
+  const { theme, setTheme } = useTheme();
   
   const initials = business?.owner_name
     ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -63,6 +65,10 @@ export default function Sidebar() {
   const handleSignOut = async () => {
     await signOut();
     router.push('/login');
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   // Routes that should only match exactly (have sub-routes in nav)
@@ -81,7 +87,7 @@ export default function Sidebar() {
           'group flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
           isActive
             ? 'bg-primary/10 text-primary'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
         )}
       >
         <div className="flex items-center gap-3">
@@ -90,7 +96,7 @@ export default function Sidebar() {
             size="md"
             className={cn(
               "transition-colors",
-              isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600"
+              isActive ? "text-primary" : "text-muted-foreground/70 group-hover:text-foreground"
             )} 
           />
           <span>{item.name}</span>
@@ -112,7 +118,7 @@ export default function Sidebar() {
 
   const NavSection = ({ label, items }: { label: string; items: NavItem[] }) => (
     <div className="space-y-1">
-      <p className="px-3 mb-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
+      <p className="px-3 mb-2 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">{label}</p>
       {items.map((item) => (
         <NavLink key={item.name} item={item} />
       ))}
@@ -120,35 +126,48 @@ export default function Sidebar() {
   );
 
   return (
-    <div className="flex h-screen w-60 flex-col bg-white border-r border-gray-200">
+    <div className="flex h-screen w-60 flex-col bg-card border-r border-border">
       {/* Header with Business Selector */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+      <div className="flex items-center justify-between h-14 px-4 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5">
+          {/* Light mode: colored logo, Dark mode: white logo */}
           <Image 
             src="/logo-icon-new.png" 
             alt="Selestial" 
             width={28} 
             height={28} 
-            className="rounded-lg" 
+            className="rounded-lg dark:hidden" 
           />
-          <span className="text-base font-semibold text-gray-900">
+          <Image 
+            src="/logo-icon-white.png" 
+            alt="Selestial" 
+            width={28} 
+            height={28} 
+            className="rounded-lg hidden dark:block" 
+          />
+          <span className="text-base font-semibold text-foreground">
             Selestial
           </span>
         </Link>
-        <button className="p-1 rounded hover:bg-gray-100">
-          <Icon name="chevronDown" size="sm" className="text-gray-400" />
+        <button 
+          onClick={toggleTheme}
+          className="p-1.5 rounded-lg hover:bg-accent transition-colors"
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          <Icon name="sun" size="sm" className="text-muted-foreground hidden dark:block" />
+          <Icon name="moon" size="sm" className="text-muted-foreground dark:hidden" />
         </button>
       </div>
       
       {/* Search */}
       <div className="px-3 py-3">
         <div className="relative">
-          <Icon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Icon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
           <Input
             placeholder="Search for anything"
-            className="w-full h-8 pl-8 text-sm bg-gray-50 border-gray-200 rounded-lg placeholder:text-gray-400 focus:bg-white"
+            className="w-full h-8 pl-8 text-sm bg-accent/50 border-border rounded-lg placeholder:text-muted-foreground/50 focus:bg-background"
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-medium">⌘K</kbd>
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/70 font-medium">⌘K</kbd>
         </div>
       </div>
       
@@ -165,22 +184,22 @@ export default function Sidebar() {
         <NavSection label="Analyze" items={analyzeNavigation} />
         
         {/* Divider */}
-        <div className="h-px bg-gray-200" />
+        <div className="h-px bg-border" />
         
         <NavSection label="Settings" items={settingsNavigation} />
       </nav>
       
       {/* User section */}
-      <div className="border-t border-gray-200 p-3">
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
+      <div className="border-t border-border p-3">
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors cursor-pointer group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {business?.owner_name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {user?.email || ''}
             </p>
           </div>
@@ -189,7 +208,7 @@ export default function Sidebar() {
             size="icon" 
             onClick={handleSignOut} 
             title="Sign out"
-            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 hover:bg-gray-100 hover:text-gray-700"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
           >
             <Icon name="logout" size="sm" />
           </Button>
