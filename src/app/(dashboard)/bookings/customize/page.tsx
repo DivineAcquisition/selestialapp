@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,903 +12,1056 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import Layout from '@/components/layout/Layout';
 import { Icon, IconName } from '@/components/ui/icon';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { PublicBookingWidget } from '@/components/booking/public-booking-widget';
-import {
-  BookingWidgetConfig,
-  SqftOption,
-  ServiceOffer,
-  TrustBadge,
-  TimeSlot,
-  FormField,
-  getDefaultConfig,
-  DEFAULT_SQFT_OPTIONS,
-  DEFAULT_SERVICE_OFFERS,
-  DEFAULT_TRUST_BADGES,
-  DEFAULT_TIME_SLOTS,
-  DEFAULT_LEAD_FIELDS,
-  DEFAULT_REVIEWS,
-  DEFAULT_CONFIRMATION,
-} from '@/lib/booking/types';
 
 // ============================================================================
-// CUSTOMIZATION SECTIONS
+// TYPES
 // ============================================================================
 
-// Header Customization
-function HeaderSection({
-  config,
-  updateConfig,
+type Niche = 'cleaning' | 'hvac' | 'plumbing' | null;
+type SetupStep = 'niche' | 'branding' | 'pricing' | 'services' | 'promotion' | 'preview' | 'complete';
+
+interface SqftTier {
+  id: string;
+  label: string;
+  minSqft: number;
+  maxSqft: number | null;
+  price: number;
+  enabled: boolean;
+}
+
+interface ServiceOption {
+  id: string;
+  name: string;
+  description: string;
+  features: string[];
+  basePrice: number;
+  discountPercent: number;
+  badge: string;
+  popular: boolean;
+  enabled: boolean;
+}
+
+interface BookingConfig {
+  niche: Niche;
+  businessName: string;
+  phone: string;
+  logoUrl: string;
+  primaryColor: string;
+  accentColor: string;
+  sqftTiers: SqftTier[];
+  services: ServiceOption[];
+  promotionEnabled: boolean;
+  promotionText: string;
+  discountPercent: number;
+  depositPercent: number;
+  serviceZips: string[];
+}
+
+// ============================================================================
+// DEFAULT DATA
+// ============================================================================
+
+const DEFAULT_SQFT_TIERS: SqftTier[] = [
+  { id: '1', label: '1,000-1,500', minSqft: 1000, maxSqft: 1500, price: 189, enabled: true },
+  { id: '2', label: '1,501-2,000', minSqft: 1501, maxSqft: 2000, price: 229, enabled: true },
+  { id: '3', label: '2,001-2,500', minSqft: 2001, maxSqft: 2500, price: 269, enabled: true },
+  { id: '4', label: '2,501-3,000', minSqft: 2501, maxSqft: 3000, price: 309, enabled: true },
+  { id: '5', label: '3,001-3,500', minSqft: 3001, maxSqft: 3500, price: 349, enabled: true },
+  { id: '6', label: '3,501-4,000', minSqft: 3501, maxSqft: 4000, price: 389, enabled: true },
+];
+
+const DEFAULT_SERVICES: ServiceOption[] = [
+  {
+    id: '1',
+    name: 'Tester Deep Clean',
+    description: 'One-time intensive cleaning',
+    features: [
+      '40-point deep clean checklist',
+      '2-person professional crew',
+      '~4 hours of service',
+      'All supplies included',
+    ],
+    basePrice: 269,
+    discountPercent: 20,
+    badge: 'Popular',
+    popular: true,
+    enabled: true,
+  },
+  {
+    id: '2',
+    name: '90-Day Reset & Maintain',
+    description: '3 visits over 90 days',
+    features: [
+      'Initial deep clean + 2 maintenance visits',
+      'Save $180 vs individual bookings',
+      'Flexible monthly payments',
+      'Priority scheduling',
+    ],
+    basePrice: 597,
+    discountPercent: 0,
+    badge: 'Best Value',
+    popular: false,
+    enabled: true,
+  },
+];
+
+const DEFAULT_CONFIG: BookingConfig = {
+  niche: null,
+  businessName: '',
+  phone: '',
+  logoUrl: '',
+  primaryColor: '#1E3A5F',
+  accentColor: '#10B981',
+  sqftTiers: DEFAULT_SQFT_TIERS,
+  services: DEFAULT_SERVICES,
+  promotionEnabled: true,
+  promotionText: 'Get 20% Off Your First Deep Clean!',
+  discountPercent: 20,
+  depositPercent: 25,
+  serviceZips: [],
+};
+
+// ============================================================================
+// NICHE SELECTION STEP
+// ============================================================================
+
+function NicheSelectionStep({
+  onSelect,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  onSelect: (niche: Niche) => void;
 }) {
-  const { header } = config;
-  
+  const niches = [
+    {
+      id: 'cleaning',
+      name: 'Cleaning',
+      icon: 'sparkles' as IconName,
+      description: 'Residential & commercial cleaning services',
+      available: true,
+      color: '#10B981',
+    },
+    {
+      id: 'hvac',
+      name: 'HVAC',
+      icon: 'thermometer' as IconName,
+      description: 'Heating, ventilation & air conditioning',
+      available: false,
+      color: '#3B82F6',
+    },
+    {
+      id: 'plumbing',
+      name: 'Plumbing',
+      icon: 'droplet' as IconName,
+      description: 'Plumbing repair & installation services',
+      available: false,
+      color: '#8B5CF6',
+    },
+  ];
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="layout" size="lg" />
-          Header Configuration
-        </CardTitle>
-        <CardDescription>Configure the top navigation bar</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>Business Name</Label>
-            <Input
-              value={header.businessName}
-              onChange={(e) => updateConfig({ header: { ...header, businessName: e.target.value } })}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label>Logo URL</Label>
-            <Input
-              value={header.logoUrl}
-              onChange={(e) => updateConfig({ header: { ...header, logoUrl: e.target.value } })}
-              placeholder="https://..."
-              className="mt-1"
-            />
-          </div>
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+          <Icon name="home" size="2xl" className="text-violet-600" />
         </div>
-        
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-          <div>
-            <Label>Show Phone Number</Label>
-            <p className="text-xs text-muted-foreground">Display click-to-call button</p>
-          </div>
-          <Switch
-            checked={header.showPhone}
-            onCheckedChange={(checked) => updateConfig({ header: { ...header, showPhone: checked } })}
-          />
-        </div>
-        
-        {header.showPhone && (
-          <div>
-            <Label>Phone Number</Label>
-            <Input
-              value={header.phoneNumber}
-              onChange={(e) => updateConfig({ header: { ...header, phoneNumber: e.target.value } })}
-              placeholder="(555) 123-4567"
-              className="mt-1"
-            />
-          </div>
-        )}
-        
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-          <div>
-            <Label>Show Website Link</Label>
-            <p className="text-xs text-muted-foreground">Link back to your website</p>
-          </div>
-          <Switch
-            checked={header.showWebsiteLink}
-            onCheckedChange={(checked) => updateConfig({ header: { ...header, showWebsiteLink: checked } })}
-          />
-        </div>
-        
-        {header.showWebsiteLink && (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Website URL</Label>
-              <Input
-                value={header.websiteUrl}
-                onChange={(e) => updateConfig({ header: { ...header, websiteUrl: e.target.value } })}
-                placeholder="https://..."
-                className="mt-1"
-              />
+        <h1 className="text-2xl font-bold mb-2">Set Up Your Booking Widget</h1>
+        <p className="text-muted-foreground">
+          Select your home service niche to get started with a customized booking experience
+        </p>
+      </div>
+
+      <div className="grid gap-4">
+        {niches.map((niche) => (
+          <motion.button
+            key={niche.id}
+            whileHover={{ scale: niche.available ? 1.02 : 1 }}
+            whileTap={{ scale: niche.available ? 0.98 : 1 }}
+            onClick={() => niche.available && onSelect(niche.id as Niche)}
+            disabled={!niche.available}
+            className={cn(
+              "relative p-6 rounded-2xl border-2 text-left transition-all",
+              niche.available 
+                ? "hover:border-violet-500 hover:shadow-lg cursor-pointer" 
+                : "opacity-60 cursor-not-allowed bg-gray-50"
+            )}
+          >
+            {!niche.available && (
+              <Badge className="absolute top-4 right-4 bg-gray-500">
+                Coming Soon
+              </Badge>
+            )}
+            <div className="flex items-start gap-4">
+              <div 
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-white"
+                style={{ backgroundColor: niche.color }}
+              >
+                <Icon name={niche.icon} size="xl" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-1">{niche.name}</h3>
+                <p className="text-sm text-muted-foreground">{niche.description}</p>
+              </div>
+              {niche.available && (
+                <Icon name="chevronRight" size="lg" className="text-muted-foreground mt-3" />
+              )}
             </div>
-            <div>
-              <Label>Button Label</Label>
-              <Input
-                value={header.websiteLabel}
-                onChange={(e) => updateConfig({ header: { ...header, websiteLabel: e.target.value } })}
-                placeholder="Visit Website"
-                className="mt-1"
-              />
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </motion.button>
+        ))}
+      </div>
+    </div>
   );
 }
 
-// Branding Customization
-function BrandingSection({
+// ============================================================================
+// BRANDING STEP
+// ============================================================================
+
+function BrandingStep({
   config,
   updateConfig,
+  onNext,
+  onBack,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  config: BookingConfig;
+  updateConfig: (updates: Partial<BookingConfig>) => void;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  const { branding } = config;
-  
-  const colorFields = [
-    { key: 'primaryColor', label: 'Primary Color', description: 'Main buttons, headers' },
-    { key: 'secondaryColor', label: 'Secondary Color', description: 'Gradients, accents' },
-    { key: 'accentColor', label: 'Accent Color', description: 'Success states, highlights' },
-    { key: 'backgroundColor', label: 'Background', description: 'Page background' },
-    { key: 'cardBackground', label: 'Card Background', description: 'Card surfaces' },
-    { key: 'textColor', label: 'Text Color', description: 'Main text' },
-  ] as const;
-  
+  const canContinue = config.businessName.trim().length > 0;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="palette" size="lg" />
-          Brand Colors
-        </CardTitle>
-        <CardDescription>Customize your color scheme</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          {colorFields.map((field) => (
-            <div key={field.key} className="space-y-1">
-              <Label className="flex items-center justify-between">
-                <span>{field.label}</span>
+    <div className="max-w-xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+          <Icon name="palette" size="xl" className="text-violet-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Brand Your Widget</h2>
+        <p className="text-muted-foreground text-sm">
+          Customize how your booking widget looks to customers
+        </p>
+      </div>
+
+      <Card>
+        <CardContent className="p-6 space-y-6">
+          <div>
+            <Label className="text-sm font-medium">Business Name *</Label>
+            <Input
+              value={config.businessName}
+              onChange={(e) => updateConfig({ businessName: e.target.value })}
+              placeholder="Alpha Lux Clean"
+              className="mt-1.5"
+            />
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium">Phone Number</Label>
+            <Input
+              value={config.phone}
+              onChange={(e) => updateConfig({ phone: e.target.value })}
+              placeholder="(512) 555-0123"
+              className="mt-1.5"
+            />
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium">Logo URL (optional)</Label>
+            <Input
+              value={config.logoUrl}
+              onChange={(e) => updateConfig({ logoUrl: e.target.value })}
+              placeholder="https://example.com/logo.png"
+              className="mt-1.5"
+            />
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium flex items-center justify-between">
+                Primary Color
                 <div 
                   className="w-6 h-6 rounded-md border shadow-sm"
-                  style={{ backgroundColor: branding[field.key] }}
+                  style={{ backgroundColor: config.primaryColor }}
                 />
               </Label>
               <Input
                 type="color"
-                value={branding[field.key]}
-                onChange={(e) => updateConfig({ branding: { ...branding, [field.key]: e.target.value } })}
-                className="h-10 cursor-pointer"
+                value={config.primaryColor}
+                onChange={(e) => updateConfig({ primaryColor: e.target.value })}
+                className="mt-1.5 h-10 cursor-pointer"
               />
-              <p className="text-xs text-muted-foreground">{field.description}</p>
             </div>
-          ))}
-        </div>
-        
-        <Separator />
-        
-        <div>
-          <Label>Border Radius: {branding.borderRadius}px</Label>
-          <Slider
-            value={[branding.borderRadius]}
-            onValueChange={([v]) => updateConfig({ branding: { ...branding, borderRadius: v } })}
-            min={0}
-            max={24}
-            step={2}
-            className="mt-2"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>Square</span>
-            <span>Rounded</span>
-          </div>
-        </div>
-        
-        <div>
-          <Label>Button Style</Label>
-          <Select
-            value={branding.buttonStyle}
-            onValueChange={(v) => updateConfig({ branding: { ...branding, buttonStyle: v as any } })}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="solid">Solid</SelectItem>
-              <SelectItem value="gradient">Gradient</SelectItem>
-              <SelectItem value="outline">Outline</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Promotion Customization
-function PromotionSection({
-  config,
-  updateConfig,
-}: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
-}) {
-  const { promotion } = config;
-  
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="tag" size="lg" />
-          Promotional Banner
-        </CardTitle>
-        <CardDescription>Configure your special offer display</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-          <div>
-            <Label>Enable Promotion</Label>
-            <p className="text-xs text-muted-foreground">Show promotional banner</p>
-          </div>
-          <Switch
-            checked={promotion.enabled}
-            onCheckedChange={(checked) => updateConfig({ promotion: { ...promotion, enabled: checked } })}
-          />
-        </div>
-        
-        {promotion.enabled && (
-          <>
             <div>
-              <Label>Headline</Label>
-              <Input
-                value={promotion.headline}
-                onChange={(e) => updateConfig({ promotion: { ...promotion, headline: e.target.value } })}
-                placeholder="New Year Special: $50 Off..."
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label>Subheadline</Label>
-              <Input
-                value={promotion.subheadline}
-                onChange={(e) => updateConfig({ promotion: { ...promotion, subheadline: e.target.value } })}
-                placeholder="+ 15% Off Recurring Service"
-                className="mt-1"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>One-Time Discount ($)</Label>
-                <Input
-                  type="number"
-                  value={promotion.discountAmount}
-                  onChange={(e) => updateConfig({ promotion: { ...promotion, discountAmount: Number(e.target.value) } })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>Recurring Discount (%)</Label>
-                <Input
-                  type="number"
-                  value={promotion.recurringDiscount}
-                  onChange={(e) => updateConfig({ promotion: { ...promotion, recurringDiscount: Number(e.target.value) } })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label>Expiry Date</Label>
-              <Input
-                type="date"
-                value={promotion.expiryDate.split('T')[0]}
-                onChange={(e) => updateConfig({ promotion: { ...promotion, expiryDate: new Date(e.target.value).toISOString() } })}
-                className="mt-1"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-              <div>
-                <Label>Show Countdown</Label>
-                <p className="text-xs text-muted-foreground">Display urgency timer</p>
-              </div>
-              <Switch
-                checked={promotion.showCountdown}
-                onCheckedChange={(checked) => updateConfig({ promotion: { ...promotion, showCountdown: checked } })}
-              />
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Trust Badges Customization
-function TrustBadgesSection({
-  config,
-  updateConfig,
-}: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
-}) {
-  const { trustBadges } = config;
-  
-  const updateBadge = (id: string, updates: Partial<TrustBadge>) => {
-    updateConfig({
-      trustBadges: trustBadges.map(badge =>
-        badge.id === id ? { ...badge, ...updates } : badge
-      ),
-    });
-  };
-  
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="shield" size="lg" />
-          Trust Badges
-        </CardTitle>
-        <CardDescription>Build credibility with trust signals</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {trustBadges.map((badge) => (
-          <div key={badge.id} className="p-4 border rounded-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <Label className="text-sm font-medium flex items-center justify-between">
+                Accent Color
                 <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: badge.color }}
-                >
-                  <Icon name={badge.icon as IconName} size="sm" className="text-white" />
-                </div>
-                <div>
-                  <p className="font-medium">{badge.label}</p>
-                  <p className="text-xs text-muted-foreground">{badge.sublabel}</p>
-                </div>
-              </div>
-              <Switch
-                checked={badge.enabled}
-                onCheckedChange={(checked) => updateBadge(badge.id, { enabled: checked })}
+                  className="w-6 h-6 rounded-md border shadow-sm"
+                  style={{ backgroundColor: config.accentColor }}
+                />
+              </Label>
+              <Input
+                type="color"
+                value={config.accentColor}
+                onChange={(e) => updateConfig({ accentColor: e.target.value })}
+                className="mt-1.5 h-10 cursor-pointer"
               />
             </div>
-            
-            {badge.enabled && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Label</Label>
-                  <Input
-                    value={badge.label}
-                    onChange={(e) => updateBadge(badge.id, { label: e.target.value })}
-                    className="mt-1 h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Color</Label>
-                  <Input
-                    type="color"
-                    value={badge.color}
-                    onChange={(e) => updateBadge(badge.id, { color: e.target.value })}
-                    className="mt-1 h-8"
-                  />
-                </div>
-              </div>
-            )}
           </div>
-        ))}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3 mt-6">
+        <Button variant="outline" onClick={onBack} className="flex-1">
+          <Icon name="chevronLeft" size="sm" className="mr-2" />
+          Back
+        </Button>
+        <Button onClick={onNext} disabled={!canContinue} className="flex-1">
+          Continue
+          <Icon name="chevronRight" size="sm" className="ml-2" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
-// Square Footage Options
-function SqftOptionsSection({
+// ============================================================================
+// PRICING STEP
+// ============================================================================
+
+function PricingStep({
   config,
   updateConfig,
+  onNext,
+  onBack,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  config: BookingConfig;
+  updateConfig: (updates: Partial<BookingConfig>) => void;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  const { sqftOptions } = config;
-  
-  const updateOption = (id: string, updates: Partial<SqftOption>) => {
+  const updateTier = (id: string, updates: Partial<SqftTier>) => {
     updateConfig({
-      sqftOptions: sqftOptions.map(opt =>
-        opt.id === id ? { ...opt, ...updates } : opt
+      sqftTiers: config.sqftTiers.map(tier =>
+        tier.id === id ? { ...tier, ...updates } : tier
       ),
     });
   };
-  
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="home" size="lg" />
-          Home Size Options
-        </CardTitle>
-        <CardDescription>Configure square footage tiers and base pricing</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {sqftOptions.map((option) => (
-          <div 
-            key={option.id} 
-            className={cn(
-              "p-3 border rounded-lg",
-              !option.enabled && "opacity-50"
-            )}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+          <Icon name="dollarSign" size="xl" className="text-violet-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Set Your Pricing</h2>
+        <p className="text-muted-foreground text-sm">
+          Configure pricing tiers based on home square footage
+        </p>
+      </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-3">
+            {config.sqftTiers.map((tier) => (
+              <div 
+                key={tier.id}
+                className={cn(
+                  "flex items-center gap-4 p-4 rounded-xl border transition-colors",
+                  tier.enabled ? "bg-white" : "bg-gray-50 opacity-60"
+                )}
+              >
                 <Switch
-                  checked={option.enabled}
-                  onCheckedChange={(checked) => updateOption(option.id, { enabled: checked })}
+                  checked={tier.enabled}
+                  onCheckedChange={(checked) => updateTier(tier.id, { enabled: checked })}
                 />
-                <span className="font-medium">{option.label} sq ft</span>
-              </div>
-              {option.requiresCall ? (
-                <Badge variant="secondary">Call Required</Badge>
-              ) : (
-                <div className="flex items-center gap-1">
+                <div className="flex-1">
+                  <p className="font-medium">{tier.label} sq ft</p>
+                </div>
+                <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">$</span>
                   <Input
                     type="number"
-                    value={option.basePrice}
-                    onChange={(e) => updateOption(option.id, { basePrice: Number(e.target.value) })}
-                    className="w-20 h-8"
-                    disabled={!option.enabled}
+                    value={tier.price}
+                    onChange={(e) => updateTier(tier.id, { price: Number(e.target.value) })}
+                    className="w-24"
+                    disabled={!tier.enabled}
                   />
                 </div>
-              )}
+              </div>
+            ))}
+          </div>
+
+          <Separator className="my-6" />
+
+          <div>
+            <Label className="text-sm font-medium">Deposit Percentage: {config.depositPercent}%</Label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Amount customers pay upfront to reserve their booking
+            </p>
+            <Slider
+              value={[config.depositPercent]}
+              onValueChange={([v]) => updateConfig({ depositPercent: v })}
+              min={10}
+              max={100}
+              step={5}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>10%</span>
+              <span>100% (Full payment)</span>
             </div>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3 mt-6">
+        <Button variant="outline" onClick={onBack} className="flex-1">
+          <Icon name="chevronLeft" size="sm" className="mr-2" />
+          Back
+        </Button>
+        <Button onClick={onNext} className="flex-1">
+          Continue
+          <Icon name="chevronRight" size="sm" className="ml-2" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
-// Service Offers Customization
-function ServiceOffersSection({
+// ============================================================================
+// SERVICES STEP
+// ============================================================================
+
+function ServicesStep({
   config,
   updateConfig,
+  onNext,
+  onBack,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  config: BookingConfig;
+  updateConfig: (updates: Partial<BookingConfig>) => void;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  const { serviceOffers } = config;
-  
-  const updateOffer = (id: string, updates: Partial<ServiceOffer>) => {
+  const updateService = (id: string, updates: Partial<ServiceOption>) => {
     updateConfig({
-      serviceOffers: serviceOffers.map(offer =>
-        offer.id === id ? { ...offer, ...updates } : offer
+      services: config.services.map(svc =>
+        svc.id === id ? { ...svc, ...updates } : svc
       ),
     });
   };
-  
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="sparkles" size="lg" />
-          Service Offers
-        </CardTitle>
-        <CardDescription>Configure your service packages</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {serviceOffers.map((offer) => (
-          <div 
-            key={offer.id}
-            className={cn(
-              "p-4 border rounded-lg space-y-4",
-              !offer.enabled && "opacity-50"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Switch
-                  checked={offer.enabled}
-                  onCheckedChange={(checked) => updateOffer(offer.id, { enabled: checked })}
-                />
-                <Input
-                  value={offer.name}
-                  onChange={(e) => updateOffer(offer.id, { name: e.target.value })}
-                  className="w-40 font-medium"
-                  disabled={!offer.enabled}
-                />
-                {offer.popular && (
-                  <Badge style={{ backgroundColor: offer.color }} className="text-white">
-                    Popular
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+          <Icon name="sparkles" size="xl" className="text-violet-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Configure Services</h2>
+        <p className="text-muted-foreground text-sm">
+          Set up the service packages customers can choose from
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {config.services.map((service) => (
+          <Card key={service.id} className={cn(!service.enabled && "opacity-60")}>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={service.enabled}
+                    onCheckedChange={(checked) => updateService(service.id, { enabled: checked })}
+                  />
+                  <div>
+                    <Input
+                      value={service.name}
+                      onChange={(e) => updateService(service.id, { name: e.target.value })}
+                      className="font-semibold text-lg border-0 p-0 h-auto focus-visible:ring-0"
+                      disabled={!service.enabled}
+                    />
+                    <Input
+                      value={service.description}
+                      onChange={(e) => updateService(service.id, { description: e.target.value })}
+                      className="text-sm text-muted-foreground border-0 p-0 h-auto focus-visible:ring-0"
+                      disabled={!service.enabled}
+                    />
+                  </div>
+                </div>
+                {service.popular && (
+                  <Badge style={{ backgroundColor: config.accentColor }}>
+                    {service.badge}
                   </Badge>
                 )}
               </div>
-              <Input
-                type="color"
-                value={offer.color}
-                onChange={(e) => updateOffer(offer.id, { color: e.target.value })}
-                className="w-12 h-8"
-                disabled={!offer.enabled}
-              />
-            </div>
-            
-            {offer.enabled && (
-              <>
-                <div>
-                  <Label className="text-xs">Description</Label>
-                  <Input
-                    value={offer.description}
-                    onChange={(e) => updateOffer(offer.id, { description: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
+
+              {service.enabled && (
+                <>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Base Price ($)</Label>
+                      <Input
+                        type="number"
+                        value={service.basePrice}
+                        onChange={(e) => updateService(service.id, { basePrice: Number(e.target.value) })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Discount (%)</Label>
+                      <Input
+                        type="number"
+                        value={service.discountPercent}
+                        onChange={(e) => updateService(service.id, { discountPercent: Number(e.target.value) })}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <Label className="text-xs">Base Price ($)</Label>
-                    <Input
-                      type="number"
-                      value={offer.basePrice}
-                      onChange={(e) => updateOffer(offer.id, { basePrice: Number(e.target.value) })}
-                      className="mt-1"
+                    <Label className="text-xs text-muted-foreground">Features (one per line)</Label>
+                    <Textarea
+                      value={service.features.join('\n')}
+                      onChange={(e) => updateService(service.id, { features: e.target.value.split('\n').filter(Boolean) })}
+                      rows={4}
+                      className="mt-1 text-sm"
                     />
                   </div>
-                  <div>
-                    <Label className="text-xs">Discounted ($)</Label>
-                    <Input
-                      type="number"
-                      value={offer.discountedPrice}
-                      onChange={(e) => updateOffer(offer.id, { discountedPrice: Number(e.target.value) })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Deposit %</Label>
-                    <Input
-                      type="number"
-                      value={offer.depositPercent}
-                      onChange={(e) => updateOffer(offer.id, { depositPercent: Number(e.target.value) })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-xs">Discount Badge</Label>
-                  <Input
-                    value={offer.discountBadge}
-                    onChange={(e) => updateOffer(offer.id, { discountBadge: e.target.value })}
-                    placeholder="$50 Off"
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="text-xs">Features (one per line)</Label>
-                  <Textarea
-                    value={offer.features.join('\n')}
-                    onChange={(e) => updateOffer(offer.id, { features: e.target.value.split('\n').filter(Boolean) })}
-                    rows={4}
-                    className="mt-1 text-sm"
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between p-2 bg-muted rounded">
-                  <Label className="text-xs">Mark as Popular</Label>
-                  <Switch
-                    checked={offer.popular}
-                    onCheckedChange={(checked) => updateOffer(offer.id, { popular: checked })}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <Button variant="outline" onClick={onBack} className="flex-1">
+          <Icon name="chevronLeft" size="sm" className="mr-2" />
+          Back
+        </Button>
+        <Button onClick={onNext} className="flex-1">
+          Continue
+          <Icon name="chevronRight" size="sm" className="ml-2" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
-// Time Slots Customization
-function TimeSlotsSection({
+// ============================================================================
+// PROMOTION STEP
+// ============================================================================
+
+function PromotionStep({
   config,
   updateConfig,
+  onNext,
+  onBack,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  config: BookingConfig;
+  updateConfig: (updates: Partial<BookingConfig>) => void;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  const { timeSlots } = config;
-  
-  const updateSlot = (id: string, updates: Partial<TimeSlot>) => {
-    updateConfig({
-      timeSlots: timeSlots.map(slot =>
-        slot.id === id ? { ...slot, ...updates } : slot
-      ),
-    });
-  };
-  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="clock" size="lg" />
-          Time Slots
-        </CardTitle>
-        <CardDescription>Configure available scheduling windows</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {timeSlots.map((slot) => (
-          <div 
-            key={slot.id}
-            className={cn(
-              "p-3 border rounded-lg flex items-center gap-4",
-              !slot.enabled && "opacity-50"
-            )}
-          >
+    <div className="max-w-xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
+          <Icon name="tag" size="xl" className="text-violet-600" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Promotion Banner</h2>
+        <p className="text-muted-foreground text-sm">
+          Create an offer to attract new customers
+        </p>
+      </div>
+
+      <Card>
+        <CardContent className="p-6 space-y-6">
+          <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+            <div>
+              <Label className="font-medium">Enable Promotion</Label>
+              <p className="text-xs text-muted-foreground">Show promotional banner</p>
+            </div>
             <Switch
-              checked={slot.enabled}
-              onCheckedChange={(checked) => updateSlot(slot.id, { enabled: checked })}
+              checked={config.promotionEnabled}
+              onCheckedChange={(checked) => updateConfig({ promotionEnabled: checked })}
             />
-            <Input
-              value={slot.label}
-              onChange={(e) => updateSlot(slot.id, { label: e.target.value })}
-              className="w-32"
-              disabled={!slot.enabled}
-            />
-            <div className="flex items-center gap-2">
-              <Input
-                type="time"
-                value={slot.startTime}
-                onChange={(e) => updateSlot(slot.id, { startTime: e.target.value })}
-                className="w-28"
-                disabled={!slot.enabled}
-              />
-              <span>to</span>
-              <Input
-                type="time"
-                value={slot.endTime}
-                onChange={(e) => updateSlot(slot.id, { endTime: e.target.value })}
-                className="w-28"
-                disabled={!slot.enabled}
-              />
-            </div>
           </div>
+
+          {config.promotionEnabled && (
+            <>
+              <div>
+                <Label className="text-sm font-medium">Promotion Headline</Label>
+                <Input
+                  value={config.promotionText}
+                  onChange={(e) => updateConfig({ promotionText: e.target.value })}
+                  placeholder="Get 20% Off Your First Deep Clean!"
+                  className="mt-1.5"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Discount Percentage: {config.discountPercent}%</Label>
+                <Slider
+                  value={[config.discountPercent]}
+                  onValueChange={([v]) => updateConfig({ discountPercent: v })}
+                  min={5}
+                  max={50}
+                  step={5}
+                  className="mt-3"
+                />
+              </div>
+
+              {/* Preview */}
+              <div 
+                className="p-4 rounded-xl text-center text-white"
+                style={{ backgroundColor: config.primaryColor }}
+              >
+                <p className="font-semibold">{config.promotionText}</p>
+                <p className="text-sm opacity-80">Professional cleaning you can trust</p>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3 mt-6">
+        <Button variant="outline" onClick={onBack} className="flex-1">
+          <Icon name="chevronLeft" size="sm" className="mr-2" />
+          Back
+        </Button>
+        <Button onClick={onNext} className="flex-1">
+          Preview Widget
+          <Icon name="eye" size="sm" className="ml-2" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// PREVIEW STEP - Shows full booking widget preview
+// ============================================================================
+
+function PreviewStep({
+  config,
+  onNext,
+  onBack,
+}: {
+  config: BookingConfig;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  const [previewStep, setPreviewStep] = React.useState(1);
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold mb-2">Preview Your Booking Widget</h2>
+        <p className="text-muted-foreground text-sm">
+          This is how customers will see your booking flow
+        </p>
+      </div>
+
+      {/* Step selector */}
+      <div className="flex justify-center gap-2 mb-6">
+        {[1, 2, 3, 4, 5, 6].map((step) => (
+          <button
+            key={step}
+            onClick={() => setPreviewStep(step)}
+            className={cn(
+              "w-10 h-10 rounded-full font-medium text-sm transition-all",
+              previewStep === step 
+                ? "text-white shadow-lg" 
+                : "bg-gray-100 hover:bg-gray-200"
+            )}
+            style={{ 
+              backgroundColor: previewStep === step ? config.primaryColor : undefined 
+            }}
+          >
+            {step}
+          </button>
         ))}
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
 
-// Reviews Customization
-function ReviewsSection({
-  config,
-  updateConfig,
-}: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
-}) {
-  const { reviews } = config;
-  
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="star" size="lg" />
-          Reviews Section
-        </CardTitle>
-        <CardDescription>Configure customer testimonials</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-          <div>
-            <Label>Show Reviews</Label>
-            <p className="text-xs text-muted-foreground">Display customer testimonials</p>
-          </div>
-          <Switch
-            checked={reviews.enabled}
-            onCheckedChange={(checked) => updateConfig({ reviews: { ...reviews, enabled: checked } })}
-          />
-        </div>
-        
-        {reviews.enabled && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Section Headline</Label>
-                <Input
-                  value={reviews.headline}
-                  onChange={(e) => updateConfig({ reviews: { ...reviews, headline: e.target.value } })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>Average Rating</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  max="5"
-                  value={reviews.averageRating}
-                  onChange={(e) => updateConfig({ reviews: { ...reviews, averageRating: Number(e.target.value) } })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label>Total Reviews Count</Label>
-              <Input
-                type="number"
-                value={reviews.totalReviews}
-                onChange={(e) => updateConfig({ reviews: { ...reviews, totalReviews: Number(e.target.value) } })}
-                className="mt-1"
-              />
-            </div>
-            
-            <Separator />
-            
-            <div>
-              <Label className="mb-2 block">Individual Reviews</Label>
-              {reviews.reviews.map((review, idx) => (
-                <div key={review.id} className="p-3 border rounded-lg mb-2 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      value={review.author}
-                      onChange={(e) => {
-                        const newReviews = [...reviews.reviews];
-                        newReviews[idx] = { ...newReviews[idx], author: e.target.value };
-                        updateConfig({ reviews: { ...reviews, reviews: newReviews } });
-                      }}
-                      placeholder="Author name"
-                    />
-                    <Select
-                      value={String(review.rating)}
-                      onValueChange={(v) => {
-                        const newReviews = [...reviews.reviews];
-                        newReviews[idx] = { ...newReviews[idx], rating: Number(v) };
-                        updateConfig({ reviews: { ...reviews, reviews: newReviews } });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[5, 4, 3, 2, 1].map(r => (
-                          <SelectItem key={r} value={String(r)}>{r} stars</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Textarea
-                    value={review.text}
-                    onChange={(e) => {
-                      const newReviews = [...reviews.reviews];
-                      newReviews[idx] = { ...newReviews[idx], text: e.target.value };
-                      updateConfig({ reviews: { ...reviews, reviews: newReviews } });
-                    }}
-                    rows={2}
-                    placeholder="Review text..."
-                  />
+      {/* Preview Container */}
+      <div className="bg-gray-100 rounded-2xl p-6">
+        <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-md mx-auto">
+          {/* Widget Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <div className="flex items-center gap-2">
+              {config.logoUrl ? (
+                <img src={config.logoUrl} alt="" className="h-8 w-8 rounded" />
+              ) : (
+                <div 
+                  className="h-8 w-8 rounded flex items-center justify-center text-white font-bold text-sm"
+                  style={{ backgroundColor: config.primaryColor }}
+                >
+                  {config.businessName.charAt(0) || 'B'}
                 </div>
-              ))}
+              )}
+              <span className="font-semibold text-sm">{config.businessName || 'Your Business'}</span>
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+            {config.phone && (
+              <span className="text-xs text-muted-foreground">{config.phone}</span>
+            )}
+          </div>
+
+          {/* Progress Bar */}
+          <div className="px-4 py-2 border-b">
+            <div className="flex justify-between text-xs mb-1">
+              <span>Step {previewStep} of 6</span>
+              <span style={{ color: config.primaryColor }}>{Math.round((previewStep / 6) * 100)}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full rounded-full transition-all"
+                style={{ 
+                  backgroundColor: config.primaryColor,
+                  width: `${(previewStep / 6) * 100}%` 
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Preview Content */}
+          <div className="p-6">
+            <AnimatePresence mode="wait">
+              {previewStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  {/* Trust Badge */}
+                  <div className="flex justify-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200">
+                      <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                        <Icon name="check" size="xs" className="text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-green-700">Google Guaranteed</span>
+                    </div>
+                  </div>
+
+                  {/* Promotion */}
+                  {config.promotionEnabled && (
+                    <div 
+                      className="p-4 rounded-xl text-center text-white"
+                      style={{ backgroundColor: config.primaryColor }}
+                    >
+                      <p className="font-semibold">{config.promotionText}</p>
+                      <p className="text-sm opacity-80">Professional cleaning you can trust</p>
+                    </div>
+                  )}
+
+                  {/* ZIP Input */}
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Enter ZIP Code</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Input placeholder="75001" className="text-center" />
+                        <Button style={{ backgroundColor: config.primaryColor }}>
+                          Check
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {previewStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <h3 className="text-lg font-semibold text-center">How big is your home?</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {config.sqftTiers.filter(t => t.enabled).slice(0, 4).map((tier) => (
+                      <button
+                        key={tier.id}
+                        className="p-3 rounded-lg border-2 text-center hover:border-gray-400"
+                      >
+                        <p className="font-medium text-sm">{tier.label}</p>
+                        <p className="text-xs text-muted-foreground">sq ft</p>
+                        <p className="text-sm font-semibold mt-1" style={{ color: config.primaryColor }}>
+                          From ${tier.price}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {previewStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <h3 className="text-lg font-semibold text-center">Choose Your Perfect Clean</h3>
+                  {config.services.filter(s => s.enabled).map((service) => (
+                    <div key={service.id} className="p-4 rounded-xl border-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{service.name}</span>
+                        {service.popular && (
+                          <Badge style={{ backgroundColor: config.accentColor }}>{service.badge}</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{service.description}</p>
+                      <div className="flex items-center gap-2">
+                        {service.discountPercent > 0 && (
+                          <span className="text-muted-foreground line-through">${service.basePrice}</span>
+                        )}
+                        <span className="font-bold" style={{ color: config.primaryColor }}>
+                          ${Math.round(service.basePrice * (1 - service.discountPercent / 100))}
+                        </span>
+                        {service.discountPercent > 0 && (
+                          <Badge variant="outline" className="text-xs">{service.discountPercent}% OFF</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+
+              {previewStep === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <h3 className="text-lg font-semibold text-center">Secure Payment</h3>
+                  <div className="p-4 rounded-xl bg-gray-50 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Deep Clean Service</span>
+                      <span>$269</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount (20%)</span>
+                      <span>-$53.80</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between font-semibold">
+                      <span>Total</span>
+                      <span>$215.20</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">Due Today ({config.depositPercent}%)</span>
+                      <span className="font-bold">${(215.20 * config.depositPercent / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Input placeholder="Card Number" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input placeholder="MM/YY" />
+                      <Input placeholder="CVC" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {previewStep === 5 && (
+                <motion.div
+                  key="step5"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <div className="p-3 rounded-lg bg-green-50 text-green-700 text-center text-sm">
+                    ✅ Payment Successful! Now let's schedule your clean.
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Street Address</Label>
+                      <Input placeholder="123 Main St" className="mt-1" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-sm">City</Label>
+                        <Input placeholder="Austin" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-sm">State</Label>
+                        <Input placeholder="TX" className="mt-1" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Preferred Time</Label>
+                      <div className="grid grid-cols-3 gap-2 mt-1">
+                        {['Morning', 'Afternoon', 'Evening'].map((time) => (
+                          <button
+                            key={time}
+                            className="p-2 rounded-lg border text-xs hover:border-gray-400"
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {previewStep === 6 && (
+                <motion.div
+                  key="step6"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="text-center space-y-4"
+                >
+                  <div 
+                    className="w-16 h-16 rounded-full mx-auto flex items-center justify-center"
+                    style={{ backgroundColor: config.accentColor }}
+                  >
+                    <Icon name="check" size="2xl" className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">🎉 Booking Confirmed!</h3>
+                    <p className="text-sm text-muted-foreground">Check your email for confirmation details</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-gray-50 text-left text-sm space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Service</span>
+                      <span className="font-medium">Deep Clean</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Date</span>
+                      <span className="font-medium">Thursday, Jan 9</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Deposit Paid</span>
+                      <span className="font-medium text-green-600">$53.80</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Trust Badges Footer */}
+          <div className="px-4 py-3 border-t flex justify-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Icon name="lock" size="xs" /> Secure
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="clock" size="xs" /> 48hr Guarantee
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="shield" size="xs" /> Insured
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <Button variant="outline" onClick={onBack} className="flex-1">
+          <Icon name="chevronLeft" size="sm" className="mr-2" />
+          Edit Settings
+        </Button>
+        <Button onClick={onNext} className="flex-1 bg-green-600 hover:bg-green-700">
+          <Icon name="check" size="sm" className="mr-2" />
+          Publish Widget
+        </Button>
+      </div>
+    </div>
   );
 }
 
-// Confirmation Page Customization
-function ConfirmationSection({
+// ============================================================================
+// COMPLETE STEP
+// ============================================================================
+
+function CompleteStep({
   config,
-  updateConfig,
+  businessId,
 }: {
-  config: BookingWidgetConfig;
-  updateConfig: (updates: Partial<BookingWidgetConfig>) => void;
+  config: BookingConfig;
+  businessId: string;
 }) {
-  const { confirmation } = config;
-  
+  const bookingUrl = `https://book.selestial.io/${businessId}/${config.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const embedCode = `<script src="https://book.selestial.io/embed.js" data-business="${businessId}"></script>`;
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied!`);
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Icon name="checkCircle" size="lg" />
-          Confirmation Page
-        </CardTitle>
-        <CardDescription>Customize the success page</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label>Success Headline</Label>
-          <Input
-            value={confirmation.headline}
-            onChange={(e) => updateConfig({ confirmation: { ...confirmation, headline: e.target.value } })}
-            className="mt-1"
-          />
-        </div>
-        
-        <div>
-          <Label>Subheadline</Label>
-          <Input
-            value={confirmation.subheadline}
-            onChange={(e) => updateConfig({ confirmation: { ...confirmation, subheadline: e.target.value } })}
-            className="mt-1"
-          />
-        </div>
-        
-        <Separator />
-        
-        <div className="space-y-3">
-          {[
-            { key: 'showBookingDetails', label: 'Show Booking Details', desc: 'Display summary card' },
-            { key: 'showAddToCalendar', label: 'Show Add to Calendar', desc: 'Calendar button' },
-            { key: 'showNextSteps', label: 'Show Next Steps', desc: 'What happens next' },
-            { key: 'showReferralCode', label: 'Show Referral Code', desc: 'Enable referral program' },
-            { key: 'showContactInfo', label: 'Show Contact Info', desc: 'Support contact' },
-          ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between p-2 bg-muted rounded">
-              <div>
-                <Label className="text-sm">{item.label}</Label>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
-              </div>
-              <Switch
-                checked={confirmation[item.key as keyof typeof confirmation] as boolean}
-                onCheckedChange={(checked) => updateConfig({ confirmation: { ...confirmation, [item.key]: checked } })}
-              />
+    <div className="max-w-xl mx-auto text-center">
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6"
+      >
+        <Icon name="check" size="3xl" className="text-green-600" />
+      </motion.div>
+
+      <h2 className="text-2xl font-bold mb-2">🎉 Your Booking Widget is Live!</h2>
+      <p className="text-muted-foreground mb-8">
+        Share your booking link or embed it on your website
+      </p>
+
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="p-4">
+            <Label className="text-sm font-medium">Direct Booking Link</Label>
+            <div className="flex gap-2 mt-2">
+              <Input value={bookingUrl} readOnly className="text-sm" />
+              <Button variant="outline" onClick={() => copyToClipboard(bookingUrl, 'Link')}>
+                <Icon name="copy" size="sm" />
+              </Button>
             </div>
-          ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <Label className="text-sm font-medium">Embed Code</Label>
+            <code className="block p-3 bg-gray-100 rounded-lg text-xs mt-2 text-left overflow-x-auto">
+              {embedCode}
+            </code>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-3"
+              onClick={() => copyToClipboard(embedCode, 'Embed code')}
+            >
+              <Icon name="copy" size="sm" className="mr-2" />
+              Copy Embed Code
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" asChild>
+            <a href={bookingUrl} target="_blank" rel="noopener noreferrer">
+              <Icon name="externalLink" size="sm" className="mr-2" />
+              View Live
+            </a>
+          </Button>
+          <Button className="flex-1" onClick={() => window.location.reload()}>
+            <Icon name="settings" size="sm" className="mr-2" />
+            Edit Widget
+          </Button>
         </div>
-        
-        {confirmation.showReferralCode && (
-          <div>
-            <Label>Referral Reward Amount ($)</Label>
-            <Input
-              type="number"
-              value={confirmation.referralReward}
-              onChange={(e) => updateConfig({ confirmation: { ...confirmation, referralReward: Number(e.target.value) } })}
-              className="mt-1"
-            />
-          </div>
-        )}
-        
-        {confirmation.showNextSteps && (
-          <div>
-            <Label>Next Steps (one per line)</Label>
-            <Textarea
-              value={confirmation.nextSteps.join('\n')}
-              onChange={(e) => updateConfig({ confirmation: { ...confirmation, nextSteps: e.target.value.split('\n').filter(Boolean) } })}
-              rows={4}
-              className="mt-1"
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -920,38 +1072,32 @@ function ConfirmationSection({
 export default function BookingCustomizePage() {
   const { business } = useBusiness();
   const businessId = business?.id || '';
-  const businessName = business?.name || 'Your Business';
   
-  const [loading, setLoading] = React.useState(false);
-  const [config, setConfig] = React.useState<BookingWidgetConfig>(() => 
-    getDefaultConfig(businessId, businessName)
-  );
-  const [previewStep, setPreviewStep] = React.useState(1);
-  const [showFullPreview, setShowFullPreview] = React.useState(false);
-  
-  // Update config when business loads
+  const [step, setStep] = React.useState<SetupStep>('niche');
+  const [config, setConfig] = React.useState<BookingConfig>({
+    ...DEFAULT_CONFIG,
+    businessName: business?.name || '',
+  });
+  const [saving, setSaving] = React.useState(false);
+
+  // Update business name when loaded
   React.useEffect(() => {
-    if (business?.name) {
-      setConfig(prev => ({
-        ...prev,
-        businessId: business.id,
-        header: { ...prev.header, businessName: business.name },
-        slug: business.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      }));
+    if (business?.name && !config.businessName) {
+      setConfig(prev => ({ ...prev, businessName: business.name }));
     }
-  }, [business]);
-  
-  const updateConfig = (updates: Partial<BookingWidgetConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates, updatedAt: new Date().toISOString() }));
+  }, [business?.name]);
+
+  const updateConfig = (updates: Partial<BookingConfig>) => {
+    setConfig(prev => ({ ...prev, ...updates }));
   };
-  
-  const handleSave = async () => {
-    if (!businessId) {
-      toast.error('No business configured');
-      return;
-    }
-    
-    setLoading(true);
+
+  const handleNicheSelect = (niche: Niche) => {
+    updateConfig({ niche });
+    setStep('branding');
+  };
+
+  const handlePublish = async () => {
+    setSaving(true);
     try {
       await fetch(`/api/booking/${businessId}/customization`, {
         method: 'PATCH',
@@ -961,196 +1107,102 @@ export default function BookingCustomizePage() {
           data: config,
         }),
       });
-      toast.success('Booking widget saved!');
+      setStep('complete');
+      toast.success('Booking widget published!');
     } catch (error) {
-      toast.error('Failed to save');
+      toast.error('Failed to publish widget');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
-  
-  const copyEmbedCode = () => {
-    const code = `<script src="https://book.selestial.io/embed.js" data-business="${businessId}"></script>`;
-    navigator.clipboard.writeText(code);
-    toast.success('Embed code copied!');
-  };
-  
-  const bookingUrl = `https://book.selestial.io/${businessId}/${config.slug}`;
-  
+
+  // Calculate progress
+  const steps: SetupStep[] = ['niche', 'branding', 'pricing', 'services', 'promotion', 'preview'];
+  const currentStepIndex = steps.indexOf(step);
+  const progress = step === 'complete' ? 100 : Math.round(((currentStepIndex + 1) / steps.length) * 100);
+
   return (
-    <Layout title="Booking Widget Builder">
-      <div className="min-h-screen">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Booking Widget Builder</h1>
-            <p className="text-muted-foreground">
-              Full control over every component of your booking experience
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Dialog open={showFullPreview} onOpenChange={setShowFullPreview}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Icon name="externalLink" size="sm" />
-                  Full Preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl h-[90vh] p-0">
-                <ScrollArea className="h-full">
-                  <PublicBookingWidget config={config} preview />
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
-            <Button onClick={handleSave} disabled={loading} className="gap-2">
-              {loading ? (
-                <Icon name="spinner" size="sm" className="animate-spin" />
-              ) : (
-                <Icon name="save" size="sm" />
-              )}
-              Save Changes
-            </Button>
-          </div>
-        </div>
-        
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-          {/* Left: Customization Controls */}
-          <div className="xl:col-span-3 space-y-6">
-            <Tabs defaultValue="branding" className="space-y-4">
-              <TabsList className="grid grid-cols-5 w-full">
-                <TabsTrigger value="branding" className="text-xs">
-                  <Icon name="palette" size="sm" className="mr-1" />
-                  Brand
-                </TabsTrigger>
-                <TabsTrigger value="content" className="text-xs">
-                  <Icon name="type" size="sm" className="mr-1" />
-                  Content
-                </TabsTrigger>
-                <TabsTrigger value="services" className="text-xs">
-                  <Icon name="grid" size="sm" className="mr-1" />
-                  Services
-                </TabsTrigger>
-                <TabsTrigger value="social" className="text-xs">
-                  <Icon name="star" size="sm" className="mr-1" />
-                  Social
-                </TabsTrigger>
-                <TabsTrigger value="finish" className="text-xs">
-                  <Icon name="check" size="sm" className="mr-1" />
-                  Finish
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="branding" className="space-y-4">
-                <HeaderSection config={config} updateConfig={updateConfig} />
-                <BrandingSection config={config} updateConfig={updateConfig} />
-              </TabsContent>
-              
-              <TabsContent value="content" className="space-y-4">
-                <PromotionSection config={config} updateConfig={updateConfig} />
-                <TrustBadgesSection config={config} updateConfig={updateConfig} />
-              </TabsContent>
-              
-              <TabsContent value="services" className="space-y-4">
-                <SqftOptionsSection config={config} updateConfig={updateConfig} />
-                <ServiceOffersSection config={config} updateConfig={updateConfig} />
-                <TimeSlotsSection config={config} updateConfig={updateConfig} />
-              </TabsContent>
-              
-              <TabsContent value="social" className="space-y-4">
-                <ReviewsSection config={config} updateConfig={updateConfig} />
-              </TabsContent>
-              
-              <TabsContent value="finish" className="space-y-4">
-                <ConfirmationSection config={config} updateConfig={updateConfig} />
-                
-                {/* Embed & Share */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Icon name="code" size="lg" />
-                      Embed & Share
-                    </CardTitle>
-                    <CardDescription>Get your booking widget live</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>Direct Booking Link</Label>
-                      <div className="flex gap-2 mt-1">
-                        <Input value={bookingUrl} readOnly />
-                        <Button 
-                          variant="outline" 
-                          onClick={() => {
-                            navigator.clipboard.writeText(bookingUrl);
-                            toast.success('Link copied!');
-                          }}
-                        >
-                          <Icon name="copy" size="sm" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label>Embed Code</Label>
-                      <code className="block p-3 bg-muted rounded-lg text-xs mt-1 overflow-x-auto">
-                        {`<script src="https://book.selestial.io/embed.js" data-business="${businessId}"></script>`}
-                      </code>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-2 gap-2"
-                        onClick={copyEmbedCode}
-                      >
-                        <Icon name="copy" size="sm" />
-                        Copy Embed Code
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-          
-          {/* Right: Live Preview */}
-          <div className="xl:col-span-2">
-            <div className="sticky top-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <Icon name="eye" size="sm" />
-                  Live Preview
-                </h3>
-                <Select value={String(previewStep)} onValueChange={(v) => setPreviewStep(Number(v))}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Step 1: ZIP</SelectItem>
-                    <SelectItem value="2">Step 2: Size</SelectItem>
-                    <SelectItem value="3">Step 3: Offer</SelectItem>
-                    <SelectItem value="4">Step 4: Pay</SelectItem>
-                    <SelectItem value="5">Step 5: Details</SelectItem>
-                    <SelectItem value="6">Step 6: Done</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="rounded-xl border bg-gray-100 p-4 overflow-hidden">
-                <div 
-                  className="rounded-xl overflow-hidden shadow-2xl transform scale-[0.85] origin-top"
-                  style={{ maxHeight: 'calc(100vh - 200px)' }}
-                >
-                  <ScrollArea className="h-[700px]">
-                    <PublicBookingWidget config={config} preview />
-                  </ScrollArea>
-                </div>
-              </div>
-              
-              <p className="text-xs text-center text-muted-foreground mt-3">
-                Preview is scaled to fit. Click "Full Preview" for actual size.
-              </p>
+    <Layout title="Booking Widget Setup">
+      <div className="min-h-screen pb-12">
+        {/* Progress indicator */}
+        {step !== 'niche' && step !== 'complete' && (
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-muted-foreground">Setup Progress</span>
+              <span className="font-medium">{progress}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-violet-600 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+              />
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Step Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {step === 'niche' && (
+              <NicheSelectionStep onSelect={handleNicheSelect} />
+            )}
+
+            {step === 'branding' && (
+              <BrandingStep
+                config={config}
+                updateConfig={updateConfig}
+                onNext={() => setStep('pricing')}
+                onBack={() => setStep('niche')}
+              />
+            )}
+
+            {step === 'pricing' && (
+              <PricingStep
+                config={config}
+                updateConfig={updateConfig}
+                onNext={() => setStep('services')}
+                onBack={() => setStep('branding')}
+              />
+            )}
+
+            {step === 'services' && (
+              <ServicesStep
+                config={config}
+                updateConfig={updateConfig}
+                onNext={() => setStep('promotion')}
+                onBack={() => setStep('pricing')}
+              />
+            )}
+
+            {step === 'promotion' && (
+              <PromotionStep
+                config={config}
+                updateConfig={updateConfig}
+                onNext={() => setStep('preview')}
+                onBack={() => setStep('services')}
+              />
+            )}
+
+            {step === 'preview' && (
+              <PreviewStep
+                config={config}
+                onNext={handlePublish}
+                onBack={() => setStep('promotion')}
+              />
+            )}
+
+            {step === 'complete' && (
+              <CompleteStep config={config} businessId={businessId} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </Layout>
   );

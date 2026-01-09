@@ -12,17 +12,48 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Icon, IconName } from '@/components/ui/icon';
 import { toast } from 'sonner';
-import {
-  BookingWidgetConfig,
-  SqftOption,
-  ServiceOffer,
-  calculatePrice,
-  getDefaultConfig,
-} from '@/lib/booking/types';
 
 // ============================================================================
 // TYPES
 // ============================================================================
+
+interface SqftTier {
+  id: string;
+  label: string;
+  minSqft: number;
+  maxSqft: number | null;
+  price: number;
+  enabled: boolean;
+  popular?: boolean;
+}
+
+interface ServiceOption {
+  id: string;
+  name: string;
+  description: string;
+  features: string[];
+  basePrice: number;
+  discountPercent: number;
+  badge: string;
+  popular: boolean;
+  enabled: boolean;
+}
+
+interface BookingConfig {
+  niche: string;
+  businessName: string;
+  phone: string;
+  logoUrl: string;
+  primaryColor: string;
+  accentColor: string;
+  sqftTiers: SqftTier[];
+  services: ServiceOption[];
+  promotionEnabled: boolean;
+  promotionText: string;
+  discountPercent: number;
+  depositPercent: number;
+  serviceZips: string[];
+}
 
 interface BookingState {
   step: number;
@@ -33,294 +64,136 @@ interface BookingState {
   lastName: string;
   email: string;
   phone: string;
-  sqftOption: SqftOption | null;
-  serviceOffer: ServiceOffer | null;
-  address1: string;
-  address2: string;
+  selectedSqft: SqftTier | null;
+  selectedService: ServiceOption | null;
+  address: string;
+  apt: string;
   city: string;
   state: string;
   preferredDate: string;
   preferredTime: string;
   notes: string;
-  paymentComplete: boolean;
   bookingId: string;
 }
 
 interface PublicBookingWidgetProps {
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   preview?: boolean;
 }
 
 // ============================================================================
-// STEP COMPONENTS
+// DEFAULT CONFIG
 // ============================================================================
 
-// Header Component
-function WidgetHeader({ config }: { config: BookingWidgetConfig }) {
-  const { header, branding } = config;
-  
+const DEFAULT_SQFT_TIERS: SqftTier[] = [
+  { id: '1', label: '1,000-1,500', minSqft: 1000, maxSqft: 1500, price: 189, enabled: true },
+  { id: '2', label: '1,501-2,000', minSqft: 1501, maxSqft: 2000, price: 229, enabled: true },
+  { id: '3', label: '2,001-2,500', minSqft: 2001, maxSqft: 2500, price: 269, enabled: true, popular: true },
+  { id: '4', label: '2,501-3,000', minSqft: 2501, maxSqft: 3000, price: 309, enabled: true },
+  { id: '5', label: '3,001-3,500', minSqft: 3001, maxSqft: 3500, price: 349, enabled: true },
+  { id: '6', label: '3,501-4,000', minSqft: 3501, maxSqft: 4000, price: 389, enabled: true },
+];
+
+const DEFAULT_SERVICES: ServiceOption[] = [
+  {
+    id: '1',
+    name: 'Tester Deep Clean',
+    description: 'One-time intensive cleaning',
+    features: [
+      '40-point deep clean checklist',
+      '2-person professional crew',
+      '~4 hours of service',
+      'All supplies included',
+    ],
+    basePrice: 269,
+    discountPercent: 20,
+    badge: 'Popular',
+    popular: true,
+    enabled: true,
+  },
+  {
+    id: '2',
+    name: '90-Day Reset & Maintain',
+    description: '3 visits over 90 days',
+    features: [
+      'Initial deep clean + 2 maintenance visits',
+      'Save $180 vs individual bookings',
+      'Flexible monthly payments',
+      'Priority scheduling',
+    ],
+    basePrice: 597,
+    discountPercent: 0,
+    badge: 'Best Value',
+    popular: false,
+    enabled: true,
+  },
+];
+
+const DEFAULT_CONFIG: BookingConfig = {
+  niche: 'cleaning',
+  businessName: 'Alpha Lux Clean',
+  phone: '(512) 555-0123',
+  logoUrl: '',
+  primaryColor: '#1E3A5F',
+  accentColor: '#10B981',
+  sqftTiers: DEFAULT_SQFT_TIERS,
+  services: DEFAULT_SERVICES,
+  promotionEnabled: true,
+  promotionText: 'Get 20% Off Your First Deep Clean!',
+  discountPercent: 20,
+  depositPercent: 25,
+  serviceZips: [],
+};
+
+// ============================================================================
+// TRUST BADGES COMPONENT
+// ============================================================================
+
+function TrustBadges({ config }: { config: BookingConfig }) {
   return (
-    <div 
-      className="flex items-center justify-between px-4 py-3 border-b"
-      style={{ backgroundColor: branding.cardBackground }}
-    >
-      <div className="flex items-center gap-3">
-        {header.logoUrl ? (
-          <img src={header.logoUrl} alt={header.businessName} className="h-8 w-auto" />
-        ) : (
-          <div 
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-            style={{ backgroundColor: branding.primaryColor }}
-          >
-            {header.businessName.charAt(0)}
-          </div>
-        )}
-        <span className="font-semibold text-sm" style={{ color: branding.textColor }}>
-          {header.businessName}
-        </span>
+    <div className="flex items-center justify-center gap-4 py-3 border-b bg-gray-50">
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+          <Icon name="shield" size="xs" className="text-white" />
+        </div>
+        <span className="text-sm font-medium text-green-700">Google Guaranteed</span>
       </div>
-      <div className="flex items-center gap-3">
-        {header.showWebsiteLink && (
-          <a 
-            href={header.websiteUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium hover:bg-gray-50"
-            style={{ color: branding.textColor }}
-          >
-            <Icon name="globe" size="xs" />
-            {header.websiteLabel}
-          </a>
-        )}
-        {header.showPhone && (
-          <a 
-            href={`tel:${header.phoneNumber}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium hover:bg-gray-50"
-            style={{ color: branding.textColor }}
-          >
-            <Icon name="phone" size="xs" />
-            {header.phoneNumber}
-          </a>
-        )}
+      <div className="flex items-center gap-1">
+        <Icon name="star" size="sm" className="text-yellow-500 fill-yellow-500" />
+        <span className="text-sm font-medium">4.9/5</span>
+        <span className="text-xs text-muted-foreground">(500+ reviews)</span>
       </div>
     </div>
   );
 }
 
-// Progress Bar
-function ProgressBar({ 
-  step, 
-  totalSteps, 
-  config 
-}: { 
-  step: number; 
-  totalSteps: number; 
-  config: BookingWidgetConfig;
-}) {
-  const { progress, branding } = config;
+// ============================================================================
+// PROGRESS BAR COMPONENT
+// ============================================================================
+
+function ProgressBar({ step, totalSteps, config }: { step: number; totalSteps: number; config: BookingConfig }) {
   const percentage = Math.round((step / totalSteps) * 100);
   
   return (
-    <div className="px-4 py-3 border-b" style={{ backgroundColor: branding.cardBackground }}>
-      <div className="flex items-center justify-between text-xs mb-2">
-        <span style={{ color: branding.textColor }}>Step {step} of {totalSteps}</span>
-        {progress.showPercentage && (
-          <span style={{ color: branding.primaryColor }} className="font-medium">{percentage}%</span>
-        )}
-      </div>
+    <div className="px-4 py-3">
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ backgroundColor: progress.color || branding.primaryColor }}
+          style={{ backgroundColor: config.primaryColor }}
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.3 }}
         />
       </div>
+      <p className="text-xs text-muted-foreground text-right mt-1">{percentage}% Complete</p>
     </div>
   );
 }
 
-// Trust Badge
-function TrustBadge({ config }: { config: BookingWidgetConfig }) {
-  const activeBadge = config.trustBadges.find(b => b.enabled && b.type === 'google_guaranteed');
-  if (!activeBadge) return null;
-  
-  return (
-    <div className="flex justify-center py-4">
-      <div 
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full border"
-        style={{ 
-          backgroundColor: `${activeBadge.color}10`,
-          borderColor: `${activeBadge.color}30`,
-        }}
-      >
-        <div 
-          className="w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: activeBadge.color }}
-        >
-          <Icon name="check" size="xs" className="text-white" />
-        </div>
-        <div className="text-left">
-          <p className="text-sm font-medium" style={{ color: activeBadge.color }}>
-            {activeBadge.label}
-          </p>
-          {activeBadge.sublabel && (
-            <p className="text-xs text-gray-500">{activeBadge.sublabel}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+// ============================================================================
+// STEP 1: ZIP + LEAD CAPTURE
+// ============================================================================
 
-// Promotion Banner
-function PromotionBanner({ config }: { config: BookingWidgetConfig }) {
-  const { promotion, branding } = config;
-  if (!promotion.enabled) return null;
-  
-  const expiryDate = new Date(promotion.expiryDate);
-  const formattedDate = expiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  
-  return (
-    <div className="text-center py-6 px-4">
-      <h1 
-        className="text-2xl md:text-3xl font-bold mb-2"
-        style={{ color: branding.primaryColor }}
-      >
-        {promotion.headline}
-      </h1>
-      <p 
-        className="text-xl md:text-2xl font-semibold"
-        style={{ color: branding.accentColor }}
-      >
-        {promotion.subheadline}
-      </p>
-      <p className="text-sm text-gray-500 mt-2">
-        Book by {formattedDate} — Enter your ZIP to get started
-      </p>
-    </div>
-  );
-}
-
-// Showcase Carousel
-function ShowcaseCarousel({ config }: { config: BookingWidgetConfig }) {
-  const [current, setCurrent] = React.useState(0);
-  const images = config.showcaseImages.filter(img => img.enabled);
-  
-  if (images.length === 0) return null;
-  
-  return (
-    <div className="px-4 py-6">
-      <h3 className="text-center font-semibold mb-2" style={{ color: config.branding.textColor }}>
-        See Our Professional Results
-      </h3>
-      <p className="text-center text-sm text-gray-500 mb-4">
-        Real photos from our cleaning services
-      </p>
-      <div className="relative rounded-xl overflow-hidden bg-gray-200 aspect-video">
-        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-          <Icon name="image" size="3xl" />
-        </div>
-        {images[current]?.caption && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            <p className="text-white text-sm font-medium">{images[current].caption}</p>
-          </div>
-        )}
-      </div>
-      {images.length > 1 && (
-        <div className="flex justify-center gap-2 mt-3">
-          {images.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrent(idx)}
-              className={cn(
-                "w-2 h-2 rounded-full transition-colors",
-                idx === current ? "bg-gray-800" : "bg-gray-300"
-              )}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Reviews Section
-function ReviewsSection({ config }: { config: BookingWidgetConfig }) {
-  const { reviews, branding } = config;
-  const [currentReview, setCurrentReview] = React.useState(0);
-  
-  if (!reviews.enabled || reviews.reviews.length === 0) return null;
-  
-  return (
-    <div className="px-4 py-6 border-t">
-      <h3 className="text-center font-semibold mb-1" style={{ color: branding.textColor }}>
-        {reviews.headline}
-      </h3>
-      <p className="text-center text-sm text-gray-500 mb-4">{reviews.subheadline}</p>
-      
-      <Card className="max-w-md mx-auto">
-        <CardContent className="p-4">
-          <div className="text-center mb-4">
-            <p className="text-sm text-gray-500">Check Out Our Happy Client</p>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <span className="text-3xl font-bold">{reviews.averageRating.toFixed(2)}</span>
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Icon key={star} name="star" size="sm" className="text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">{reviews.totalReviews} reviews</span>
-            </div>
-          </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-3">
-            <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Icon 
-                  key={star} 
-                  name="star" 
-                  size="sm" 
-                  className={star <= reviews.reviews[currentReview].rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
-                />
-              ))}
-              <span className="text-xs text-gray-500 ml-2">
-                {new Date(reviews.reviews[currentReview].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 italic">"{reviews.reviews[currentReview].text}"</p>
-            <p className="text-sm font-medium">— {reviews.reviews[currentReview].author}</p>
-          </div>
-          
-          {reviews.reviews.length > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <button
-                onClick={() => setCurrentReview(prev => prev === 0 ? reviews.reviews.length - 1 : prev - 1)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <Icon name="chevronLeft" size="sm" />
-              </button>
-              <span className="text-xs text-gray-500">
-                {currentReview + 1} / {reviews.reviews.length}
-              </span>
-              <button
-                onClick={() => setCurrentReview(prev => prev === reviews.reviews.length - 1 ? 0 : prev + 1)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <Icon name="chevronRight" size="sm" />
-              </button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Step 1: ZIP Code & Lead Capture
 function ZipStep({
   state,
   setState,
@@ -329,31 +202,31 @@ function ZipStep({
 }: {
   state: BookingState;
   setState: React.Dispatch<React.SetStateAction<BookingState>>;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   onNext: () => void;
 }) {
-  const { branding, leadCaptureFields } = config;
   const [checking, setChecking] = React.useState(false);
-  
+
   const checkZip = async () => {
-    setChecking(true);
-    // Simulate ZIP validation
-    await new Promise(r => setTimeout(r, 800));
+    if (state.zip.length !== 5) return;
     
-    // Mock validation - in production, check against serviceAreaZips
-    const isValid = state.zip.length === 5 && /^\d+$/.test(state.zip);
+    setChecking(true);
+    await new Promise(r => setTimeout(r, 600));
+    
+    // Mock validation - would check against serviceZips in production
+    const isValid = /^\d{5}$/.test(state.zip);
     setState(prev => ({
       ...prev,
       zipValid: isValid,
-      cityState: isValid ? 'Houston, TX' : '', // Would come from API
+      cityState: isValid ? 'Austin, TX' : '',
     }));
     setChecking(false);
     
     if (!isValid) {
-      toast.error('Sorry, we don\'t service this area yet');
+      toast.error("Sorry, we don't service this area yet");
     }
   };
-  
+
   const handleSubmit = () => {
     if (!state.firstName || !state.email) {
       toast.error('Please fill in all required fields');
@@ -361,145 +234,159 @@ function ZipStep({
     }
     onNext();
   };
-  
+
   return (
-    <div className="px-4 py-6">
-      {!state.zipValid ? (
-        // Phase 1: ZIP Code Entry
-        <div className="max-w-sm mx-auto space-y-4">
-          <div>
-            <Label className="text-sm font-medium">ZIP Code</Label>
-            <Input
-              value={state.zip}
-              onChange={(e) => setState(prev => ({ ...prev, zip: e.target.value.slice(0, 5) }))}
-              placeholder="75001"
-              className="mt-1 text-center text-lg"
-              style={{ borderRadius: branding.borderRadius }}
-              maxLength={5}
-            />
-          </div>
-          <Button
-            onClick={checkZip}
-            disabled={state.zip.length !== 5 || checking}
-            className="w-full text-white"
-            style={{ 
-              backgroundColor: branding.primaryColor,
-              borderRadius: branding.borderRadius,
-            }}
-          >
-            {checking ? (
-              <>
-                <Icon name="spinner" size="sm" className="animate-spin mr-2" />
-                Checking...
-              </>
-            ) : (
-              'Check Availability'
-            )}
-          </Button>
-        </div>
-      ) : (
-        // Phase 2: Lead Capture Form
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md mx-auto"
+    <div className="p-6">
+      {/* Promotion Banner */}
+      {config.promotionEnabled && (
+        <div 
+          className="p-4 rounded-xl text-center text-white mb-6"
+          style={{ backgroundColor: config.primaryColor }}
         >
-          <div 
-            className="p-4 rounded-xl border mb-6"
-            style={{ 
-              backgroundColor: `${branding.accentColor}10`,
-              borderColor: `${branding.accentColor}30`,
-            }}
+          <p className="text-lg font-bold">{config.promotionText}</p>
+          <p className="text-sm opacity-80">Professional cleaning you can trust</p>
+        </div>
+      )}
+
+      <AnimatePresence mode="wait">
+        {!state.zipValid ? (
+          <motion.div
+            key="zip-entry"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
           >
-            <div className="flex items-center gap-2">
+            <div className="text-center mb-6">
+              <h2 className="text-lg font-semibold">Enter your ZIP code to get started</h2>
+            </div>
+
+            <div className="max-w-xs mx-auto">
+              <div className="flex gap-2">
+                <Input
+                  value={state.zip}
+                  onChange={(e) => setState(prev => ({ ...prev, zip: e.target.value.slice(0, 5) }))}
+                  placeholder="Enter ZIP Code"
+                  className="text-center text-lg"
+                  maxLength={5}
+                  autoFocus
+                />
+                <Button
+                  onClick={checkZip}
+                  disabled={state.zip.length !== 5 || checking}
+                  style={{ backgroundColor: config.primaryColor }}
+                  className="text-white"
+                >
+                  {checking ? (
+                    <Icon name="spinner" size="sm" className="animate-spin" />
+                  ) : (
+                    'Check →'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="lead-capture"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            {/* Success Message */}
+            <div 
+              className="p-3 rounded-lg flex items-center gap-2"
+              style={{ backgroundColor: `${config.accentColor}15` }}
+            >
               <div 
                 className="w-6 h-6 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: branding.accentColor }}
+                style={{ backgroundColor: config.accentColor }}
               >
                 <Icon name="check" size="xs" className="text-white" />
               </div>
-              <div>
-                <p className="font-medium" style={{ color: branding.textColor }}>
-                  Great news! We service {state.cityState}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Enter your details to claim your New Year discount
-                </p>
-              </div>
+              <span className="font-medium" style={{ color: config.accentColor }}>
+                ✅ We service your area!
+              </span>
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* Contact Form */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm">First Name</Label>
+                  <Input
+                    value={state.firstName}
+                    onChange={(e) => setState(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="John"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Last Name</Label>
+                  <Input
+                    value={state.lastName}
+                    onChange={(e) => setState(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Smith"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
               <div>
-                <Label className="text-sm font-medium">First Name</Label>
+                <Label className="text-sm">Email Address</Label>
                 <Input
-                  value={state.firstName}
-                  onChange={(e) => setState(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="John"
+                  type="email"
+                  value={state.email}
+                  onChange={(e) => setState(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="john@example.com"
                   className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
                 />
               </div>
               <div>
-                <Label className="text-sm font-medium">Last Name</Label>
+                <Label className="text-sm">Phone Number</Label>
                 <Input
-                  value={state.lastName}
-                  onChange={(e) => setState(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Smith"
+                  type="tel"
+                  value={state.phone}
+                  onChange={(e) => setState(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="(555) 123-4567"
                   className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
                 />
               </div>
             </div>
-            <div>
-              <Label className="text-sm font-medium">Email</Label>
-              <Input
-                type="email"
-                value={state.email}
-                onChange={(e) => setState(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="john@example.com"
-                className="mt-1"
-                style={{ borderRadius: branding.borderRadius }}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium">Phone Number</Label>
-              <Input
-                type="tel"
-                value={state.phone}
-                onChange={(e) => setState(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="(555) 123-4567"
-                className="mt-1"
-                style={{ borderRadius: branding.borderRadius }}
-              />
-            </div>
-            
+
             <Button
               onClick={handleSubmit}
               className="w-full text-white"
-              style={{ 
-                backgroundColor: branding.primaryColor,
-                borderRadius: branding.borderRadius,
-              }}
+              style={{ backgroundColor: config.primaryColor }}
             >
-              Claim My Discount →
+              🎁 Claim My {config.discountPercent}% Discount
             </Button>
-            
-            <button
-              onClick={() => setState(prev => ({ ...prev, zipValid: false, zip: '' }))}
-              className="w-full text-sm text-gray-500 hover:text-gray-700"
-            >
-              ← Change ZIP code ({state.zip})
-            </button>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Trust Badges Footer */}
+      <div className="flex justify-center gap-4 mt-8 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Icon name="lock" size="xs" /> Secure
+        </span>
+        <span className="flex items-center gap-1">
+          <Icon name="clock" size="xs" /> 48hr Guarantee
+        </span>
+        <span className="flex items-center gap-1">
+          <Icon name="fileText" size="xs" /> No Contract
+        </span>
+        <span className="flex items-center gap-1">
+          <Icon name="shield" size="xs" /> Insured
+        </span>
+      </div>
     </div>
   );
 }
 
-// Step 2: Square Footage Selection
+// ============================================================================
+// STEP 2: SQUARE FOOTAGE SELECTION
+// ============================================================================
+
 function SqftStep({
   state,
   setState,
@@ -509,75 +396,81 @@ function SqftStep({
 }: {
   state: BookingState;
   setState: React.Dispatch<React.SetStateAction<BookingState>>;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const { branding, sqftOptions } = config;
-  const enabledOptions = sqftOptions.filter(opt => opt.enabled);
-  
-  const handleSelect = (option: SqftOption) => {
-    if (option.requiresCall) {
-      toast.info('Please call us for homes over 5,000 sq ft');
-      return;
-    }
-    setState(prev => ({ ...prev, sqftOption: option }));
+  const tiers = config.sqftTiers.filter(t => t.enabled);
+
+  const handleSelect = (tier: SqftTier) => {
+    setState(prev => ({ ...prev, selectedSqft: tier }));
     onNext();
   };
-  
+
   return (
-    <div className="px-4 py-6">
+    <div className="p-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: branding.textColor }}>
-          What size is your home?
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          This helps us provide an accurate estimate
-        </p>
+        <h2 className="text-xl font-bold">How big is your home?</h2>
+        <p className="text-sm text-muted-foreground">Select your approximate square footage</p>
       </div>
-      
-      <div className="max-w-lg mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {enabledOptions.map((option) => (
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {tiers.map((tier) => (
           <button
-            key={option.id}
-            onClick={() => handleSelect(option)}
+            key={tier.id}
+            onClick={() => handleSelect(tier)}
             className={cn(
-              "p-4 rounded-xl border-2 text-center transition-all hover:shadow-md",
-              state.sqftOption?.id === option.id 
+              "relative p-4 rounded-xl border-2 text-center transition-all hover:shadow-md",
+              state.selectedSqft?.id === tier.id 
                 ? "border-current shadow-lg" 
                 : "border-gray-200 hover:border-gray-300"
             )}
-            style={{ 
-              borderRadius: branding.borderRadius,
-              borderColor: state.sqftOption?.id === option.id ? branding.primaryColor : undefined,
-              backgroundColor: state.sqftOption?.id === option.id ? `${branding.primaryColor}10` : undefined,
+            style={{
+              borderColor: state.selectedSqft?.id === tier.id ? config.primaryColor : undefined,
+              backgroundColor: state.selectedSqft?.id === tier.id ? `${config.primaryColor}08` : undefined,
             }}
           >
-            <p className="font-medium" style={{ color: branding.textColor }}>
-              {option.label}
-            </p>
-            <p className="text-xs text-gray-500">sq ft</p>
-            {option.requiresCall && (
-              <Badge variant="secondary" className="mt-2 text-xs">Call us</Badge>
+            {tier.popular && (
+              <Badge 
+                className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs text-white"
+                style={{ backgroundColor: config.accentColor }}
+              >
+                ⭐ Popular
+              </Badge>
             )}
+            <div className="text-2xl mb-1">🏠</div>
+            <p className="font-semibold">{tier.label}</p>
+            <p className="text-xs text-muted-foreground">sq ft</p>
+            <p className="text-sm font-bold mt-2" style={{ color: config.primaryColor }}>
+              From ${tier.price}
+            </p>
           </button>
         ))}
       </div>
-      
-      <div className="mt-6 text-center">
-        <button
-          onClick={onBack}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
+
+      <div className="text-center mt-6 p-3 bg-gray-50 rounded-lg">
+        <p className="text-sm text-muted-foreground">
+          📞 Home larger than 5,000 sqft?{' '}
+          <a href={`tel:${config.phone}`} className="font-medium" style={{ color: config.primaryColor }}>
+            Call for quote
+          </a>
+        </p>
+      </div>
+
+      <div className="mt-6">
+        <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
           ← Back
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-// Step 3: Service Offer Selection
-function OfferStep({
+// ============================================================================
+// STEP 3: SERVICE SELECTION
+// ============================================================================
+
+function ServiceStep({
   state,
   setState,
   config,
@@ -586,133 +479,117 @@ function OfferStep({
 }: {
   state: BookingState;
   setState: React.Dispatch<React.SetStateAction<BookingState>>;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const { branding, serviceOffers, promotion } = config;
-  const enabledOffers = serviceOffers.filter(offer => offer.enabled);
-  
-  const handleSelect = (offer: ServiceOffer) => {
-    setState(prev => ({ ...prev, serviceOffer: offer }));
+  const services = config.services.filter(s => s.enabled);
+
+  const handleSelect = (service: ServiceOption) => {
+    setState(prev => ({ ...prev, selectedService: service }));
     onNext();
   };
-  
-  const getPricing = (offer: ServiceOffer) => {
-    if (!state.sqftOption) return { basePrice: 0, total: 0, deposit: 0 };
-    return calculatePrice(state.sqftOption, offer, config);
+
+  const calculatePrice = (service: ServiceOption) => {
+    const basePrice = (state.selectedSqft?.price || 0) + (service.basePrice - 269);
+    const discounted = basePrice * (1 - service.discountPercent / 100);
+    return { base: basePrice, discounted: Math.round(discounted) };
   };
-  
+
   return (
-    <div className="px-4 py-6">
-      {/* Sticky banner */}
-      {promotion.enabled && (
-        <div 
-          className="sticky top-0 -mx-4 px-4 py-2 text-center text-sm font-medium text-white mb-4"
-          style={{ backgroundColor: branding.primaryColor }}
-        >
-          ${promotion.discountAmount} Off + {promotion.recurringDiscount}% Off — Limited Time
-        </div>
-      )}
-      
+    <div className="p-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: branding.textColor }}>
-          Start 2025 With a Spotless Home
-        </h2>
-        <TrustBadge config={config} />
+        <h2 className="text-xl font-bold">Choose Your Perfect Clean</h2>
+        <p className="text-sm text-muted-foreground">Select the service that fits your needs</p>
       </div>
-      
-      <div className="max-w-2xl mx-auto grid md:grid-cols-2 gap-4">
-        {enabledOffers.map((offer) => {
-          const pricing = getPricing(offer);
+
+      <div className="space-y-4">
+        {services.map((service) => {
+          const pricing = calculatePrice(service);
+          
           return (
             <div
-              key={offer.id}
+              key={service.id}
               className={cn(
-                "relative p-6 rounded-xl border-2 transition-all",
-                offer.popular && "ring-2"
+                "relative p-5 rounded-xl border-2 transition-all",
+                service.popular && "ring-2"
               )}
-              style={{ 
-                borderRadius: branding.borderRadius,
-                borderColor: offer.color,
-                ...(offer.popular && { ringColor: offer.color }),
+              style={{
+                borderColor: service.popular ? config.primaryColor : '#e5e7eb',
+                ...(service.popular && { ringColor: config.primaryColor }),
               }}
             >
-              {offer.popular && (
-                <Badge 
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-white"
-                  style={{ backgroundColor: offer.color }}
+              {/* Badge */}
+              <Badge 
+                className="absolute -top-2.5 right-4 text-white"
+                style={{ backgroundColor: service.popular ? config.accentColor : config.primaryColor }}
+              >
+                {service.badge}
+              </Badge>
+
+              <div className="flex items-start gap-3 mb-4">
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                  style={{ backgroundColor: config.primaryColor }}
                 >
-                  Most Popular
-                </Badge>
-              )}
-              
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold" style={{ color: branding.textColor }}>
-                  {offer.name}
-                </h3>
-                {offer.discountBadge && (
-                  <Badge style={{ backgroundColor: branding.accentColor }} className="text-white">
-                    {offer.discountBadge}
-                  </Badge>
-                )}
-              </div>
-              
-              <p className="text-sm text-gray-600 mb-4">{offer.description}</p>
-              
-              <div className="mb-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold" style={{ color: offer.color }}>
-                    ${pricing.total}
-                  </span>
-                  <span className="text-gray-400 line-through">${pricing.basePrice}</span>
+                  {service.popular ? '💎' : '🔄'}
                 </div>
-                {offer.type === 'recurring' && (
-                  <p className="text-xs text-gray-500">per visit</p>
-                )}
+                <div>
+                  <h3 className="font-bold text-lg">{service.name}</h3>
+                  <p className="text-sm text-muted-foreground">{service.description}</p>
+                </div>
               </div>
-              
-              <ul className="space-y-2 mb-6">
-                {offer.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span style={{ color: branding.accentColor }}><Icon name="check" size="sm" className="mt-0.5" /></span>
-                    <span>{feature}</span>
+
+              <ul className="space-y-2 mb-4">
+                {service.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-sm">
+                    <span style={{ color: config.accentColor }}>✓</span>
+                    {feature}
                   </li>
                 ))}
               </ul>
-              
+
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-4">
+                <div className="flex items-baseline gap-2">
+                  {service.discountPercent > 0 && (
+                    <span className="text-gray-400 line-through">${pricing.base}</span>
+                  )}
+                  <span className="text-2xl font-bold" style={{ color: config.primaryColor }}>
+                    ${pricing.discounted}
+                  </span>
+                  {service.discountPercent > 0 && (
+                    <Badge variant="outline" style={{ color: config.accentColor, borderColor: config.accentColor }}>
+                      {service.discountPercent}% OFF!
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
               <Button
-                onClick={() => handleSelect(offer)}
+                onClick={() => handleSelect(service)}
                 className="w-full text-white"
-                style={{ 
-                  backgroundColor: offer.color,
-                  borderRadius: branding.borderRadius,
-                }}
+                style={{ backgroundColor: config.primaryColor }}
               >
-                Get Started — ${pricing.deposit} deposit
+                Select {service.name}
               </Button>
-              
-              <button className="w-full mt-2 text-sm text-gray-500 hover:text-gray-700">
-                What's included?
-              </button>
             </div>
           );
         })}
       </div>
-      
-      <div className="mt-6 text-center">
-        <button
-          onClick={onBack}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Back to Home Size
-        </button>
+
+      <div className="mt-6">
+        <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
+          ← Back
+        </Button>
       </div>
     </div>
   );
 }
 
-// Step 4: Checkout/Payment
+// ============================================================================
+// STEP 4: CHECKOUT / PAYMENT
+// ============================================================================
+
 function CheckoutStep({
   state,
   setState,
@@ -722,192 +599,175 @@ function CheckoutStep({
 }: {
   state: BookingState;
   setState: React.Dispatch<React.SetStateAction<BookingState>>;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const { branding, promotion } = config;
   const [processing, setProcessing] = React.useState(false);
-  
-  const pricing = state.sqftOption && state.serviceOffer 
-    ? calculatePrice(state.sqftOption, state.serviceOffer, config)
-    : { basePrice: 0, discount: 0, total: 0, deposit: 0, balance: 0 };
-  
+
+  const calculatePricing = () => {
+    const service = state.selectedService;
+    const sqft = state.selectedSqft;
+    if (!service || !sqft) return { subtotal: 0, discount: 0, total: 0, deposit: 0, balance: 0 };
+
+    const subtotal = sqft.price + (service.basePrice - 269);
+    const discount = subtotal * (service.discountPercent / 100);
+    const total = subtotal - discount;
+    const deposit = total * (config.depositPercent / 100);
+    const balance = total - deposit;
+
+    return {
+      subtotal: Math.round(subtotal),
+      discount: Math.round(discount),
+      total: Math.round(total),
+      deposit: Math.round(deposit * 100) / 100,
+      balance: Math.round(balance * 100) / 100,
+    };
+  };
+
+  const pricing = calculatePricing();
+
   const handlePayment = async () => {
     setProcessing(true);
-    // Simulate payment processing
     await new Promise(r => setTimeout(r, 2000));
-    setState(prev => ({ ...prev, paymentComplete: true }));
     setProcessing(false);
     onNext();
   };
-  
+
   return (
-    <div className="px-4 py-6">
-      {promotion.enabled && (
-        <div 
-          className="p-4 rounded-xl mb-6 text-center"
-          style={{ backgroundColor: `${branding.accentColor}10` }}
-        >
-          <span className="text-lg">🎉</span>
-          <p className="font-medium" style={{ color: branding.accentColor }}>
-            New Year Special Applied!
-          </p>
-        </div>
-      )}
-      
+    <div className="p-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: branding.textColor }}>
-          Your New Year Discount is Applied!
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Pay only 25% today to reserve your spot
-        </p>
-        <TrustBadge config={config} />
+        <h2 className="text-xl font-bold">Secure Payment</h2>
+        <p className="text-sm text-muted-foreground">Your payment is protected by 256-bit SSL encryption</p>
       </div>
-      
-      <div className="max-w-md mx-auto space-y-4">
-        {/* Booking Summary */}
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Booking Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Service</span>
-                <span className="font-medium">{state.serviceOffer?.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Home Size</span>
-                <span className="font-medium">{state.sqftOption?.label} sq ft</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Location</span>
-                <span className="font-medium">{state.cityState}</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between">
-                <span className="text-gray-500">Original Price</span>
-                <span className="text-gray-400 line-through">${pricing.basePrice}</span>
-              </div>
-              <div className="flex justify-between" style={{ color: branding.accentColor }}>
-                <span>🎉 New Year Special</span>
-                <span>-${pricing.discount}</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between text-base font-bold">
-                <span>Total</span>
-                <span style={{ color: branding.primaryColor }}>${pricing.total}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Payment Breakdown */}
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Icon name="creditCard" size="sm" />
-              Payment Breakdown
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between font-medium" style={{ color: branding.primaryColor }}>
-                <span>Today (25% deposit)</span>
-                <span>${pricing.deposit}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>After service</span>
-                <span>${pricing.balance}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
+
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Payment Form */}
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Payment Method</h3>
-            <div className="space-y-3">
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-4 space-y-3">
               <div>
                 <Label className="text-sm">Card Number</Label>
-                <Input 
-                  placeholder="1234 5678 9012 3456" 
-                  className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
-                />
+                <Input placeholder="1234 5678 9012 3456" className="mt-1" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-sm">Expiry</Label>
-                  <Input 
-                    placeholder="MM/YY" 
-                    className="mt-1"
-                    style={{ borderRadius: branding.borderRadius }}
-                  />
+                  <Label className="text-sm">MM/YY</Label>
+                  <Input placeholder="MM/YY" className="mt-1" />
                 </div>
                 <div>
                   <Label className="text-sm">CVC</Label>
-                  <Input 
-                    placeholder="123" 
-                    className="mt-1"
-                    style={{ borderRadius: branding.borderRadius }}
-                  />
+                  <Input placeholder="123" className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-sm">ZIP</Label>
+                  <Input placeholder="12345" className="mt-1" />
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          <div className="text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <Icon name="lock" size="xs" />
+            Your payment is secure. 256-bit SSL encryption.
+          </div>
+
+          <Button
+            onClick={handlePayment}
+            disabled={processing}
+            className="w-full text-white py-6 text-lg"
+            style={{ backgroundColor: config.primaryColor }}
+          >
+            {processing ? (
+              <>
+                <Icon name="spinner" size="sm" className="animate-spin mr-2" />
+                Processing...
+              </>
+            ) : (
+              <>💳 Pay ${pricing.deposit.toFixed(2)} Deposit</>
+            )}
+          </Button>
+        </div>
+
+        {/* Order Summary */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-4">📋 Order Summary</h3>
             
-            <Button
-              onClick={handlePayment}
-              disabled={processing}
-              className="w-full mt-4 text-white"
-              style={{ 
-                backgroundColor: branding.primaryColor,
-                borderRadius: branding.borderRadius,
-              }}
-            >
-              {processing ? (
-                <>
-                  <Icon name="spinner" size="sm" className="animate-spin mr-2" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Icon name="lock" size="sm" className="mr-2" />
-                  Pay ${pricing.deposit} Now
-                </>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Service</span>
+                <span className="font-medium">{state.selectedService?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Home Size</span>
+                <span className="font-medium">{state.selectedSqft?.label} sq ft</span>
+              </div>
+              
+              <Separator className="my-3" />
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>${pricing.subtotal}</span>
+              </div>
+              {pricing.discount > 0 && (
+                <div className="flex justify-between" style={{ color: config.accentColor }}>
+                  <span>Discount ({state.selectedService?.discountPercent}%)</span>
+                  <span>-${pricing.discount}</span>
+                </div>
               )}
-            </Button>
+              
+              <Separator className="my-3" />
+              
+              <div className="flex justify-between font-bold text-base">
+                <span>Total</span>
+                <span>${pricing.total}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: `${config.primaryColor}10` }}>
+              <div className="flex justify-between text-sm font-medium" style={{ color: config.primaryColor }}>
+                <span>💳 Due Today ({config.depositPercent}%)</span>
+                <span>${pricing.deposit.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                <span>📅 Due at Service</span>
+                <span>${pricing.balance.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-4 text-xs text-muted-foreground justify-center">
+              <span className="flex items-center gap-1">
+                <Icon name="shield" size="xs" /> Secure
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="clock" size="xs" /> 48hr
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="fileText" size="xs" /> No Contract
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="shield" size="xs" /> Insured
+              </span>
+            </div>
           </CardContent>
         </Card>
-        
-        {/* Trust badges */}
-        <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            <Icon name="lock" size="xs" />
-            <span>Secure</span>
-          </div>
-          <span>•</span>
-          <span>48-Hr Guarantee</span>
-          <span>•</span>
-          <span>No Contracts</span>
-          <span>•</span>
-          <span>Insured</span>
-        </div>
-        
-        <div className="text-center">
-          <button
-            onClick={onBack}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            ← Back to Service Selection
-          </button>
-        </div>
+      </div>
+
+      <div className="mt-6">
+        <Button variant="ghost" onClick={onBack} className="text-muted-foreground">
+          ← Back
+        </Button>
       </div>
     </div>
   );
 }
 
-// Step 5: Address & Scheduling
-function DetailsStep({
+// ============================================================================
+// STEP 5: SCHEDULING
+// ============================================================================
+
+function SchedulingStep({
   state,
   setState,
   config,
@@ -916,303 +776,307 @@ function DetailsStep({
 }: {
   state: BookingState;
   setState: React.Dispatch<React.SetStateAction<BookingState>>;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
   onNext: () => void;
   onBack: () => void;
 }) {
-  const { branding, timeSlots } = config;
-  const enabledTimeSlots = timeSlots.filter(ts => ts.enabled);
-  
+  const timeSlots = [
+    { id: '1', label: '7-9 AM', sublabel: 'Early' },
+    { id: '2', label: '9-11 AM', sublabel: 'Morning' },
+    { id: '3', label: '11-1 PM', sublabel: 'Midday' },
+    { id: '4', label: '1-3 PM', sublabel: 'Afternoon' },
+    { id: '5', label: '3-5 PM', sublabel: 'Late' },
+    { id: '6', label: 'Flexible', sublabel: 'Anytime' },
+  ];
+
   const handleSubmit = () => {
-    if (!state.address1 || !state.city || !state.preferredDate || !state.preferredTime) {
+    if (!state.address || !state.city || !state.preferredDate || !state.preferredTime) {
       toast.error('Please fill in all required fields');
       return;
     }
-    setState(prev => ({ ...prev, bookingId: `BK${Date.now().toString(36).toUpperCase()}` }));
+    setState(prev => ({ ...prev, bookingId: `ALC-2025-${Math.random().toString(36).substr(2, 4).toUpperCase()}` }));
     onNext();
   };
-  
+
   return (
-    <div className="px-4 py-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold" style={{ color: branding.textColor }}>
-          Almost Done! Let's Schedule Your Clean
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          We have your payment. Now let's get your home details.
-        </p>
+    <div className="p-6">
+      <div 
+        className="p-3 rounded-lg mb-6 text-center"
+        style={{ backgroundColor: `${config.accentColor}15`, color: config.accentColor }}
+      >
+        ✅ Payment Successful! Now let's schedule your clean.
       </div>
-      
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Service Address */}
+
+      <div className="space-y-6">
+        {/* Address Section */}
         <Card>
           <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Service Address</h3>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              📍 Service Address
+            </h3>
             <div className="space-y-3">
               <div>
-                <Label className="text-sm">Address Line 1 *</Label>
+                <Label className="text-sm">Street Address</Label>
                 <Input
-                  value={state.address1}
-                  onChange={(e) => setState(prev => ({ ...prev, address1: e.target.value }))}
+                  value={state.address}
+                  onChange={(e) => setState(prev => ({ ...prev, address: e.target.value }))}
                   placeholder="123 Main Street"
                   className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
                 />
               </div>
               <div>
-                <Label className="text-sm">Address Line 2</Label>
+                <Label className="text-sm">Apt/Suite (optional)</Label>
                 <Input
-                  value={state.address2}
-                  onChange={(e) => setState(prev => ({ ...prev, address2: e.target.value }))}
-                  placeholder="Apt, Suite, Unit"
+                  value={state.apt}
+                  onChange={(e) => setState(prev => ({ ...prev, apt: e.target.value }))}
+                  placeholder="Apt 4B"
                   className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-sm">City *</Label>
+                  <Label className="text-sm">City</Label>
                   <Input
                     value={state.city}
                     onChange={(e) => setState(prev => ({ ...prev, city: e.target.value }))}
-                    placeholder="Dallas"
+                    placeholder="Austin"
                     className="mt-1"
-                    style={{ borderRadius: branding.borderRadius }}
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">State *</Label>
+                  <Label className="text-sm">State</Label>
                   <Input
                     value={state.state}
                     onChange={(e) => setState(prev => ({ ...prev, state: e.target.value }))}
                     placeholder="TX"
                     className="mt-1"
-                    style={{ borderRadius: branding.borderRadius }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">ZIP</Label>
+                  <Input
+                    value={state.zip}
+                    readOnly
+                    className="mt-1 bg-gray-50"
                   />
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-        
-        {/* Scheduling */}
+
+        {/* Date Selection */}
         <Card>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Icon name="calendar" size="sm" />
-              Preferred Scheduling
+              📅 Preferred Date
             </h3>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-sm">Preferred Date *</Label>
-                <Input
-                  type="date"
-                  value={state.preferredDate}
-                  onChange={(e) => setState(prev => ({ ...prev, preferredDate: e.target.value }))}
-                  className="mt-1"
-                  style={{ borderRadius: branding.borderRadius }}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              <div>
-                <Label className="text-sm">Preferred Time Block *</Label>
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  {enabledTimeSlots.map((slot) => (
-                    <button
-                      key={slot.id}
-                      onClick={() => setState(prev => ({ ...prev, preferredTime: slot.id }))}
-                      className={cn(
-                        "p-3 rounded-lg border-2 text-center transition-all",
-                        state.preferredTime === slot.id 
-                          ? "border-current" 
-                          : "border-gray-200 hover:border-gray-300"
-                      )}
-                      style={{ 
-                        borderRadius: branding.borderRadius,
-                        borderColor: state.preferredTime === slot.id ? branding.primaryColor : undefined,
-                        backgroundColor: state.preferredTime === slot.id ? `${branding.primaryColor}10` : undefined,
-                      }}
-                    >
-                      <p className="font-medium text-sm">{slot.label}</p>
-                      <p className="text-xs text-gray-500">{slot.startTime}-{slot.endTime}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Additional Notes */}
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Additional Notes</h3>
-            <Textarea
-              value={state.notes}
-              onChange={(e) => setState(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Gate code, pets, parking instructions, or any special requests..."
-              rows={3}
-              style={{ borderRadius: branding.borderRadius }}
+            <Input
+              type="date"
+              value={state.preferredDate}
+              onChange={(e) => setState(prev => ({ ...prev, preferredDate: e.target.value }))}
+              min={new Date().toISOString().split('T')[0]}
             />
           </CardContent>
         </Card>
-        
+
+        {/* Time Selection */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              ⏰ Preferred Time Window
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {timeSlots.map((slot) => (
+                <button
+                  key={slot.id}
+                  onClick={() => setState(prev => ({ ...prev, preferredTime: slot.id }))}
+                  className={cn(
+                    "p-3 rounded-lg border-2 text-center transition-all",
+                    state.preferredTime === slot.id 
+                      ? "border-current" 
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                  style={{
+                    borderColor: state.preferredTime === slot.id ? config.primaryColor : undefined,
+                    backgroundColor: state.preferredTime === slot.id ? `${config.primaryColor}08` : undefined,
+                  }}
+                >
+                  <p className="font-medium text-sm">{slot.label}</p>
+                  <p className="text-xs text-muted-foreground">{slot.sublabel}</p>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notes */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              📝 Special Instructions (optional)
+            </h3>
+            <Textarea
+              value={state.notes}
+              onChange={(e) => setState(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Gate code, pet info, focus areas..."
+              rows={3}
+            />
+          </CardContent>
+        </Card>
+
         <Button
           onClick={handleSubmit}
-          className="w-full text-white"
-          style={{ 
-            backgroundColor: branding.primaryColor,
-            borderRadius: branding.borderRadius,
-          }}
+          className="w-full text-white py-6 text-lg"
+          style={{ backgroundColor: config.primaryColor }}
         >
-          Complete Booking
+          ✓ Complete Booking
         </Button>
       </div>
     </div>
   );
 }
 
-// Step 6: Confirmation
+// ============================================================================
+// STEP 6: CONFIRMATION
+// ============================================================================
+
 function ConfirmationStep({
   state,
   config,
 }: {
   state: BookingState;
-  config: BookingWidgetConfig;
+  config: BookingConfig;
 }) {
-  const { branding, confirmation, header } = config;
-  
-  const pricing = state.sqftOption && state.serviceOffer 
-    ? calculatePrice(state.sqftOption, state.serviceOffer, config)
-    : { basePrice: 0, discount: 0, total: 0, deposit: 0, balance: 0 };
-  
-  const selectedTimeSlot = config.timeSlots.find(ts => ts.id === state.preferredTime);
+  const pricing = () => {
+    const service = state.selectedService;
+    const sqft = state.selectedSqft;
+    if (!service || !sqft) return { total: 0, deposit: 0, balance: 0 };
+
+    const subtotal = sqft.price + (service.basePrice - 269);
+    const total = subtotal * (1 - service.discountPercent / 100);
+    const deposit = total * (config.depositPercent / 100);
+    return {
+      total: Math.round(total),
+      deposit: Math.round(deposit * 100) / 100,
+      balance: Math.round((total - deposit) * 100) / 100,
+    };
+  };
+
+  const prices = pricing();
   const referralCode = `REF${state.bookingId.slice(-4)}`;
-  
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  };
+
+  const getTimeLabel = (timeId: string) => {
+    const times: Record<string, string> = {
+      '1': '7:00 AM - 9:00 AM',
+      '2': '9:00 AM - 11:00 AM',
+      '3': '11:00 AM - 1:00 PM',
+      '4': '1:00 PM - 3:00 PM',
+      '5': '3:00 PM - 5:00 PM',
+      '6': 'Flexible',
+    };
+    return times[timeId] || 'TBD';
+  };
+
   return (
-    <div className="px-4 py-8 text-center">
+    <div className="p-6 text-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-        style={{ backgroundColor: branding.accentColor }}
+        className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl"
+        style={{ backgroundColor: `${config.accentColor}20` }}
       >
-        <Icon name="check" size="2xl" className="text-white" />
+        ✅
       </motion.div>
-      
-      <h1 className="text-2xl font-bold mb-2" style={{ color: branding.textColor }}>
-        🎉 {confirmation.headline}
-      </h1>
-      <p className="text-gray-500 mb-2">{confirmation.subheadline}</p>
-      <p className="text-sm text-gray-500">
-        Confirmation sent to {state.email}
-      </p>
-      
-      {confirmation.showBookingDetails && (
-        <Card className="max-w-md mx-auto mt-6 text-left">
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Booking Details</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Booking ID</span>
-                <span className="font-mono font-medium">{state.bookingId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Service</span>
-                <span className="font-medium">{state.serviceOffer?.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Service Date</span>
-                <span className="font-medium">
-                  {state.preferredDate ? new Date(state.preferredDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Time Window</span>
-                <span className="font-medium">
-                  {selectedTimeSlot ? `${selectedTimeSlot.label} (${selectedTimeSlot.startTime}-${selectedTimeSlot.endTime})` : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Address</span>
-                <span className="font-medium text-right">
-                  {state.address1}, {state.city}, {state.state}
-                </span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between">
-                <span className="text-gray-500">Total Cost</span>
-                <span className="font-medium">${pricing.total}</span>
-              </div>
-              <div className="flex justify-between" style={{ color: branding.accentColor }}>
-                <span>✓ Deposit Paid Today</span>
-                <span className="font-medium">${pricing.deposit}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Balance Due After Service</span>
-                <span className="font-medium">${pricing.balance}</span>
-              </div>
+
+      <h1 className="text-2xl font-bold mb-2">🎉 Booking Confirmed!</h1>
+      <p className="text-muted-foreground mb-6">Check your email for confirmation details</p>
+
+      {/* Booking Details */}
+      <Card className="text-left mb-6">
+        <CardContent className="p-4">
+          <h3 className="font-semibold mb-3">📋 Booking Details</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Service</span>
+              <span className="font-medium">{state.selectedService?.name}</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      {confirmation.showAddToCalendar && (
-        <Button
-          variant="outline"
-          className="mt-4"
-          style={{ borderRadius: branding.borderRadius }}
-        >
-          <Icon name="calendar" size="sm" className="mr-2" />
-          Add to Calendar
-        </Button>
-      )}
-      
-      {confirmation.showNextSteps && confirmation.nextSteps.length > 0 && (
-        <div className="max-w-md mx-auto mt-6 text-left">
-          <h3 className="font-semibold mb-3">What happens next?</h3>
-          <ul className="space-y-2">
-            {confirmation.nextSteps.map((step, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm">
-                <span style={{ color: branding.accentColor }}><Icon name="check" size="sm" className="mt-0.5" /></span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      
-      {confirmation.showReferralCode && (
-        <div 
-          className="max-w-md mx-auto mt-6 p-4 rounded-xl border"
-          style={{ backgroundColor: `${branding.accentColor}10`, borderColor: `${branding.accentColor}30` }}
-        >
-          <p className="font-semibold flex items-center justify-center gap-2">
-            <span>🌟</span>
-            Earn ${confirmation.referralReward} for Every Friend
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Date</span>
+              <span className="font-medium">{formatDate(state.preferredDate)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Time</span>
+              <span className="font-medium">{getTimeLabel(state.preferredTime)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Address</span>
+              <span className="font-medium text-right">
+                {state.address}, {state.city}, {state.state} {state.zip}
+              </span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Deposit Paid</span>
+              <span className="font-medium text-green-600">${prices.deposit.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Balance Due</span>
+              <span className="font-medium">${prices.balance.toFixed(2)} (at service)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Confirmation #</span>
+              <span className="font-mono font-medium">{state.bookingId}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Referral */}
+      <Card className="text-left mb-6" style={{ backgroundColor: `${config.accentColor}10` }}>
+        <CardContent className="p-4">
+          <h3 className="font-semibold mb-2">🎁 Share & Earn $25!</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Give friends $25 off, get $25 credit when they book their first clean.
           </p>
-          <p className="text-sm text-gray-500 mt-1">Share your code:</p>
-          <p className="font-mono font-bold text-lg" style={{ color: branding.primaryColor }}>
-            {referralCode}
-          </p>
-        </div>
-      )}
-      
-      {confirmation.showContactInfo && (
-        <div className="mt-6 text-sm text-gray-500">
-          Need help? Call{' '}
-          <a href={`tel:${header.phoneNumber}`} style={{ color: branding.primaryColor }}>
-            {header.phoneNumber}
-          </a>
-        </div>
-      )}
-      
-      <Button
-        variant="outline"
-        className="mt-6"
-        style={{ borderRadius: branding.borderRadius }}
-      >
-        Return Home
+          <div className="flex gap-2">
+            <Input 
+              value={`book.selestial.io/r/${referralCode}`} 
+              readOnly 
+              className="text-sm bg-white"
+            />
+            <Button
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(`book.selestial.io/r/${referralCode}`);
+                toast.success('Referral link copied!');
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" variant="outline" className="flex-1">📧 Email</Button>
+            <Button size="sm" variant="outline" className="flex-1">💬 Text</Button>
+            <Button size="sm" variant="outline" className="flex-1">📱 Share</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact */}
+      <div className="text-sm text-muted-foreground">
+        <p>📞 Questions? Call us: {config.phone}</p>
+        <p>📧 Email: support@{config.businessName.toLowerCase().replace(/\s+/g, '')}.com</p>
+      </div>
+
+      <Button variant="outline" className="mt-6">
+        🏠 Return to Homepage
       </Button>
     </div>
   );
@@ -1222,7 +1086,7 @@ function ConfirmationStep({
 // MAIN WIDGET COMPONENT
 // ============================================================================
 
-export function PublicBookingWidget({ config, preview = false }: PublicBookingWidgetProps) {
+export function PublicBookingWidget({ config = DEFAULT_CONFIG, preview = false }: PublicBookingWidgetProps) {
   const [state, setState] = React.useState<BookingState>({
     step: 1,
     zip: '',
@@ -1232,61 +1096,70 @@ export function PublicBookingWidget({ config, preview = false }: PublicBookingWi
     lastName: '',
     email: '',
     phone: '',
-    sqftOption: null,
-    serviceOffer: null,
-    address1: '',
-    address2: '',
+    selectedSqft: null,
+    selectedService: null,
+    address: '',
+    apt: '',
     city: '',
     state: '',
     preferredDate: '',
     preferredTime: '',
     notes: '',
-    paymentComplete: false,
     bookingId: '',
   });
-  
+
   const totalSteps = 6;
-  
-  const goToStep = (step: number) => {
-    setState(prev => ({ ...prev, step }));
-  };
-  
+  const goToStep = (step: number) => setState(prev => ({ ...prev, step }));
+
   return (
-    <div 
-      className="min-h-screen"
-      style={{ 
-        backgroundColor: config.branding.backgroundColor,
-        fontFamily: config.branding.fontFamily,
-      }}
-    >
-      <WidgetHeader config={config} />
-      <ProgressBar step={state.step} totalSteps={totalSteps} config={config} />
-      
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={state.step}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-        >
-          {state.step === 1 && (
-            <>
-              <TrustBadge config={config} />
-              <PromotionBanner config={config} />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt="" className="h-8 w-8 rounded" />
+            ) : (
+              <div 
+                className="h-8 w-8 rounded flex items-center justify-center text-white font-bold text-sm"
+                style={{ backgroundColor: config.primaryColor }}
+              >
+                {config.businessName.charAt(0)}
+              </div>
+            )}
+            <span className="font-semibold">{config.businessName}</span>
+          </div>
+          <a 
+            href={`tel:${config.phone}`}
+            className="text-sm font-medium"
+            style={{ color: config.primaryColor }}
+          >
+            {config.phone}
+          </a>
+        </div>
+        <TrustBadges config={config} />
+        <ProgressBar step={state.step} totalSteps={totalSteps} config={config} />
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto bg-white min-h-[600px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={state.step}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {state.step === 1 && (
               <ZipStep
                 state={state}
                 setState={setState}
                 config={config}
                 onNext={() => goToStep(2)}
               />
-              <ShowcaseCarousel config={config} />
-              <ReviewsSection config={config} />
-            </>
-          )}
-          
-          {state.step === 2 && (
-            <>
+            )}
+            {state.step === 2 && (
               <SqftStep
                 state={state}
                 setState={setState}
@@ -1294,56 +1167,47 @@ export function PublicBookingWidget({ config, preview = false }: PublicBookingWi
                 onNext={() => goToStep(3)}
                 onBack={() => goToStep(1)}
               />
-              <ShowcaseCarousel config={config} />
-              <ReviewsSection config={config} />
-              <TrustBadge config={config} />
-            </>
-          )}
-          
-          {state.step === 3 && (
-            <OfferStep
-              state={state}
-              setState={setState}
-              config={config}
-              onNext={() => goToStep(4)}
-              onBack={() => goToStep(2)}
-            />
-          )}
-          
-          {state.step === 4 && (
-            <CheckoutStep
-              state={state}
-              setState={setState}
-              config={config}
-              onNext={() => goToStep(5)}
-              onBack={() => goToStep(3)}
-            />
-          )}
-          
-          {state.step === 5 && (
-            <DetailsStep
-              state={state}
-              setState={setState}
-              config={config}
-              onNext={() => goToStep(6)}
-              onBack={() => goToStep(4)}
-            />
-          )}
-          
-          {state.step === 6 && (
-            <ConfirmationStep
-              state={state}
-              config={config}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
-      
+            )}
+            {state.step === 3 && (
+              <ServiceStep
+                state={state}
+                setState={setState}
+                config={config}
+                onNext={() => goToStep(4)}
+                onBack={() => goToStep(2)}
+              />
+            )}
+            {state.step === 4 && (
+              <CheckoutStep
+                state={state}
+                setState={setState}
+                config={config}
+                onNext={() => goToStep(5)}
+                onBack={() => goToStep(3)}
+              />
+            )}
+            {state.step === 5 && (
+              <SchedulingStep
+                state={state}
+                setState={setState}
+                config={config}
+                onNext={() => goToStep(6)}
+                onBack={() => goToStep(4)}
+              />
+            )}
+            {state.step === 6 && (
+              <ConfirmationStep
+                state={state}
+                config={config}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
       {/* Footer */}
-      <div className="py-6 text-center text-xs text-gray-400 border-t">
-        By booking, you agree to {config.header.businessName}'s{' '}
-        <a href="#" className="underline">Terms</a> &{' '}
-        <a href="#" className="underline">Privacy Policy</a>
+      <div className="text-center py-4 text-xs text-muted-foreground">
+        By booking, you agree to {config.businessName}'s Terms & Privacy Policy
       </div>
     </div>
   );
