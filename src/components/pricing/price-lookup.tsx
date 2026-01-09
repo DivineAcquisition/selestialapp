@@ -175,8 +175,8 @@ export function PriceLookup({ onSelect, triggerClassName }: PriceLookupProps) {
               {selected.job} - <span className="font-bold">${selected.price}</span>
             </span>
           ) : (
-            <span className="text-muted-foreground flex items-center">
-              <Icon name="search" size="sm" className="mr-2" />
+            <span className="text-muted-foreground">
+              <Icon name="search" size="sm" className="inline mr-2" />
               Look up price...
             </span>
           )}
@@ -198,7 +198,7 @@ export function PriceLookup({ onSelect, triggerClassName }: PriceLookupProps) {
                     className="flex justify-between"
                   >
                     <span>{item.job}</span>
-                    <span className="font-bold text-primary">${item.price}</span>
+                    <span className="font-bold text-violet-600">${item.price}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -226,7 +226,7 @@ export function PriceTag({
   if (!item) return null;
   
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-sm font-medium">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-sm font-medium">
       ${item.price}
     </span>
   );

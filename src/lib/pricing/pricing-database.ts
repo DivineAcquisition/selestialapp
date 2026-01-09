@@ -707,7 +707,7 @@ export function calculateTierPricing(
 /**
  * Get regional price multiplier
  */
-export function getRegionalMultiplier(_zipCode: string): number {
+export function getRegionalMultiplier(_zipCode: string, _country: string = 'us'): number {
   // Default to baseline
   return 1.0
 }

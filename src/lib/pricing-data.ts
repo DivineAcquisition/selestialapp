@@ -2,6 +2,34 @@
 // All industry pricing data - import anywhere
 // ============================================================================
 
+// Re-export pricing database utilities
+export { 
+  US_REGIONAL_MULTIPLIERS as REGIONAL_MULTIPLIERS,
+  CANADIAN_MULTIPLIERS,
+  getRegionalMultiplier,
+  CONVERSION_RATES as CONVERSION_INSIGHTS
+} from './pricing/pricing-database'
+
+// Industry data for AI pricing suggestions
+export const INDUSTRIES = [
+  { slug: 'hvac', name: 'HVAC', emoji: '❄️' },
+  { slug: 'plumbing', name: 'Plumbing', emoji: '🔧' },
+  { slug: 'electrical', name: 'Electrical', emoji: '⚡' },
+  { slug: 'cleaning', name: 'Cleaning', emoji: '🧹' },
+  { slug: 'landscaping', name: 'Landscaping', emoji: '🌿' },
+  { slug: 'painting', name: 'Painting', emoji: '🎨' },
+  { slug: 'pest', name: 'Pest Control', emoji: '🐜' },
+  { slug: 'roofing', name: 'Roofing', emoji: '🏠' },
+  { slug: 'garage', name: 'Garage Door', emoji: '🚗' },
+  { slug: 'pressure', name: 'Pressure Washing', emoji: '💦' },
+  { slug: 'pool', name: 'Pool Service', emoji: '🏊' },
+  { slug: 'window', name: 'Window Cleaning', emoji: '🪟' },
+] as const
+
+export function getIndustryBySlug(slug: string) {
+  return INDUSTRIES.find(ind => ind.slug === slug) || null
+}
+
 export const PRICING_DATA = {
   hvac: {
     name: 'HVAC',
