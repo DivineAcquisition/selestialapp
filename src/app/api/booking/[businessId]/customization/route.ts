@@ -172,6 +172,17 @@ export async function PATCH(
           }, { onConflict: 'business_id' });
         break;
         
+      case 'full_config':
+        // Save complete booking widget configuration as JSON
+        result = await (supabase as any)
+          .from('booking_widget_configs')
+          .upsert({
+            business_id: businessId,
+            config: data,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'business_id' });
+        break;
+        
       default:
         return NextResponse.json(
           { error: `Unknown customization type: ${type}` },
