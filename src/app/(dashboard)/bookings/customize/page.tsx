@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +21,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 import Layout from '@/components/layout/Layout';
 import { Icon, IconName } from '@/components/ui/icon';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -55,35 +60,21 @@ import {
 // ============================================================================
 
 type Niche = 'cleaning' | 'hvac' | 'plumbing' | null;
-type PricingModel = 'sqft' | 'hourly' | 'flat' | 'bedroom_bathroom' | 'custom';
 
 interface TrustBadgeConfig {
   id: string;
-  type: 'google_guaranteed' | 'google_screened' | 'bbb' | 'angies_list' | 'thumbtack' | 'homeadvisor' | 'custom';
+  type: string;
   enabled: boolean;
   label: string;
   sublabel?: string;
-  imageUrl?: string;
-  verificationUrl?: string;
-}
-
-interface PricingTier {
-  id: string;
-  label: string;
-  minValue: number;
-  maxValue: number | null;
-  price: number;
-  enabled: boolean;
 }
 
 interface ServiceOption {
   id: string;
   name: string;
   description: string;
-  features: string[];
   basePrice: number;
   discountPercent: number;
-  badge: string;
   popular: boolean;
   enabled: boolean;
 }
@@ -93,51 +84,32 @@ interface BookingWidgetConfig {
   name: string;
   niche: Niche;
   status: 'draft' | 'active' | 'paused';
-  
-  // Branding
   businessName: string;
   phone: string;
   email: string;
   logoUrl: string;
   primaryColor: string;
   accentColor: string;
-  
-  // Pricing Configuration (Legacy - for backwards compatibility)
-  pricingModel: PricingModel;
-  pricingTiers: PricingTier[];
-  hourlyRate?: number;
-  flatRatePrice?: number;
-  minimumPrice: number;
-  
-  // Advanced Pricing Configuration (New)
   pricingConfig?: PricingConfig;
-  
-  // Services
   services: ServiceOption[];
-  
-  // Trust & Credibility
   trustBadges: TrustBadgeConfig[];
   showRating: boolean;
   ratingValue: number;
   reviewCount: number;
-  
-  // Promotion
   promotionEnabled: boolean;
   promotionHeadline: string;
   promotionSubheadline: string;
   discountPercent: number;
   promotionExpiry: string;
-  
-  // Settings
   depositPercent: number;
+  minimumPrice: number;
   serviceZips: string[];
-  
   createdAt: string;
   updatedAt: string;
 }
 
 // ============================================================================
-// DEFAULT DATA
+// DEFAULTS
 // ============================================================================
 
 const DEFAULT_TRUST_BADGES: TrustBadgeConfig[] = [
@@ -149,64 +121,16 @@ const DEFAULT_TRUST_BADGES: TrustBadgeConfig[] = [
   { id: '6', type: 'homeadvisor', enabled: false, label: 'HomeAdvisor', sublabel: 'Screened & Approved' },
 ];
 
-const DEFAULT_SQFT_TIERS: PricingTier[] = [
-  { id: '1', label: 'Under 1,000', minValue: 0, maxValue: 1000, price: 149, enabled: true },
-  { id: '2', label: '1,000-1,500', minValue: 1000, maxValue: 1500, price: 189, enabled: true },
-  { id: '3', label: '1,500-2,000', minValue: 1500, maxValue: 2000, price: 229, enabled: true },
-  { id: '4', label: '2,000-2,500', minValue: 2000, maxValue: 2500, price: 269, enabled: true },
-  { id: '5', label: '2,500-3,000', minValue: 2500, maxValue: 3000, price: 309, enabled: true },
-  { id: '6', label: '3,000-4,000', minValue: 3000, maxValue: 4000, price: 369, enabled: true },
-  { id: '7', label: '4,000+', minValue: 4000, maxValue: null, price: 449, enabled: true },
-];
-
-const DEFAULT_BEDROOM_TIERS: PricingTier[] = [
-  { id: '1', label: '1 Bedroom', minValue: 1, maxValue: 1, price: 99, enabled: true },
-  { id: '2', label: '2 Bedrooms', minValue: 2, maxValue: 2, price: 149, enabled: true },
-  { id: '3', label: '3 Bedrooms', minValue: 3, maxValue: 3, price: 199, enabled: true },
-  { id: '4', label: '4 Bedrooms', minValue: 4, maxValue: 4, price: 249, enabled: true },
-  { id: '5', label: '5+ Bedrooms', minValue: 5, maxValue: null, price: 299, enabled: true },
-];
-
 const DEFAULT_SERVICES: ServiceOption[] = [
-  {
-    id: '1',
-    name: 'Standard Clean',
-    description: 'Regular maintenance cleaning',
-    features: ['Surface cleaning', 'Vacuuming & mopping', 'Kitchen & bathroom wipe-down', 'Trash removal'],
-    basePrice: 0,
-    discountPercent: 0,
-    badge: '',
-    popular: false,
-    enabled: true,
-  },
-  {
-    id: '2',
-    name: 'Deep Clean',
-    description: 'Intensive top-to-bottom cleaning',
-    features: ['All standard clean services', 'Inside appliances', 'Baseboards & door frames', 'Window sills', 'Light fixtures'],
-    basePrice: 50,
-    discountPercent: 20,
-    badge: 'Most Popular',
-    popular: true,
-    enabled: true,
-  },
-  {
-    id: '3',
-    name: 'Move In/Out',
-    description: 'Complete move preparation cleaning',
-    features: ['Deep clean services', 'Inside cabinets & drawers', 'Garage sweep', 'Wall spot cleaning'],
-    basePrice: 100,
-    discountPercent: 0,
-    badge: '',
-    popular: false,
-    enabled: true,
-  },
+  { id: '1', name: 'Standard Clean', description: 'Regular maintenance cleaning', basePrice: 0, discountPercent: 0, popular: false, enabled: true },
+  { id: '2', name: 'Deep Clean', description: 'Intensive top-to-bottom cleaning', basePrice: 50, discountPercent: 20, popular: true, enabled: true },
+  { id: '3', name: 'Move In/Out', description: 'Complete move preparation cleaning', basePrice: 100, discountPercent: 0, popular: false, enabled: true },
 ];
 
 const createDefaultConfig = (businessId: string, businessName: string): BookingWidgetConfig => ({
   id: crypto.randomUUID(),
   name: 'My Booking Widget',
-  niche: null,
+  niche: 'cleaning',
   status: 'draft',
   businessName,
   phone: '',
@@ -214,11 +138,6 @@ const createDefaultConfig = (businessId: string, businessName: string): BookingW
   logoUrl: '',
   primaryColor: '#1E3A5F',
   accentColor: '#10B981',
-  pricingModel: 'sqft',
-  pricingTiers: DEFAULT_SQFT_TIERS,
-  hourlyRate: 50,
-  flatRatePrice: 200,
-  minimumPrice: 99,
   pricingConfig: DEFAULT_PRICING_CONFIG,
   services: DEFAULT_SERVICES,
   trustBadges: DEFAULT_TRUST_BADGES,
@@ -231,527 +150,324 @@ const createDefaultConfig = (businessId: string, businessName: string): BookingW
   discountPercent: 20,
   promotionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   depositPercent: 25,
+  minimumPrice: 99,
   serviceZips: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 });
 
 // ============================================================================
-// PLAN LIMITS
+// STRIPE CONNECTION CHECK
 // ============================================================================
 
-const PLAN_LIMITS = {
-  free: { widgets: 0, name: 'Free' },
-  starter: { widgets: 1, name: 'Starter' },
-  basic: { widgets: 1, name: 'Basic' },
-  pro: { widgets: 2, name: 'Pro' },
-  enterprise: { widgets: 10, name: 'Enterprise' },
-};
+function StripeConnectionBanner({ businessId }: { businessId: string }) {
+  const [checking, setChecking] = React.useState(true);
+  const [connected, setConnected] = React.useState(false);
 
-// ============================================================================
-// COMPONENTS
-// ============================================================================
+  React.useEffect(() => {
+    const checkStripe = async () => {
+      try {
+        const res = await fetch(`/api/stripe/connect/status?businessId=${businessId}`);
+        const data = await res.json();
+        setConnected(data.connected || false);
+      } catch {
+        setConnected(false);
+      }
+      setChecking(false);
+    };
+    if (businessId) checkStripe();
+  }, [businessId]);
 
-// Widget Card Component
-function WidgetCard({
-  widget,
-  businessId,
-  onEdit,
-  onDelete,
-  onToggleStatus,
-  onPreview,
-}: {
-  widget: BookingWidgetConfig;
-  businessId: string;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggleStatus: () => void;
-  onPreview: () => void;
-}) {
-  const [showEmbed, setShowEmbed] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
+  if (checking) return null;
 
-  const statusColors = {
-    draft: 'bg-gray-100 text-gray-700',
-    active: 'bg-green-100 text-green-700',
-    paused: 'bg-yellow-100 text-yellow-700',
-  };
-
-  const bookingUrl = `https://book.selestial.io/${businessId}/${encodeURIComponent(widget.businessName.toLowerCase().replace(/\s+/g, '-'))}`;
-  const embedCode = `<iframe src="${bookingUrl}" width="100%" height="800" frameborder="0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></iframe>`;
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success('Copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
+  if (!connected) {
+    return (
+      <Alert className="border-yellow-500 bg-yellow-50">
+        <Icon name="alertTriangle" size="lg" className="text-yellow-600" />
+        <AlertTitle className="text-yellow-800">Stripe Not Connected</AlertTitle>
+        <AlertDescription className="text-yellow-700">
+          You need to connect Stripe to accept payments from your booking widget.{' '}
+          <a href="/connections" className="font-medium underline hover:no-underline">
+            Connect Stripe →
+          </a>
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <>
-      <Card className="hover:border-primary/30 transition-colors">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: widget.primaryColor }}
-              >
-                {widget.businessName.charAt(0) || 'B'}
-              </div>
+    <Alert className="border-green-500 bg-green-50">
+      <Icon name="checkCircle" size="lg" className="text-green-600" />
+      <AlertTitle className="text-green-800">Stripe Connected</AlertTitle>
+      <AlertDescription className="text-green-700">
+        You're ready to accept payments through your booking widget.
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+// ============================================================================
+// PRICING WIZARD PROMPT
+// ============================================================================
+
+function PricingWizardPrompt() {
+  return (
+    <Card className="bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-violet-100">
+            <Icon name="sparkles" size="xl" className="text-violet-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg mb-1">Struggling with pricing?</h3>
+            <p className="text-muted-foreground mb-4">
+              Our AI-powered Pricing Wizard analyzes your business, costs, and market to recommend optimal prices that maximize your revenue.
+            </p>
+            <Button asChild>
+              <a href="/pricing">
+                <Icon name="calculator" size="sm" className="mr-2" />
+                Open Pricing Wizard
+              </a>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// DOCS LINK CARD
+// ============================================================================
+
+function DocsLinkCard() {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-100">
+            <Icon name="fileText" size="lg" className="text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium">Need Help?</p>
+            <p className="text-sm text-muted-foreground">Learn how each feature works</p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href="https://docs.selestial.io/booking-widget" target="_blank" rel="noopener noreferrer">
+              <Icon name="externalLink" size="sm" className="mr-1" />
+              View Docs
+            </a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// WIDGET PREVIEW PANEL
+// ============================================================================
+
+function WidgetPreviewPanel({ config }: { config: BookingWidgetConfig }) {
+  const [previewStep, setPreviewStep] = React.useState(0);
+  const steps = ['ZIP', 'Size', 'Service', 'Checkout', 'Schedule', 'Confirm'];
+
+  return (
+    <Card className="sticky top-4">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Icon name="eye" size="sm" />
+          Live Preview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {/* Step selector */}
+        <div className="flex gap-1 px-4 mb-3">
+          {steps.map((step, idx) => (
+            <button
+              key={step}
+              onClick={() => setPreviewStep(idx)}
+              className={cn(
+                "flex-1 px-1 py-1 text-[10px] font-medium rounded transition-colors",
+                previewStep === idx ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+              )}
+            >
+              {step}
+            </button>
+          ))}
+        </div>
+
+        {/* Preview frame */}
+        <div className="mx-4 mb-4 rounded-lg border overflow-hidden" style={{ borderColor: config.primaryColor + '30' }}>
+          {/* Header */}
+          <div className="p-3 text-white text-sm" style={{ backgroundColor: config.primaryColor }}>
+            <div className="flex items-center gap-2">
+              {config.logoUrl ? (
+                <img src={config.logoUrl} alt="" className="h-8 w-8 rounded object-cover" />
+              ) : (
+                <div className="h-8 w-8 rounded bg-white/20 flex items-center justify-center font-bold text-xs">
+                  {config.businessName.charAt(0)}
+                </div>
+              )}
               <div>
-                <h3 className="font-semibold">{widget.name}</h3>
-                <p className="text-sm text-muted-foreground">{widget.businessName}</p>
+                <p className="font-medium leading-tight">{config.businessName || 'Your Business'}</p>
+                <p className="text-[10px] opacity-80">{config.phone || '(555) 123-4567'}</p>
               </div>
             </div>
-            <Badge className={statusColors[widget.status]}>
-              {widget.status.charAt(0).toUpperCase() + widget.status.slice(1)}
-            </Badge>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Pricing</p>
-              <p className="font-medium capitalize">{widget.pricingModel.replace('_', ' ')}</p>
+          {/* Promo banner */}
+          {config.promotionEnabled && (
+            <div className="p-2 text-center text-xs" style={{ backgroundColor: config.accentColor + '15' }}>
+              <p className="font-medium" style={{ color: config.accentColor }}>
+                {config.promotionHeadline}
+              </p>
             </div>
-            <div>
-              <p className="text-muted-foreground">Services</p>
-              <p className="font-medium">{widget.services.filter(s => s.enabled).length} active</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Deposit</p>
-              <p className="font-medium">{widget.depositPercent}%</p>
-            </div>
-          </div>
+          )}
 
-          {/* Trust Badges Preview */}
-          {widget.trustBadges.some(b => b.enabled) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {widget.trustBadges.filter(b => b.enabled).map(badge => (
-                <Badge key={badge.id} variant="outline" className="text-xs">
-                  <Icon name="shield" size="xs" className="mr-1" />
+          {/* Trust badges */}
+          {config.trustBadges.some(b => b.enabled) && (
+            <div className="p-2 flex flex-wrap justify-center gap-1 border-b">
+              {config.trustBadges.filter(b => b.enabled).slice(0, 3).map(badge => (
+                <span key={badge.id} className="flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-[9px]">
+                  <Icon name="shield" size="xs" className="text-green-600" />
                   {badge.label}
-                </Badge>
+                </span>
               ))}
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={onEdit} className="flex-1 min-w-[120px]">
-              <Icon name="settings" size="sm" className="mr-1" />
-              Configure
-            </Button>
-            <Button size="sm" variant="outline" onClick={onPreview}>
-              <Icon name="eye" size="sm" className="mr-1" />
-              Preview
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowEmbed(true)}>
-              <Icon name="code" size="sm" className="mr-1" />
-              Embed
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={onToggleStatus}
-            >
-              {widget.status === 'active' ? (
-                <Icon name="pause" size="sm" />
-              ) : (
-                <Icon name="play" size="sm" />
-              )}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={onDelete}>
-              <Icon name="trash" size="sm" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Embed Code Dialog */}
-      <Dialog open={showEmbed} onOpenChange={setShowEmbed}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Embed Your Booking Widget</DialogTitle>
-            <DialogDescription>
-              Copy the code below to embed this widget on your website
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {/* Booking Link */}
-            <div>
-              <Label className="text-xs text-muted-foreground">Direct Booking Link</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Input value={bookingUrl} readOnly className="text-sm" />
-                <Button size="sm" variant="outline" onClick={() => copyToClipboard(bookingUrl)}>
-                  <Icon name={copied ? 'check' : 'copy'} size="sm" />
-                </Button>
-                <Button size="sm" variant="outline" asChild>
-                  <a href={bookingUrl} target="_blank" rel="noopener noreferrer">
-                    <Icon name="externalLink" size="sm" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-
-            {/* Embed Code */}
-            <div>
-              <Label className="text-xs text-muted-foreground">Embed Code</Label>
-              <div className="mt-1 relative">
-                <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto">
-                  {embedCode}
-                </pre>
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  className="absolute top-2 right-2"
-                  onClick={() => copyToClipboard(embedCode)}
-                >
-                  <Icon name={copied ? 'check' : 'copy'} size="sm" className="mr-1" />
-                  Copy
-                </Button>
-              </div>
-            </div>
-
-            {/* Quick Share */}
-            <div className="pt-2">
-              <Label className="text-xs text-muted-foreground">Quick Share</Label>
-              <div className="flex gap-2 mt-2">
-                <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <a href={`mailto:?subject=Book with ${widget.businessName}&body=Schedule your appointment: ${bookingUrl}`}>
-                    <Icon name="mail" size="sm" className="mr-1" />
-                    Email
-                  </a>
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <a href={`sms:?body=Book with ${widget.businessName}: ${bookingUrl}`}>
-                    <Icon name="messageSquare" size="sm" className="mr-1" />
-                    SMS
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-// Pricing Model Selector
-function PricingModelSelector({
-  value,
-  onChange,
-}: {
-  value: PricingModel;
-  onChange: (model: PricingModel) => void;
-}) {
-  const models = [
-    { id: 'sqft', label: 'Square Footage', icon: 'ruler' as IconName, description: 'Price based on home size' },
-    { id: 'bedroom_bathroom', label: 'Bedroom/Bathroom', icon: 'bed' as IconName, description: 'Price based on room count' },
-    { id: 'hourly', label: 'Hourly Rate', icon: 'clock' as IconName, description: 'Charge by the hour' },
-    { id: 'flat', label: 'Flat Rate', icon: 'dollarSign' as IconName, description: 'Single fixed price' },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      {models.map((model) => (
-        <button
-          key={model.id}
-          onClick={() => onChange(model.id as PricingModel)}
-          className={cn(
-            "p-4 rounded-xl border-2 text-left transition-all",
-            value === model.id 
-              ? "border-primary bg-primary/5" 
-              : "border-gray-200 hover:border-gray-300"
-          )}
-        >
-          <Icon name={model.icon} size="lg" className={value === model.id ? "text-primary" : "text-muted-foreground"} />
-          <p className="font-medium mt-2">{model.label}</p>
-          <p className="text-xs text-muted-foreground">{model.description}</p>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// Trust Badge Editor
-function TrustBadgeEditor({
-  badges,
-  onChange,
-}: {
-  badges: TrustBadgeConfig[];
-  onChange: (badges: TrustBadgeConfig[]) => void;
-}) {
-  const updateBadge = (id: string, updates: Partial<TrustBadgeConfig>) => {
-    onChange(badges.map(b => b.id === id ? { ...b, ...updates } : b));
-  };
-
-  const badgeIcons: Record<string, IconName> = {
-    google_guaranteed: 'shield',
-    google_screened: 'shieldCheck',
-    bbb: 'award',
-    angies_list: 'star',
-    thumbtack: 'thumbsUp',
-    homeadvisor: 'home',
-    custom: 'badge',
-  };
-
-  return (
-    <div className="space-y-3">
-      {badges.map((badge) => (
-        <div 
-          key={badge.id}
-          className={cn(
-            "p-4 rounded-xl border transition-colors",
-            badge.enabled ? "bg-white border-primary/30" : "bg-gray-50 border-gray-200"
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={badge.enabled}
-                onCheckedChange={(checked) => updateBadge(badge.id, { enabled: checked })}
-              />
-              <div className={cn("p-2 rounded-lg", badge.enabled ? "bg-primary/10" : "bg-gray-200")}>
-                <Icon 
-                  name={badgeIcons[badge.type] || 'badge'} 
-                  size="lg" 
-                  className={badge.enabled ? "text-primary" : "text-gray-400"}
-                />
-              </div>
-              <div>
-                <p className={cn("font-medium", !badge.enabled && "text-muted-foreground")}>
-                  {badge.label}
-                </p>
-                <p className="text-xs text-muted-foreground">{badge.sublabel}</p>
-              </div>
+          {/* Content placeholder */}
+          <div className="p-4 min-h-[120px] flex items-center justify-center">
+            <div className="text-center">
+              <Icon name={['mapPin', 'home', 'layers', 'creditCard', 'calendar', 'check'][previewStep] as IconName} size="xl" className="mx-auto mb-2 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{steps[previewStep]} Step</p>
             </div>
           </div>
 
-          {badge.enabled && (
-            <div className="mt-3 pl-14 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs">Display Label</Label>
-                  <Input
-                    value={badge.label}
-                    onChange={(e) => updateBadge(badge.id, { label: e.target.value })}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Sublabel</Label>
-                  <Input
-                    value={badge.sublabel || ''}
-                    onChange={(e) => updateBadge(badge.id, { sublabel: e.target.value })}
-                    className="h-8 text-sm"
-                  />
-                </div>
+          {/* Rating footer */}
+          {config.showRating && (
+            <div className="p-2 border-t bg-gray-50 text-center">
+              <div className="flex items-center justify-center gap-0.5 text-yellow-400">
+                {[1,2,3,4,5].map(i => <Icon key={i} name="star" size="xs" />)}
+                <span className="ml-1 text-xs font-medium text-gray-700">{config.ratingValue}</span>
               </div>
-              {badge.type === 'google_guaranteed' && (
-                <div>
-                  <Label className="text-xs">Verification URL (optional)</Label>
-                  <Input
-                    value={badge.verificationUrl || ''}
-                    onChange={(e) => updateBadge(badge.id, { verificationUrl: e.target.value })}
-                    placeholder="https://google.com/localservices/..."
-                    className="h-8 text-sm"
-                  />
-                </div>
-              )}
+              <p className="text-[9px] text-muted-foreground">{config.reviewCount} reviews</p>
             </div>
           )}
         </div>
-      ))}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 // ============================================================================
-// MAIN PAGE
+// MAIN PAGE COMPONENT
 // ============================================================================
 
 export default function BookingCustomizePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { business } = useBusiness();
   const businessId = business?.id || '';
   const businessName = business?.name || 'My Business';
-  const businessPlan = (business as any)?.plan || 'starter';
 
   // State
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
-  const [widgets, setWidgets] = React.useState<BookingWidgetConfig[]>([]);
-  const [editingWidget, setEditingWidget] = React.useState<BookingWidgetConfig | null>(null);
-  const [showEditor, setShowEditor] = React.useState(false);
-  const [deleteConfirm, setDeleteConfirm] = React.useState<string | null>(null);
-  const [editorStep, setEditorStep] = React.useState<'niche' | 'config'>('niche');
-  const [editorTab, setEditorTab] = React.useState<'branding' | 'pricing' | 'addons' | 'trust' | 'promotion' | 'zones'>('branding');
+  const [config, setConfig] = React.useState<BookingWidgetConfig | null>(null);
+  const [activeTab, setActiveTab] = React.useState('branding');
+  const [showResetDialog, setShowResetDialog] = React.useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
 
-  // Plan limits
-  const planLimit = PLAN_LIMITS[businessPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.starter;
-  const canCreateWidget = widgets.length < planLimit.widgets;
-
-  // Load existing widgets
+  // Load config
   React.useEffect(() => {
     if (!businessId) {
       setLoading(false);
       return;
     }
 
-    const loadWidgets = async () => {
+    const loadConfig = async () => {
       try {
         const { data, error } = await (supabase as any)
           .from('booking_widget_configs')
           .select('*')
           .eq('business_id', businessId)
-          .order('created_at', { ascending: false });
+          .single();
 
-        if (error) throw error;
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading config:', error);
+        }
 
-        // Parse config from JSON
-        const parsedWidgets = (data || []).map((row: any) => ({
-          ...row.config,
-          id: row.id,
-        }));
-
-        setWidgets(parsedWidgets);
-      } catch (error) {
-        console.error('Error loading widgets:', error);
-        // Don't show error toast - table might not exist yet
-      } finally {
-        setLoading(false);
+        if (data?.config) {
+          setConfig(data.config);
+        } else {
+          // Create new config
+          setConfig(createDefaultConfig(businessId, businessName));
+        }
+      } catch (err) {
+        console.error('Error loading config:', err);
+        setConfig(createDefaultConfig(businessId, businessName));
       }
+      setLoading(false);
     };
 
-    loadWidgets();
-  }, [businessId]);
+    loadConfig();
+  }, [businessId, businessName]);
 
-  // Save widget
-  const saveWidget = async (widget: BookingWidgetConfig) => {
-    if (!businessId) return;
+  // Update config helper
+  const updateConfig = (updates: Partial<BookingWidgetConfig>) => {
+    if (!config) return;
+    setConfig({ ...config, ...updates, updatedAt: new Date().toISOString() });
+    setHasUnsavedChanges(true);
+  };
+
+  // Save config
+  const saveConfig = async () => {
+    if (!config || !businessId) return;
 
     setSaving(true);
     try {
       const { error } = await (supabase as any)
         .from('booking_widget_configs')
         .upsert({
-          id: widget.id,
+          id: config.id,
           business_id: businessId,
-          config: widget,
+          config: config,
           updated_at: new Date().toISOString(),
         });
 
       if (error) throw error;
 
-      // Update local state
-      setWidgets(prev => {
-        const exists = prev.find(w => w.id === widget.id);
-        if (exists) {
-          return prev.map(w => w.id === widget.id ? widget : w);
-        }
-        return [...prev, widget];
-      });
-
-      toast.success('Booking widget saved!');
-      setShowEditor(false);
-      setEditingWidget(null);
-    } catch (error) {
-      console.error('Error saving widget:', error);
-      toast.error('Failed to save widget');
-    } finally {
-      setSaving(false);
+      toast.success('Widget configuration saved!');
+      setHasUnsavedChanges(false);
+    } catch (err) {
+      console.error('Error saving config:', err);
+      toast.error('Failed to save configuration. Please try again.');
     }
+    setSaving(false);
   };
 
-  // Delete widget
-  const deleteWidget = async (id: string) => {
-    if (!businessId) return;
-
-    try {
-      const { error } = await (supabase as any)
-        .from('booking_widget_configs')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setWidgets(prev => prev.filter(w => w.id !== id));
-      toast.success('Widget deleted');
-    } catch (error) {
-      console.error('Error deleting widget:', error);
-      toast.error('Failed to delete widget');
-    }
-    setDeleteConfirm(null);
+  // Reset config
+  const resetConfig = () => {
+    setConfig(createDefaultConfig(businessId, businessName));
+    setHasUnsavedChanges(true);
+    setShowResetDialog(false);
+    toast.success('Configuration reset to defaults');
   };
 
-  // Toggle widget status
-  const toggleWidgetStatus = async (widget: BookingWidgetConfig) => {
-    const newStatus = widget.status === 'active' ? 'paused' : 'active';
-    await saveWidget({ ...widget, status: newStatus, updatedAt: new Date().toISOString() });
-  };
-
-  // Create new widget
-  const createNewWidget = () => {
-    if (!canCreateWidget) {
-      toast.error(`Your ${planLimit.name} plan allows ${planLimit.widgets} widget(s). Upgrade to create more.`);
-      return;
-    }
-
-    const newWidget = createDefaultConfig(businessId, businessName);
-    setEditingWidget(newWidget);
-    setEditorStep('niche');
-    setShowEditor(true);
-  };
-
-  // Edit existing widget
-  const editWidget = (widget: BookingWidgetConfig) => {
-    setEditingWidget(widget);
-    setEditorStep('config');
-    setShowEditor(true);
-  };
-
-  // Preview state
-  const [previewWidget, setPreviewWidget] = React.useState<BookingWidgetConfig | null>(null);
-  const [showPreview, setShowPreview] = React.useState(false);
-  const [previewStep, setPreviewStep] = React.useState(0);
-
-  const openPreview = (widget: BookingWidgetConfig) => {
-    setPreviewWidget(widget);
-    setPreviewStep(0);
-    setShowPreview(true);
-  };
-
-  // Handle niche selection
-  const handleNicheSelect = (niche: Niche) => {
-    if (!editingWidget) return;
-
-    // Set appropriate defaults based on niche
-    let pricingModel: PricingModel = 'sqft';
-    let pricingTiers = DEFAULT_SQFT_TIERS;
-
-    if (niche === 'hvac' || niche === 'plumbing') {
-      pricingModel = 'flat';
-    }
-
-    setEditingWidget({
-      ...editingWidget,
-      niche,
-      pricingModel,
-      pricingTiers,
-    });
-    setEditorStep('config');
-  };
-
-  // Update editing widget
-  const updateEditingWidget = (updates: Partial<BookingWidgetConfig>) => {
-    if (!editingWidget) return;
-    setEditingWidget({ ...editingWidget, ...updates, updatedAt: new Date().toISOString() });
+  // Publish/Unpublish
+  const togglePublish = async () => {
+    if (!config) return;
+    const newStatus = config.status === 'active' ? 'paused' : 'active';
+    updateConfig({ status: newStatus });
+    await saveConfig();
+    toast.success(newStatus === 'active' ? 'Widget is now live!' : 'Widget paused');
   };
 
   if (loading) {
     return (
-      <Layout title="Booking Widgets">
+      <Layout title="Booking Widget">
         <div className="flex items-center justify-center min-h-96">
           <Icon name="spinner" size="xl" className="animate-spin text-primary" />
         </div>
@@ -759,859 +475,675 @@ export default function BookingCustomizePage() {
     );
   }
 
+  if (!config) {
+    return (
+      <Layout title="Booking Widget">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Icon name="alertTriangle" size="xl" className="mx-auto text-yellow-500 mb-4" />
+            <h3 className="font-medium">Unable to load configuration</h3>
+            <p className="text-sm text-muted-foreground mt-1">Please try refreshing the page</p>
+            <Button className="mt-4" onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+          </CardContent>
+        </Card>
+      </Layout>
+    );
+  }
+
+  const bookingUrl = `https://book.selestial.io/${businessId}`;
+
   return (
-    <Layout title="Booking Widgets">
+    <Layout title="Booking Widget Customization">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Booking Widgets</h1>
-            <p className="text-muted-foreground">
-              Create and manage your online booking interfaces
-            </p>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/bookings')}>
+                <Icon name="chevronLeft" size="sm" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Customize Booking Widget</h1>
+                <p className="text-muted-foreground">Configure how customers book your services</p>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="gap-1">
-              <Icon name="layers" size="xs" />
-              {widgets.length} / {planLimit.widgets} widgets
-            </Badge>
-            <Button onClick={createNewWidget} disabled={!canCreateWidget}>
-              <Icon name="plus" size="sm" className="mr-2" />
-              New Widget
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <Badge variant="outline" className="text-yellow-600 border-yellow-300">
+                Unsaved changes
+              </Badge>
+            )}
+            <Button variant="outline" onClick={() => setShowResetDialog(true)}>
+              <Icon name="refreshCw" size="sm" className="mr-2" />
+              Reset
+            </Button>
+            <Button variant="outline" onClick={togglePublish}>
+              {config.status === 'active' ? (
+                <><Icon name="pause" size="sm" className="mr-2" />Pause</>
+              ) : (
+                <><Icon name="play" size="sm" className="mr-2" />Publish</>
+              )}
+            </Button>
+            <Button onClick={saveConfig} disabled={saving}>
+              {saving ? (
+                <><Icon name="spinner" size="sm" className="animate-spin mr-2" />Saving...</>
+              ) : (
+                <><Icon name="save" size="sm" className="mr-2" />Save Changes</>
+              )}
             </Button>
           </div>
         </div>
 
-        {/* Plan Upgrade Notice */}
-        {!canCreateWidget && widgets.length > 0 && (
-          <Card className="bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-violet-100">
-                  <Icon name="sparkles" size="lg" className="text-violet-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Need more booking widgets?</p>
-                  <p className="text-sm text-muted-foreground">
-                    Upgrade to Pro for up to 2 widgets with advanced features
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline" asChild>
-                <a href="/billing">Upgrade Plan</a>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Stripe Connection Check */}
+        <StripeConnectionBanner businessId={businessId} />
 
-        {/* Widgets Grid */}
-        {widgets.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-4">
-            {widgets.map((widget) => (
-              <WidgetCard
-                key={widget.id}
-                widget={widget}
-                businessId={businessId}
-                onEdit={() => editWidget(widget)}
-                onDelete={() => setDeleteConfirm(widget.id)}
-                onToggleStatus={() => toggleWidgetStatus(widget)}
-                onPreview={() => openPreview(widget)}
-              />
-            ))}
-          </div>
-        ) : (
+        {/* Status & Links */}
+        <div className="grid md:grid-cols-3 gap-4">
           <Card>
-            <CardContent className="py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Icon name="calendar" size="2xl" className="text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">No Booking Widgets Yet</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Create your first booking widget to let customers schedule appointments online
-              </p>
-              <Button onClick={createNewWidget}>
-                <Icon name="plus" size="sm" className="mr-2" />
-                Create Your First Widget
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Widget Editor Dialog */}
-      <Dialog open={showEditor} onOpenChange={(open) => {
-        if (!open) {
-          setShowEditor(false);
-          setEditingWidget(null);
-        }
-      }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>
-              {editorStep === 'niche' ? 'Select Your Industry' : 'Configure Booking Widget'}
-            </DialogTitle>
-            <DialogDescription>
-              {editorStep === 'niche' 
-                ? 'Choose your home service niche to get started' 
-                : 'Customize every aspect of your booking experience'
-              }
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Editor Tabs - Only show when in config step */}
-          {editorStep === 'config' && editingWidget && (
-            <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4 overflow-x-auto">
-              {[
-                { id: 'branding', label: 'Branding', icon: 'palette' as IconName },
-                { id: 'pricing', label: 'Pricing', icon: 'dollarSign' as IconName },
-                { id: 'addons', label: 'Add-Ons', icon: 'plus' as IconName },
-                { id: 'trust', label: 'Trust Badges', icon: 'shield' as IconName },
-                { id: 'promotion', label: 'Promotion', icon: 'tag' as IconName },
-                { id: 'zones', label: 'Service Zones', icon: 'mapPin' as IconName },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setEditorTab(tab.id as typeof editorTab)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
-                    editorTab === tab.id
-                      ? "bg-white shadow text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon name={tab.icon} size="sm" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <ScrollArea className="flex-1 -mx-6 px-6">
-            <AnimatePresence mode="wait">
-              {editorStep === 'niche' ? (
-                <motion.div
-                  key="niche"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="py-4 space-y-4"
-                >
-                  {[
-                    { id: 'cleaning', name: 'Cleaning', icon: 'sparkles' as IconName, available: true },
-                    { id: 'hvac', name: 'HVAC', icon: 'thermometer' as IconName, available: false },
-                    { id: 'plumbing', name: 'Plumbing', icon: 'droplet' as IconName, available: false },
-                  ].map((niche) => (
-                    <button
-                      key={niche.id}
-                      onClick={() => niche.available && handleNicheSelect(niche.id as Niche)}
-                      disabled={!niche.available}
-                      className={cn(
-                        "w-full p-6 rounded-xl border-2 text-left transition-all flex items-center gap-4",
-                        niche.available 
-                          ? "hover:border-primary hover:bg-primary/5 cursor-pointer" 
-                          : "opacity-50 cursor-not-allowed bg-gray-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center",
-                        niche.available ? "bg-primary/10 text-primary" : "bg-gray-200 text-gray-400"
-                      )}>
-                        <Icon name={niche.icon} size="xl" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-lg">{niche.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {niche.available ? 'Click to configure' : 'Coming soon'}
-                        </p>
-                      </div>
-                      {!niche.available && (
-                        <Badge variant="secondary">Coming Soon</Badge>
-                      )}
-                    </button>
-                  ))}
-                </motion.div>
-              ) : editingWidget && (
-                <motion.div
-                  key="config"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="py-4 space-y-6"
-                >
-                  {/* Widget Name - Always visible */}
-                  <div>
-                    <Label>Widget Name</Label>
-                    <Input
-                      value={editingWidget.name}
-                      onChange={(e) => updateEditingWidget({ name: e.target.value })}
-                      placeholder="My Booking Widget"
-                      className="mt-1"
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "p-2 rounded-lg",
+                    config.status === 'active' ? "bg-green-100" : "bg-gray-100"
+                  )}>
+                    <Icon 
+                      name={config.status === 'active' ? 'checkCircle' : 'pause'} 
+                      size="lg" 
+                      className={config.status === 'active' ? "text-green-600" : "text-gray-500"} 
                     />
                   </div>
+                  <div>
+                    <p className="font-medium">Widget Status</p>
+                    <p className="text-sm text-muted-foreground capitalize">{config.status}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                  <Separator />
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-100">
+                  <Icon name="link" size="lg" className="text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium">Booking Link</p>
+                  <p className="text-sm text-muted-foreground truncate">{bookingUrl}</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={() => {
+                    navigator.clipboard.writeText(bookingUrl);
+                    toast.success('Link copied!');
+                  }}
+                >
+                  <Icon name="copy" size="sm" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-                  {/* BRANDING TAB */}
-                  {editorTab === 'branding' && (
-                    <>
+          <DocsLinkCard />
+        </div>
+
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Configuration Panel */}
+          <div className="lg:col-span-3 space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-6 w-full">
+                <TabsTrigger value="branding" className="text-xs">
+                  <Icon name="palette" size="sm" className="mr-1 hidden sm:inline" />
+                  Branding
+                </TabsTrigger>
+                <TabsTrigger value="pricing" className="text-xs">
+                  <Icon name="dollarSign" size="sm" className="mr-1 hidden sm:inline" />
+                  Pricing
+                </TabsTrigger>
+                <TabsTrigger value="services" className="text-xs">
+                  <Icon name="layers" size="sm" className="mr-1 hidden sm:inline" />
+                  Services
+                </TabsTrigger>
+                <TabsTrigger value="trust" className="text-xs">
+                  <Icon name="shield" size="sm" className="mr-1 hidden sm:inline" />
+                  Trust
+                </TabsTrigger>
+                <TabsTrigger value="promotion" className="text-xs">
+                  <Icon name="tag" size="sm" className="mr-1 hidden sm:inline" />
+                  Promo
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="text-xs">
+                  <Icon name="settings" size="sm" className="mr-1 hidden sm:inline" />
+                  Settings
+                </TabsTrigger>
+              </TabsList>
+
+              {/* BRANDING TAB */}
+              <TabsContent value="branding" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Business Branding</CardTitle>
+                    <CardDescription>Customize how your brand appears to customers</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="palette" size="lg" />
-                          Branding
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label>Business Name</Label>
-                            <Input
-                              value={editingWidget.businessName}
-                              onChange={(e) => updateEditingWidget({ businessName: e.target.value })}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label>Phone Number</Label>
-                            <Input
-                              value={editingWidget.phone}
-                              onChange={(e) => updateEditingWidget({ phone: e.target.value })}
-                              placeholder="(555) 123-4567"
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label>Primary Color</Label>
-                            <div className="flex gap-2 mt-1">
-                              <Input
-                                type="color"
-                                value={editingWidget.primaryColor}
-                                onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
-                                className="w-16 h-10 cursor-pointer"
-                              />
-                              <Input
-                                value={editingWidget.primaryColor}
-                                onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
-                                className="flex-1"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <Label>Accent Color</Label>
-                            <div className="flex gap-2 mt-1">
-                              <Input
-                                type="color"
-                                value={editingWidget.accentColor}
-                                onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
-                                className="w-16 h-10 cursor-pointer"
-                              />
-                              <Input
-                                value={editingWidget.accentColor}
-                                onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
-                                className="flex-1"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <Label>Logo URL</Label>
-                            <Input
-                              value={editingWidget.logoUrl}
-                              onChange={(e) => updateEditingWidget({ logoUrl: e.target.value })}
-                              placeholder="https://your-logo-url.com/logo.png"
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label>Email</Label>
-                            <Input
-                              value={editingWidget.email}
-                              onChange={(e) => updateEditingWidget({ email: e.target.value })}
-                              placeholder="hello@yourbusiness.com"
-                              className="mt-1"
-                            />
-                          </div>
-                        </div>
+                        <Label>Business Name</Label>
+                        <Input
+                          value={config.businessName}
+                          onChange={(e) => updateConfig({ businessName: e.target.value })}
+                          className="mt-1"
+                        />
                       </div>
-
-                      <Separator />
-
-                      {/* Rating Section */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="star" size="lg" />
-                          Customer Rating Display
-                        </h3>
-                        <div className="p-4 bg-muted rounded-xl">
-                          <div className="flex items-center justify-between mb-3">
-                            <Label>Show Rating</Label>
-                            <Switch
-                              checked={editingWidget.showRating}
-                              onCheckedChange={(checked) => updateEditingWidget({ showRating: checked })}
-                            />
-                          </div>
-                          {editingWidget.showRating && (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label className="text-xs">Rating (1-5)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.1"
-                                  min="1"
-                                  max="5"
-                                  value={editingWidget.ratingValue}
-                                  onChange={(e) => updateEditingWidget({ ratingValue: Number(e.target.value) })}
-                                  className="mt-1"
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-xs">Review Count</Label>
-                                <Input
-                                  type="number"
-                                  value={editingWidget.reviewCount}
-                                  onChange={(e) => updateEditingWidget({ reviewCount: Number(e.target.value) })}
-                                  className="mt-1"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <Label>Phone Number</Label>
+                        <Input
+                          value={config.phone}
+                          onChange={(e) => updateConfig({ phone: e.target.value })}
+                          placeholder="(555) 123-4567"
+                          className="mt-1"
+                        />
                       </div>
-                    </>
-                  )}
-
-                  {/* PRICING TAB */}
-                  {editorTab === 'pricing' && editingWidget.pricingConfig && (
-                    <PricingConfigurator
-                      config={editingWidget.pricingConfig}
-                      onChange={(pricingConfig) => updateEditingWidget({ pricingConfig })}
-                    />
-                  )}
-
-                  {/* PRICING TAB - Fallback if no pricingConfig */}
-                  {editorTab === 'pricing' && !editingWidget.pricingConfig && (
-                    <div className="text-center py-8">
-                      <Icon name="calculator" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">Advanced pricing not configured</p>
-                      <Button
-                        onClick={() => updateEditingWidget({ pricingConfig: DEFAULT_PRICING_CONFIG })}
-                      >
-                        Enable Advanced Pricing
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* ADD-ONS TAB */}
-                  {editorTab === 'addons' && editingWidget.pricingConfig && (
-                    <AddOnsConfigurator
-                      addOns={editingWidget.pricingConfig.addOns}
-                      onChange={(addOns) => updateEditingWidget({
-                        pricingConfig: { ...editingWidget.pricingConfig!, addOns }
-                      })}
-                    />
-                  )}
-
-                  {editorTab === 'addons' && !editingWidget.pricingConfig && (
-                    <div className="text-center py-8">
-                      <Icon name="plus" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">Enable advanced pricing to configure add-ons</p>
-                      <Button
-                        onClick={() => updateEditingWidget({ pricingConfig: DEFAULT_PRICING_CONFIG })}
-                      >
-                        Enable Advanced Pricing
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* TRUST BADGES TAB */}
-                  {editorTab === 'trust' && (
-                    <div>
-                      <h3 className="font-semibold mb-4 flex items-center gap-2">
-                        <Icon name="shield" size="lg" />
-                        Trust Badges & Credentials
-                      </h3>
-                      <TrustBadgeEditor
-                        badges={editingWidget.trustBadges}
-                        onChange={(badges) => updateEditingWidget({ trustBadges: badges })}
-                      />
-                    </div>
-                  )}
-
-                  {/* PROMOTION TAB */}
-                  {editorTab === 'promotion' && (
-                    <>
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="tag" size="lg" />
-                          Promotion Banner
-                        </h3>
-                        <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-lg">
-                          <Label>Enable Promotion Banner</Label>
-                          <Switch
-                            checked={editingWidget.promotionEnabled}
-                            onCheckedChange={(checked) => updateEditingWidget({ promotionEnabled: checked })}
+                        <Label>Email</Label>
+                        <Input
+                          value={config.email}
+                          onChange={(e) => updateConfig({ email: e.target.value })}
+                          placeholder="hello@yourbusiness.com"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Logo URL</Label>
+                        <Input
+                          value={config.logoUrl}
+                          onChange={(e) => updateConfig({ logoUrl: e.target.value })}
+                          placeholder="https://..."
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Primary Color</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            type="color"
+                            value={config.primaryColor}
+                            onChange={(e) => updateConfig({ primaryColor: e.target.value })}
+                            className="w-16 h-10 cursor-pointer p-1"
+                          />
+                          <Input
+                            value={config.primaryColor}
+                            onChange={(e) => updateConfig({ primaryColor: e.target.value })}
+                            className="flex-1"
                           />
                         </div>
-                        {editingWidget.promotionEnabled && (
-                          <div className="space-y-4">
+                      </div>
+                      <div>
+                        <Label>Accent Color</Label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            type="color"
+                            value={config.accentColor}
+                            onChange={(e) => updateConfig({ accentColor: e.target.value })}
+                            className="w-16 h-10 cursor-pointer p-1"
+                          />
+                          <Input
+                            value={config.accentColor}
+                            onChange={(e) => updateConfig({ accentColor: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <Label>Show Rating</Label>
+                        <Switch
+                          checked={config.showRating}
+                          onCheckedChange={(checked) => updateConfig({ showRating: checked })}
+                        />
+                      </div>
+                      {config.showRating && (
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                          <div>
+                            <Label className="text-xs">Rating (1-5)</Label>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              min="1"
+                              max="5"
+                              value={config.ratingValue}
+                              onChange={(e) => updateConfig({ ratingValue: Number(e.target.value) })}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Review Count</Label>
+                            <Input
+                              type="number"
+                              value={config.reviewCount}
+                              onChange={(e) => updateConfig({ reviewCount: Number(e.target.value) })}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* PRICING TAB */}
+              <TabsContent value="pricing" className="space-y-6 mt-6">
+                <PricingWizardPrompt />
+                
+                {config.pricingConfig ? (
+                  <PricingConfigurator
+                    config={config.pricingConfig}
+                    onChange={(pricingConfig) => updateConfig({ pricingConfig })}
+                  />
+                ) : (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Icon name="calculator" size="xl" className="mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="font-medium">Advanced Pricing Not Configured</h3>
+                      <p className="text-sm text-muted-foreground mt-1 mb-4">
+                        Enable advanced pricing to customize your rates
+                      </p>
+                      <Button onClick={() => updateConfig({ pricingConfig: DEFAULT_PRICING_CONFIG })}>
+                        Enable Advanced Pricing
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* SERVICES TAB */}
+              <TabsContent value="services" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Service Types</CardTitle>
+                    <CardDescription>Configure the services customers can book</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {config.services.map((service, idx) => (
+                      <div
+                        key={service.id}
+                        className={cn(
+                          "p-4 rounded-xl border transition-colors",
+                          service.enabled ? "bg-white" : "bg-gray-50 opacity-70"
+                        )}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Switch
+                              checked={service.enabled}
+                              onCheckedChange={(checked) => {
+                                const newServices = [...config.services];
+                                newServices[idx] = { ...service, enabled: checked };
+                                updateConfig({ services: newServices });
+                              }}
+                            />
                             <div>
-                              <Label>Headline</Label>
-                              <Input
-                                value={editingWidget.promotionHeadline}
-                                onChange={(e) => updateEditingWidget({ promotionHeadline: e.target.value })}
-                                className="mt-1"
-                              />
+                              <p className="font-medium">{service.name}</p>
+                              <p className="text-sm text-muted-foreground">{service.description}</p>
                             </div>
-                            <div>
-                              <Label>Subheadline</Label>
-                              <Input
-                                value={editingWidget.promotionSubheadline}
-                                onChange={(e) => updateEditingWidget({ promotionSubheadline: e.target.value })}
-                                className="mt-1"
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                          </div>
+                          {service.popular && (
+                            <Badge className="bg-violet-100 text-violet-700">Popular</Badge>
+                          )}
+                        </div>
+
+                        {service.enabled && (
+                          <div className="pl-12 space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
                               <div>
-                                <Label>Discount %</Label>
+                                <Label className="text-xs">Name</Label>
+                                <Input
+                                  value={service.name}
+                                  onChange={(e) => {
+                                    const newServices = [...config.services];
+                                    newServices[idx] = { ...service, name: e.target.value };
+                                    updateConfig({ services: newServices });
+                                  }}
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Add-on Price ($)</Label>
                                 <Input
                                   type="number"
-                                  value={editingWidget.discountPercent}
-                                  onChange={(e) => updateEditingWidget({ discountPercent: Number(e.target.value) })}
-                                  className="mt-1"
+                                  value={service.basePrice}
+                                  onChange={(e) => {
+                                    const newServices = [...config.services];
+                                    newServices[idx] = { ...service, basePrice: Number(e.target.value) };
+                                    updateConfig({ services: newServices });
+                                  }}
+                                  className="h-9"
                                 />
                               </div>
                               <div>
-                                <Label>Expiry Date</Label>
+                                <Label className="text-xs">Discount %</Label>
                                 <Input
-                                  type="date"
-                                  value={editingWidget.promotionExpiry.split('T')[0]}
-                                  onChange={(e) => updateEditingWidget({ promotionExpiry: new Date(e.target.value).toISOString() })}
-                                  className="mt-1"
+                                  type="number"
+                                  value={service.discountPercent}
+                                  onChange={(e) => {
+                                    const newServices = [...config.services];
+                                    newServices[idx] = { ...service, discountPercent: Number(e.target.value) };
+                                    updateConfig({ services: newServices });
+                                  }}
+                                  className="h-9"
                                 />
                               </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={service.popular}
+                                onCheckedChange={(checked) => {
+                                  const newServices = [...config.services];
+                                  newServices[idx] = { ...service, popular: checked };
+                                  updateConfig({ services: newServices });
+                                }}
+                              />
+                              <Label className="text-xs">Mark as Popular</Label>
                             </div>
                           </div>
                         )}
                       </div>
+                    ))}
 
-                      <Separator />
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        const newService: ServiceOption = {
+                          id: crypto.randomUUID(),
+                          name: 'New Service',
+                          description: 'Service description',
+                          basePrice: 0,
+                          discountPercent: 0,
+                          popular: false,
+                          enabled: true,
+                        };
+                        updateConfig({ services: [...config.services, newService] });
+                      }}
+                    >
+                      <Icon name="plus" size="sm" className="mr-2" />
+                      Add Service
+                    </Button>
+                  </CardContent>
+                </Card>
 
-                      {/* Services Section */}
-                      <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="layers" size="lg" />
-                          Service Types
-                        </h3>
-                        <div className="space-y-3">
-                          {editingWidget.services.map((service, idx) => (
-                            <div 
-                              key={service.id}
-                              className={cn(
-                                "p-4 rounded-xl border transition-colors",
-                                service.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-100 opacity-70"
-                              )}
-                            >
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                  <Switch
-                                    checked={service.enabled}
-                                    onCheckedChange={(checked) => {
-                                      const newServices = [...editingWidget.services];
-                                      newServices[idx] = { ...service, enabled: checked };
-                                      updateEditingWidget({ services: newServices });
-                                    }}
-                                  />
-                                  <div>
-                                    <p className="font-medium">{service.name}</p>
-                                    <p className="text-xs text-muted-foreground">{service.description}</p>
-                                  </div>
-                                </div>
-                                {service.popular && (
-                                  <Badge className="bg-violet-100 text-violet-700">Popular</Badge>
-                                )}
-                              </div>
-                              
-                              {service.enabled && (
-                                <div className="pl-12 space-y-3">
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                      <Label className="text-xs">Service Name</Label>
-                                      <Input
-                                        value={service.name}
-                                        onChange={(e) => {
-                                          const newServices = [...editingWidget.services];
-                                          newServices[idx] = { ...service, name: e.target.value };
-                                          updateEditingWidget({ services: newServices });
-                                        }}
-                                        className="h-8 text-sm"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs">Add-on Price ($)</Label>
-                                      <Input
-                                        type="number"
-                                        value={service.basePrice}
-                                        onChange={(e) => {
-                                          const newServices = [...editingWidget.services];
-                                          newServices[idx] = { ...service, basePrice: Number(e.target.value) };
-                                          updateEditingWidget({ services: newServices });
-                                        }}
-                                        className="h-8 text-sm"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Switch
-                                      checked={service.popular}
-                                      onCheckedChange={(checked) => {
-                                        const newServices = [...editingWidget.services];
-                                        newServices[idx] = { ...service, popular: checked };
-                                        updateEditingWidget({ services: newServices });
-                                      }}
-                                    />
-                                    <Label className="text-xs">Mark as Popular</Label>
-                                  </div>
-                                </div>
-                              )}
+                {/* Add-ons */}
+                {config.pricingConfig && (
+                  <AddOnsConfigurator
+                    addOns={config.pricingConfig.addOns}
+                    onChange={(addOns) => updateConfig({
+                      pricingConfig: { ...config.pricingConfig!, addOns }
+                    })}
+                  />
+                )}
+              </TabsContent>
+
+              {/* TRUST TAB */}
+              <TabsContent value="trust" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Trust Badges & Credentials</CardTitle>
+                    <CardDescription>Display certifications to build customer confidence</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {config.trustBadges.map((badge, idx) => (
+                      <div
+                        key={badge.id}
+                        className={cn(
+                          "p-4 rounded-xl border transition-colors",
+                          badge.enabled ? "bg-white border-green-200" : "bg-gray-50"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Switch
+                              checked={badge.enabled}
+                              onCheckedChange={(checked) => {
+                                const newBadges = [...config.trustBadges];
+                                newBadges[idx] = { ...badge, enabled: checked };
+                                updateConfig({ trustBadges: newBadges });
+                              }}
+                            />
+                            <div className={cn("p-2 rounded-lg", badge.enabled ? "bg-green-100" : "bg-gray-200")}>
+                              <Icon name="shield" size="lg" className={badge.enabled ? "text-green-600" : "text-gray-400"} />
                             </div>
-                          ))}
+                            <div>
+                              <p className={cn("font-medium", !badge.enabled && "text-muted-foreground")}>
+                                {badge.label}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{badge.sublabel}</p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
 
-                  {/* SERVICE ZONES TAB */}
-                  {editorTab === 'zones' && (
-                    <>
-                      <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="mapPin" size="lg" />
-                          Service Zones
-                        </h3>
+                        {badge.enabled && (
+                          <div className="mt-3 pl-14 grid grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-xs">Display Label</Label>
+                              <Input
+                                value={badge.label}
+                                onChange={(e) => {
+                                  const newBadges = [...config.trustBadges];
+                                  newBadges[idx] = { ...badge, label: e.target.value };
+                                  updateConfig({ trustBadges: newBadges });
+                                }}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Sublabel</Label>
+                              <Input
+                                value={badge.sublabel || ''}
+                                onChange={(e) => {
+                                  const newBadges = [...config.trustBadges];
+                                  newBadges[idx] = { ...badge, sublabel: e.target.value };
+                                  updateConfig({ trustBadges: newBadges });
+                                }}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* PROMOTION TAB */}
+              <TabsContent value="promotion" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Promotion Banner</CardTitle>
+                    <CardDescription>Display a promotional offer to attract customers</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <Label>Enable Promotion</Label>
+                      <Switch
+                        checked={config.promotionEnabled}
+                        onCheckedChange={(checked) => updateConfig({ promotionEnabled: checked })}
+                      />
+                    </div>
+
+                    {config.promotionEnabled && (
+                      <div className="space-y-4">
                         <div>
-                          <Label>Service ZIP Codes</Label>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            Enter ZIP codes separated by commas. Leave empty to service all areas.
-                          </p>
-                          <Textarea
-                            value={editingWidget.serviceZips.join(', ')}
-                            onChange={(e) => {
-                              const zips = e.target.value.split(',').map(z => z.trim()).filter(Boolean);
-                              updateEditingWidget({ serviceZips: zips });
-                            }}
-                            placeholder="90210, 90211, 90212..."
-                            className="min-h-[80px]"
+                          <Label>Headline</Label>
+                          <Input
+                            value={config.promotionHeadline}
+                            onChange={(e) => updateConfig({ promotionHeadline: e.target.value })}
+                            className="mt-1"
                           />
                         </div>
-                      </div>
-
-                      <Separator />
-
-                      <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Icon name="dollarSign" size="lg" />
-                          Deposit & Minimum
-                        </h3>
+                        <div>
+                          <Label>Subheadline</Label>
+                          <Input
+                            value={config.promotionSubheadline}
+                            onChange={(e) => updateConfig({ promotionSubheadline: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>Minimum Price ($)</Label>
+                            <Label>Discount %</Label>
                             <Input
                               type="number"
-                              value={editingWidget.minimumPrice}
-                              onChange={(e) => updateEditingWidget({ minimumPrice: Number(e.target.value) })}
+                              value={config.discountPercent}
+                              onChange={(e) => updateConfig({ discountPercent: Number(e.target.value) })}
                               className="mt-1"
                             />
                           </div>
                           <div>
-                            <Label>Deposit Percentage: {editingWidget.depositPercent}%</Label>
-                            <Slider
-                              value={[editingWidget.depositPercent]}
-                              onValueChange={([v]) => updateEditingWidget({ depositPercent: v })}
-                              min={0}
-                              max={100}
-                              step={5}
-                              className="mt-3"
+                            <Label>Expiry Date</Label>
+                            <Input
+                              type="date"
+                              value={config.promotionExpiry.split('T')[0]}
+                              onChange={(e) => updateConfig({ promotionExpiry: new Date(e.target.value).toISOString() })}
+                              className="mt-1"
                             />
                           </div>
                         </div>
                       </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </ScrollArea>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t">
-            {editorStep === 'config' && (
-              <Button variant="ghost" onClick={() => setEditorStep('niche')}>
-                <Icon name="chevronLeft" size="sm" className="mr-1" />
-                Change Industry
-              </Button>
-            )}
-            <div className="flex-1" />
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowEditor(false)}>
-                Cancel
-              </Button>
-              {editorStep === 'config' && editingWidget && (
-                <Button onClick={() => saveWidget(editingWidget)} disabled={saving}>
-                  {saving ? (
-                    <><Icon name="spinner" size="sm" className="animate-spin mr-2" /> Saving...</>
-                  ) : (
-                    <><Icon name="save" size="sm" className="mr-2" /> Save Widget</>
-                  )}
-                </Button>
-              )}
-            </div>
+              {/* SETTINGS TAB */}
+              <TabsContent value="settings" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Business Settings</CardTitle>
+                    <CardDescription>Configure deposit, minimum, and service areas</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Minimum Price ($)</Label>
+                        <Input
+                          type="number"
+                          value={config.minimumPrice}
+                          onChange={(e) => updateConfig({ minimumPrice: Number(e.target.value) })}
+                          className="mt-1"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Industry standard: $100-$150</p>
+                      </div>
+                      <div>
+                        <Label>Deposit Percentage: {config.depositPercent}%</Label>
+                        <Slider
+                          value={[config.depositPercent]}
+                          onValueChange={([v]) => updateConfig({ depositPercent: v })}
+                          min={0}
+                          max={100}
+                          step={5}
+                          className="mt-3"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Industry standard: 25-50%</p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <Label>Service ZIP Codes</Label>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Enter ZIP codes separated by commas. Leave empty to service all areas.
+                      </p>
+                      <Textarea
+                        value={config.serviceZips.join(', ')}
+                        onChange={(e) => {
+                          const zips = e.target.value.split(',').map(z => z.trim()).filter(Boolean);
+                          updateConfig({ serviceZips: zips });
+                        }}
+                        placeholder="90210, 90211, 90212..."
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Embed Code */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Embed Code</CardTitle>
+                    <CardDescription>Add this code to your website</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="relative">
+                      <pre className="p-4 bg-muted rounded-lg text-xs overflow-x-auto">
+{`<iframe 
+  src="${bookingUrl}" 
+  width="100%" 
+  height="800" 
+  frameborder="0"
+  style="border-radius: 12px;"
+></iframe>`}
+                      </pre>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`<iframe src="${bookingUrl}" width="100%" height="800" frameborder="0" style="border-radius: 12px;"></iframe>`);
+                          toast.success('Embed code copied!');
+                        }}
+                      >
+                        <Icon name="copy" size="sm" className="mr-1" />
+                        Copy
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+          {/* Preview Panel */}
+          <div className="lg:col-span-1">
+            <WidgetPreviewPanel config={config} />
+          </div>
+        </div>
+      </div>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Booking Widget?</AlertDialogTitle>
+            <AlertDialogTitle>Reset Configuration?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The widget will be permanently deleted and any
-              embedded instances will stop working.
+              This will reset all settings to their defaults. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirm && deleteWidget(deleteConfirm)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
+            <AlertDialogAction onClick={resetConfig} className="bg-red-600 hover:bg-red-700">
+              Reset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Widget Preview</DialogTitle>
-            <DialogDescription>
-              See how your booking widget will look to customers
-            </DialogDescription>
-          </DialogHeader>
-
-          {previewWidget && (
-            <div className="flex-1 overflow-auto">
-              {/* Step Selector */}
-              <div className="flex gap-1 mb-4 p-1 bg-muted rounded-lg">
-                {['ZIP Code', 'Home Size', 'Service', 'Checkout', 'Schedule', 'Confirm'].map((step, idx) => (
-                  <button
-                    key={step}
-                    onClick={() => setPreviewStep(idx)}
-                    className={cn(
-                      "flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors",
-                      previewStep === idx 
-                        ? "bg-white shadow text-primary" 
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {step}
-                  </button>
-                ))}
-              </div>
-
-              {/* Preview Frame */}
-              <div 
-                className="rounded-xl border-2 overflow-hidden"
-                style={{ borderColor: previewWidget.primaryColor + '30' }}
-              >
-                {/* Header Preview */}
-                <div 
-                  className="p-4 text-white"
-                  style={{ backgroundColor: previewWidget.primaryColor }}
-                >
-                  <div className="flex items-center gap-3">
-                    {previewWidget.logoUrl ? (
-                      <img src={previewWidget.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
-                    ) : (
-                      <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center font-bold">
-                        {previewWidget.businessName.charAt(0)}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold">{previewWidget.businessName}</p>
-                      <p className="text-sm opacity-80">{previewWidget.phone}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Promotion Banner Preview */}
-                {previewWidget.promotionEnabled && (
-                  <div 
-                    className="p-3 text-center text-sm"
-                    style={{ backgroundColor: previewWidget.accentColor + '20' }}
-                  >
-                    <p className="font-semibold" style={{ color: previewWidget.accentColor }}>
-                      {previewWidget.promotionHeadline}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{previewWidget.promotionSubheadline}</p>
-                  </div>
-                )}
-
-                {/* Trust Badges Preview */}
-                {previewWidget.trustBadges.some(b => b.enabled) && (
-                  <div className="p-3 flex flex-wrap justify-center gap-2 border-b">
-                    {previewWidget.trustBadges.filter(b => b.enabled).map(badge => (
-                      <div key={badge.id} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs">
-                        <Icon name="shield" size="xs" className="text-green-600" />
-                        <span className="font-medium">{badge.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Step Content Preview */}
-                <div className="p-6 min-h-[300px]">
-                  {previewStep === 0 && (
-                    <div className="text-center">
-                      <Icon name="mapPin" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
-                      <h3 className="font-semibold mb-1">Enter Your ZIP Code</h3>
-                      <p className="text-sm text-muted-foreground mb-4">Check if we service your area</p>
-                      <Input placeholder="Enter ZIP code" className="max-w-[200px] mx-auto" readOnly />
-                    </div>
-                  )}
-
-                  {previewStep === 1 && (
-                    <div>
-                      <h3 className="font-semibold mb-3">Select Your Home Size</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {previewWidget.pricingTiers.filter(t => t.enabled).slice(0, 4).map(tier => (
-                          <div key={tier.id} className="p-3 border rounded-lg text-center hover:border-primary/50 transition-colors">
-                            <p className="font-medium text-sm">{tier.label}</p>
-                            <p className="text-lg font-bold" style={{ color: previewWidget.primaryColor }}>
-                              ${tier.price}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {previewStep === 2 && (
-                    <div>
-                      <h3 className="font-semibold mb-3">Choose Your Service</h3>
-                      <div className="space-y-2">
-                        {previewWidget.services.filter(s => s.enabled).map(service => (
-                          <div 
-                            key={service.id} 
-                            className={cn(
-                              "p-3 border rounded-lg flex items-center justify-between",
-                              service.popular && "border-primary/50 bg-primary/5"
-                            )}
-                          >
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-sm">{service.name}</p>
-                                {service.popular && (
-                                  <Badge className="text-[10px]" style={{ backgroundColor: previewWidget.accentColor }}>
-                                    Popular
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground">{service.description}</p>
-                            </div>
-                            <p className="font-bold text-sm">
-                              {service.basePrice > 0 ? `+$${service.basePrice}` : 'Included'}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {previewStep === 3 && (
-                    <div className="text-center">
-                      <h3 className="font-semibold mb-2">Checkout Preview</h3>
-                      <div className="p-4 bg-gray-50 rounded-lg max-w-sm mx-auto">
-                        <div className="flex justify-between mb-2 text-sm">
-                          <span>Deep Clean</span>
-                          <span>$249</span>
-                        </div>
-                        <div className="flex justify-between mb-2 text-sm text-green-600">
-                          <span>First-time Discount</span>
-                          <span>-$50</span>
-                        </div>
-                        <div className="border-t pt-2 flex justify-between font-semibold">
-                          <span>Total</span>
-                          <span>$199</span>
-                        </div>
-                        <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-                          <span>Deposit ({previewWidget.depositPercent}%): </span>
-                          <span className="font-medium">${Math.round(199 * previewWidget.depositPercent / 100)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {previewStep === 4 && (
-                    <div className="text-center">
-                      <Icon name="calendar" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
-                      <h3 className="font-semibold mb-1">Select Date & Time</h3>
-                      <p className="text-sm text-muted-foreground">Choose your preferred appointment slot</p>
-                    </div>
-                  )}
-
-                  {previewStep === 5 && (
-                    <div className="text-center">
-                      <div 
-                        className="w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center"
-                        style={{ backgroundColor: previewWidget.accentColor + '20' }}
-                      >
-                        <span style={{ color: previewWidget.accentColor }}>
-                          <Icon name="check" size="2xl" />
-                        </span>
-                      </div>
-                      <h3 className="font-semibold mb-1">Booking Confirmed!</h3>
-                      <p className="text-sm text-muted-foreground">Thank you for booking with {previewWidget.businessName}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Rating Footer */}
-                {previewWidget.showRating && (
-                  <div className="p-3 border-t bg-gray-50 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Icon 
-                          key={star} 
-                          name="star" 
-                          size="sm" 
-                          className={star <= Math.round(previewWidget.ratingValue) ? "text-yellow-400" : "text-gray-300"} 
-                        />
-                      ))}
-                      <span className="ml-1 font-semibold">{previewWidget.ratingValue}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Based on {previewWidget.reviewCount} reviews</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setShowPreview(false)}>
-              Close
-            </Button>
-            <Button asChild>
-              <a 
-                href={`https://book.selestial.io/${businessId}/${encodeURIComponent(previewWidget?.businessName.toLowerCase().replace(/\s+/g, '-') || '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Icon name="externalLink" size="sm" className="mr-1" />
-                Open Full Preview
-              </a>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 }

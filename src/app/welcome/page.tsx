@@ -540,9 +540,190 @@ function AnalyticsDemo() {
   );
 }
 
+// Booking Widget Demo
+function BookingWidgetDemo() {
+  const [step, setStep] = useState(0);
+  const steps = ['ZIP', 'Size', 'Service', 'Checkout'];
+  
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+      {/* Widget Header */}
+      <div className="px-6 py-4 bg-gradient-to-r from-primary to-violet-500 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center font-bold">
+            SC
+          </div>
+          <div>
+            <p className="font-semibold">Sparkle Clean Co.</p>
+            <p className="text-xs text-white/80">(555) 123-4567</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Promo Banner */}
+      <div className="px-6 py-3 bg-green-50 text-center">
+        <p className="text-green-700 font-semibold text-sm">🎉 Get 20% Off Your First Clean!</p>
+      </div>
+      
+      {/* Trust Badges */}
+      <div className="px-6 py-3 flex justify-center gap-3 border-b border-gray-100">
+        {['Google Guaranteed', 'BBB A+', 'Insured'].map((badge, i) => (
+          <span key={i} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-[10px] font-medium">
+            <Icon name="shield" size="xs" className="text-green-500" />
+            {badge}
+          </span>
+        ))}
+      </div>
+      
+      {/* Step Indicator */}
+      <div className="px-6 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          {steps.map((s, i) => (
+            <div key={i} className="flex items-center">
+              <div className={cn(
+                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all",
+                i <= step ? "bg-primary text-white" : "bg-gray-200 text-gray-500"
+              )}>
+                {i + 1}
+              </div>
+              {i < steps.length - 1 && (
+                <div className={cn(
+                  "w-8 h-0.5 mx-1 transition-all",
+                  i < step ? "bg-primary" : "bg-gray-200"
+                )} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="p-6 min-h-[180px]">
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.div
+              key="zip"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="text-center"
+            >
+              <Icon name="mapPin" size="xl" className="mx-auto text-gray-400 mb-3" />
+              <h4 className="font-semibold text-gray-900 mb-2">Enter Your ZIP Code</h4>
+              <p className="text-sm text-gray-500 mb-4">We'll check if we service your area</p>
+              <Input placeholder="Enter ZIP code" className="max-w-[200px] mx-auto text-center" />
+            </motion.div>
+          )}
+          {step === 1 && (
+            <motion.div
+              key="size"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <h4 className="font-semibold text-gray-900 mb-4">Select Home Size</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {['1,000 sqft', '1,500 sqft', '2,000 sqft', '2,500 sqft'].map((size, i) => (
+                  <div key={i} className="p-3 border rounded-lg text-center hover:border-primary/50 cursor-pointer transition-all">
+                    <p className="font-medium text-sm">{size}</p>
+                    <p className="text-primary font-bold">${149 + (i * 40)}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          {step === 2 && (
+            <motion.div
+              key="service"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <h4 className="font-semibold text-gray-900 mb-4">Choose Service</h4>
+              <div className="space-y-2">
+                {[
+                  { name: 'Standard Clean', price: 189, popular: false },
+                  { name: 'Deep Clean', price: 249, popular: true },
+                  { name: 'Move In/Out', price: 299, popular: false },
+                ].map((service, i) => (
+                  <div key={i} className={cn(
+                    "p-3 border rounded-lg flex items-center justify-between cursor-pointer transition-all",
+                    service.popular && "border-primary/50 bg-primary/5"
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{service.name}</span>
+                      {service.popular && (
+                        <span className="px-1.5 py-0.5 bg-primary text-white text-[9px] rounded font-medium">Popular</span>
+                      )}
+                    </div>
+                    <span className="font-bold text-primary">${service.price}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+          {step === 3 && (
+            <motion.div
+              key="checkout"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="text-center"
+            >
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                <Icon name="check" size="lg" className="text-green-600" />
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">Ready to Book!</h4>
+              <p className="text-sm text-gray-500 mb-4">Secure checkout with Stripe</p>
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                <div className="flex justify-between mb-1">
+                  <span>Deep Clean</span>
+                  <span>$249</span>
+                </div>
+                <div className="flex justify-between text-green-600">
+                  <span>First-time Discount</span>
+                  <span>-$50</span>
+                </div>
+                <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>$199</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      {/* Navigation */}
+      <div className="px-6 py-4 border-t border-gray-100 flex justify-between">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setStep(Math.max(0, step - 1))}
+          disabled={step === 0}
+        >
+          Back
+        </Button>
+        <Button 
+          size="sm" 
+          onClick={() => setStep(Math.min(3, step + 1))}
+          className="bg-primary"
+        >
+          {step === 3 ? 'Book Now' : 'Continue'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 // Features Section
 function FeaturesSection() {
   const features = [
+    {
+      title: 'Online Booking Widget',
+      description: 'Let customers book appointments 24/7 from your website with real-time pricing and secure Stripe payments.',
+      demo: <BookingWidgetDemo />,
+    },
     {
       title: 'Speed-to-Lead Automation',
       description: 'Respond to new leads in under 60 seconds. First to respond wins 78% of jobs.',
