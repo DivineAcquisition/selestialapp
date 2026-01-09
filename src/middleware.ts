@@ -8,7 +8,7 @@ const publicRoutes: string[] = []
 const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification']
 
 // Routes that require authentication
-const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin']
+const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
