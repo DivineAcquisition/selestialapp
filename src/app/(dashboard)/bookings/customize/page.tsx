@@ -21,20 +21,46 @@ export default function BookingCustomizePage() {
   React.useEffect(() => {
     // Fetch customization data
     async function loadData() {
-      if (!businessId) return;
+      if (!businessId) {
+        setLoading(false);
+        return;
+      }
       
       try {
         // Get service types
         const servicesRes = await fetch(`/api/booking/${businessId}/config`);
-        const config = await servicesRes.json();
-        setServiceTypes(config.serviceTypes || []);
+        if (servicesRes.ok) {
+          const config = await servicesRes.json();
+          setServiceTypes(config.serviceTypes || []);
+        }
 
         // Get customization
         const customRes = await fetch(`/api/booking/${businessId}/customization`);
-        const customization = await customRes.json();
-        setData(customization);
+        if (customRes.ok) {
+          const customization = await customRes.json();
+          setData(customization);
+        } else {
+          // Initialize with empty data if no customization exists
+          setData({
+            service_areas: [],
+            pricing_model: {},
+            promotions: [],
+            branding: {},
+            copy: {},
+            settings: {},
+          });
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
+        // Initialize with empty data on error
+        setData({
+          service_areas: [],
+          pricing_model: {},
+          promotions: [],
+          branding: {},
+          copy: {},
+          settings: {},
+        });
       } finally {
         setLoading(false);
       }
@@ -56,6 +82,20 @@ export default function BookingCustomizePage() {
       <Layout title="Booking Customization">
         <div className="flex items-center justify-center min-h-[400px]">
           <Icon name="spinner" size="2xl" className="animate-spin text-violet-600" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!businessId) {
+    return (
+      <Layout title="Booking Customization">
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+          <Icon name="settings" size="4xl" className="text-muted-foreground/50 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Business Not Found</h2>
+          <p className="text-muted-foreground max-w-md">
+            Please make sure you have a business configured to customize your booking widget.
+          </p>
         </div>
       </Layout>
     );

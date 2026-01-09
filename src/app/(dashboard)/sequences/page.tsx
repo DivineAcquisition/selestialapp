@@ -24,6 +24,8 @@ import UpgradePrompt from '@/components/shared/UpgradePrompt';
 import type { TablesInsert } from '@/integrations/supabase/types';
 import type { Sequence, SequenceStep } from '@/types';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { ALL_TEMPLATES, TEMPLATES_BY_CATEGORY } from '@/lib/sequences/templates';
 
 const TEMPLATE_ICONS: Record<string, IconName> = {
   zap: 'bolt',
@@ -313,6 +315,31 @@ export default function SequencesPage() {
             <p className="text-sm text-gray-500">Retention</p>
           </div>
         </div>
+
+        {/* Template Library Promo */}
+        <Card className="card-elevated p-5 bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg shadow-violet-500/20">
+                <Icon name="bookOpen" size="xl" className="text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">
+                  {ALL_TEMPLATES.length}+ Pre-Built Sequence Templates
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Speed-to-lead, quote follow-up, retention, seasonal campaigns, and more
+                </p>
+              </div>
+            </div>
+            <Button asChild className="bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-90 rounded-xl gap-2">
+              <Link href="/sequences/templates">
+                <Icon name="sparkles" size="sm" />
+                Browse Templates
+              </Link>
+            </Button>
+          </div>
+        </Card>
 
         {/* AI Builder Promo */}
         {!hasAIBuilder && (
