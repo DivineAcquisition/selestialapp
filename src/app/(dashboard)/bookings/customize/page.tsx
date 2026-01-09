@@ -42,6 +42,13 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  PricingConfigurator, 
+  AddOnsConfigurator, 
+  PriceCalculatorPreview,
+  DEFAULT_PRICING_CONFIG,
+  type PricingConfig,
+} from '@/components/booking/pricing-configurator';
 
 // ============================================================================
 // TYPES
@@ -95,12 +102,15 @@ interface BookingWidgetConfig {
   primaryColor: string;
   accentColor: string;
   
-  // Pricing Configuration
+  // Pricing Configuration (Legacy - for backwards compatibility)
   pricingModel: PricingModel;
   pricingTiers: PricingTier[];
   hourlyRate?: number;
   flatRatePrice?: number;
   minimumPrice: number;
+  
+  // Advanced Pricing Configuration (New)
+  pricingConfig?: PricingConfig;
   
   // Services
   services: ServiceOption[];
@@ -209,6 +219,7 @@ const createDefaultConfig = (businessId: string, businessName: string): BookingW
   hourlyRate: 50,
   flatRatePrice: 200,
   minimumPrice: 99,
+  pricingConfig: DEFAULT_PRICING_CONFIG,
   services: DEFAULT_SERVICES,
   trustBadges: DEFAULT_TRUST_BADGES,
   showRating: true,
@@ -575,6 +586,7 @@ export default function BookingCustomizePage() {
   const [showEditor, setShowEditor] = React.useState(false);
   const [deleteConfirm, setDeleteConfirm] = React.useState<string | null>(null);
   const [editorStep, setEditorStep] = React.useState<'niche' | 'config'>('niche');
+  const [editorTab, setEditorTab] = React.useState<'branding' | 'pricing' | 'addons' | 'trust' | 'promotion' | 'zones'>('branding');
 
   // Plan limits
   const planLimit = PLAN_LIMITS[businessPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.starter;
@@ -846,6 +858,34 @@ export default function BookingCustomizePage() {
             </DialogDescription>
           </DialogHeader>
 
+          {/* Editor Tabs - Only show when in config step */}
+          {editorStep === 'config' && editingWidget && (
+            <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4 overflow-x-auto">
+              {[
+                { id: 'branding', label: 'Branding', icon: 'palette' as IconName },
+                { id: 'pricing', label: 'Pricing', icon: 'dollarSign' as IconName },
+                { id: 'addons', label: 'Add-Ons', icon: 'plus' as IconName },
+                { id: 'trust', label: 'Trust Badges', icon: 'shield' as IconName },
+                { id: 'promotion', label: 'Promotion', icon: 'tag' as IconName },
+                { id: 'zones', label: 'Service Zones', icon: 'mapPin' as IconName },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap",
+                    editorTab === tab.id
+                      ? "bg-white shadow text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon name={tab.icon} size="sm" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <ScrollArea className="flex-1 -mx-6 px-6">
             <AnimatePresence mode="wait">
               {editorStep === 'niche' ? (
@@ -898,7 +938,7 @@ export default function BookingCustomizePage() {
                   exit={{ opacity: 0, x: -20 }}
                   className="py-4 space-y-6"
                 >
-                  {/* Widget Name */}
+                  {/* Widget Name - Always visible */}
                   <div>
                     <Label>Widget Name</Label>
                     <Input
@@ -911,429 +951,388 @@ export default function BookingCustomizePage() {
 
                   <Separator />
 
-                  {/* Branding Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="palette" size="lg" />
-                      Branding
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
+                  {/* BRANDING TAB */}
+                  {editorTab === 'branding' && (
+                    <>
                       <div>
-                        <Label>Business Name</Label>
-                        <Input
-                          value={editingWidget.businessName}
-                          onChange={(e) => updateEditingWidget({ businessName: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>Phone Number</Label>
-                        <Input
-                          value={editingWidget.phone}
-                          onChange={(e) => updateEditingWidget({ phone: e.target.value })}
-                          placeholder="(555) 123-4567"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>Primary Color</Label>
-                        <div className="flex gap-2 mt-1">
-                          <Input
-                            type="color"
-                            value={editingWidget.primaryColor}
-                            onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
-                            className="w-16 h-10 cursor-pointer"
-                          />
-                          <Input
-                            value={editingWidget.primaryColor}
-                            onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Accent Color</Label>
-                        <div className="flex gap-2 mt-1">
-                          <Input
-                            type="color"
-                            value={editingWidget.accentColor}
-                            onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
-                            className="w-16 h-10 cursor-pointer"
-                          />
-                          <Input
-                            value={editingWidget.accentColor}
-                            onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Pricing Model Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="dollarSign" size="lg" />
-                      Pricing Model
-                    </h3>
-                    <PricingModelSelector
-                      value={editingWidget.pricingModel}
-                      onChange={(model) => {
-                        let tiers = editingWidget.pricingTiers;
-                        if (model === 'sqft') tiers = DEFAULT_SQFT_TIERS;
-                        if (model === 'bedroom_bathroom') tiers = DEFAULT_BEDROOM_TIERS;
-                        updateEditingWidget({ pricingModel: model, pricingTiers: tiers });
-                      }}
-                    />
-
-                    {/* Pricing Tiers */}
-                    {(editingWidget.pricingModel === 'sqft' || editingWidget.pricingModel === 'bedroom_bathroom') && (
-                      <div className="mt-4 space-y-2">
-                        <Label>Pricing Tiers</Label>
-                        {editingWidget.pricingTiers.map((tier, idx) => (
-                          <div key={tier.id} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                            <Switch
-                              checked={tier.enabled}
-                              onCheckedChange={(checked) => {
-                                const newTiers = [...editingWidget.pricingTiers];
-                                newTiers[idx] = { ...tier, enabled: checked };
-                                updateEditingWidget({ pricingTiers: newTiers });
-                              }}
-                            />
-                            <span className="flex-1 font-medium">{tier.label}</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-muted-foreground">$</span>
-                              <Input
-                                type="number"
-                                value={tier.price}
-                                onChange={(e) => {
-                                  const newTiers = [...editingWidget.pricingTiers];
-                                  newTiers[idx] = { ...tier, price: Number(e.target.value) };
-                                  updateEditingWidget({ pricingTiers: newTiers });
-                                }}
-                                className="w-24"
-                                disabled={!tier.enabled}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {editingWidget.pricingModel === 'hourly' && (
-                      <div className="mt-4">
-                        <Label>Hourly Rate ($)</Label>
-                        <Input
-                          type="number"
-                          value={editingWidget.hourlyRate}
-                          onChange={(e) => updateEditingWidget({ hourlyRate: Number(e.target.value) })}
-                          className="mt-1 w-32"
-                        />
-                      </div>
-                    )}
-
-                    {editingWidget.pricingModel === 'flat' && (
-                      <div className="mt-4">
-                        <Label>Flat Rate Price ($)</Label>
-                        <Input
-                          type="number"
-                          value={editingWidget.flatRatePrice}
-                          onChange={(e) => updateEditingWidget({ flatRatePrice: Number(e.target.value) })}
-                          className="mt-1 w-32"
-                        />
-                      </div>
-                    )}
-
-                    <div className="mt-4 grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Minimum Price ($)</Label>
-                        <Input
-                          type="number"
-                          value={editingWidget.minimumPrice}
-                          onChange={(e) => updateEditingWidget({ minimumPrice: Number(e.target.value) })}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>Deposit Percentage: {editingWidget.depositPercent}%</Label>
-                        <Slider
-                          value={[editingWidget.depositPercent]}
-                          onValueChange={([v]) => updateEditingWidget({ depositPercent: v })}
-                          min={0}
-                          max={100}
-                          step={5}
-                          className="mt-3"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Trust Badges Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="shield" size="lg" />
-                      Trust Badges & Credentials
-                    </h3>
-                    <TrustBadgeEditor
-                      badges={editingWidget.trustBadges}
-                      onChange={(badges) => updateEditingWidget({ trustBadges: badges })}
-                    />
-
-                    <div className="mt-4 p-4 bg-muted rounded-xl">
-                      <div className="flex items-center justify-between mb-3">
-                        <Label>Show Rating</Label>
-                        <Switch
-                          checked={editingWidget.showRating}
-                          onCheckedChange={(checked) => updateEditingWidget({ showRating: checked })}
-                        />
-                      </div>
-                      {editingWidget.showRating && (
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="palette" size="lg" />
+                          Branding
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label className="text-xs">Rating (1-5)</Label>
+                            <Label>Business Name</Label>
                             <Input
-                              type="number"
-                              step="0.1"
-                              min="1"
-                              max="5"
-                              value={editingWidget.ratingValue}
-                              onChange={(e) => updateEditingWidget({ ratingValue: Number(e.target.value) })}
+                              value={editingWidget.businessName}
+                              onChange={(e) => updateEditingWidget({ businessName: e.target.value })}
                               className="mt-1"
                             />
                           </div>
                           <div>
-                            <Label className="text-xs">Review Count</Label>
+                            <Label>Phone Number</Label>
                             <Input
-                              type="number"
-                              value={editingWidget.reviewCount}
-                              onChange={(e) => updateEditingWidget({ reviewCount: Number(e.target.value) })}
+                              value={editingWidget.phone}
+                              onChange={(e) => updateEditingWidget({ phone: e.target.value })}
+                              placeholder="(555) 123-4567"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label>Primary Color</Label>
+                            <div className="flex gap-2 mt-1">
+                              <Input
+                                type="color"
+                                value={editingWidget.primaryColor}
+                                onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
+                                className="w-16 h-10 cursor-pointer"
+                              />
+                              <Input
+                                value={editingWidget.primaryColor}
+                                onChange={(e) => updateEditingWidget({ primaryColor: e.target.value })}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Accent Color</Label>
+                            <div className="flex gap-2 mt-1">
+                              <Input
+                                type="color"
+                                value={editingWidget.accentColor}
+                                onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
+                                className="w-16 h-10 cursor-pointer"
+                              />
+                              <Input
+                                value={editingWidget.accentColor}
+                                onChange={(e) => updateEditingWidget({ accentColor: e.target.value })}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Logo URL</Label>
+                            <Input
+                              value={editingWidget.logoUrl}
+                              onChange={(e) => updateEditingWidget({ logoUrl: e.target.value })}
+                              placeholder="https://your-logo-url.com/logo.png"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input
+                              value={editingWidget.email}
+                              onChange={(e) => updateEditingWidget({ email: e.target.value })}
+                              placeholder="hello@yourbusiness.com"
                               className="mt-1"
                             />
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
 
-                  <Separator />
+                      <Separator />
 
-                  {/* Services Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="layers" size="lg" />
-                      Service Options
-                    </h3>
-                    <div className="space-y-3">
-                      {editingWidget.services.map((service, idx) => (
-                        <div 
-                          key={service.id}
-                          className={cn(
-                            "p-4 rounded-xl border transition-colors",
-                            service.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-100 opacity-70"
-                          )}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <Switch
-                                checked={service.enabled}
-                                onCheckedChange={(checked) => {
-                                  const newServices = [...editingWidget.services];
-                                  newServices[idx] = { ...service, enabled: checked };
-                                  updateEditingWidget({ services: newServices });
-                                }}
-                              />
-                              <div>
-                                <p className="font-medium">{service.name}</p>
-                                <p className="text-xs text-muted-foreground">{service.description}</p>
-                              </div>
-                            </div>
-                            {service.popular && (
-                              <Badge className="bg-violet-100 text-violet-700">Popular</Badge>
-                            )}
+                      {/* Rating Section */}
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="star" size="lg" />
+                          Customer Rating Display
+                        </h3>
+                        <div className="p-4 bg-muted rounded-xl">
+                          <div className="flex items-center justify-between mb-3">
+                            <Label>Show Rating</Label>
+                            <Switch
+                              checked={editingWidget.showRating}
+                              onCheckedChange={(checked) => updateEditingWidget({ showRating: checked })}
+                            />
                           </div>
-                          
-                          {service.enabled && (
-                            <div className="pl-12 space-y-3">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <Label className="text-xs">Service Name</Label>
-                                  <Input
-                                    value={service.name}
-                                    onChange={(e) => {
-                                      const newServices = [...editingWidget.services];
-                                      newServices[idx] = { ...service, name: e.target.value };
-                                      updateEditingWidget({ services: newServices });
-                                    }}
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs">Add-on Price ($)</Label>
-                                  <Input
-                                    type="number"
-                                    value={service.basePrice}
-                                    onChange={(e) => {
-                                      const newServices = [...editingWidget.services];
-                                      newServices[idx] = { ...service, basePrice: Number(e.target.value) };
-                                      updateEditingWidget({ services: newServices });
-                                    }}
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                              </div>
+                          {editingWidget.showRating && (
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <Label className="text-xs">Description</Label>
+                                <Label className="text-xs">Rating (1-5)</Label>
                                 <Input
-                                  value={service.description}
-                                  onChange={(e) => {
-                                    const newServices = [...editingWidget.services];
-                                    newServices[idx] = { ...service, description: e.target.value };
-                                    updateEditingWidget({ services: newServices });
-                                  }}
-                                  className="h-8 text-sm"
+                                  type="number"
+                                  step="0.1"
+                                  min="1"
+                                  max="5"
+                                  value={editingWidget.ratingValue}
+                                  onChange={(e) => updateEditingWidget({ ratingValue: Number(e.target.value) })}
+                                  className="mt-1"
                                 />
                               </div>
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                  <Switch
-                                    checked={service.popular}
-                                    onCheckedChange={(checked) => {
-                                      const newServices = [...editingWidget.services];
-                                      newServices[idx] = { ...service, popular: checked };
-                                      updateEditingWidget({ services: newServices });
-                                    }}
-                                  />
-                                  <Label className="text-xs">Mark as Popular</Label>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Label className="text-xs">Discount %</Label>
-                                  <Input
-                                    type="number"
-                                    value={service.discountPercent}
-                                    onChange={(e) => {
-                                      const newServices = [...editingWidget.services];
-                                      newServices[idx] = { ...service, discountPercent: Number(e.target.value) };
-                                      updateEditingWidget({ services: newServices });
-                                    }}
-                                    className="h-8 w-20 text-sm"
-                                  />
-                                </div>
+                              <div>
+                                <Label className="text-xs">Review Count</Label>
+                                <Input
+                                  type="number"
+                                  value={editingWidget.reviewCount}
+                                  onChange={(e) => updateEditingWidget({ reviewCount: Number(e.target.value) })}
+                                  className="mt-1"
+                                />
                               </div>
                             </div>
                           )}
                         </div>
-                      ))}
-                      
+                      </div>
+                    </>
+                  )}
+
+                  {/* PRICING TAB */}
+                  {editorTab === 'pricing' && editingWidget.pricingConfig && (
+                    <PricingConfigurator
+                      config={editingWidget.pricingConfig}
+                      onChange={(pricingConfig) => updateEditingWidget({ pricingConfig })}
+                    />
+                  )}
+
+                  {/* PRICING TAB - Fallback if no pricingConfig */}
+                  {editorTab === 'pricing' && !editingWidget.pricingConfig && (
+                    <div className="text-center py-8">
+                      <Icon name="calculator" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground mb-4">Advanced pricing not configured</p>
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          const newService: ServiceOption = {
-                            id: crypto.randomUUID(),
-                            name: 'New Service',
-                            description: 'Service description',
-                            features: [],
-                            basePrice: 0,
-                            discountPercent: 0,
-                            badge: '',
-                            popular: false,
-                            enabled: true,
-                          };
-                          updateEditingWidget({ services: [...editingWidget.services, newService] });
-                        }}
+                        onClick={() => updateEditingWidget({ pricingConfig: DEFAULT_PRICING_CONFIG })}
                       >
-                        <Icon name="plus" size="sm" className="mr-1" />
-                        Add Service Option
+                        Enable Advanced Pricing
                       </Button>
                     </div>
-                  </div>
+                  )}
 
-                  <Separator />
+                  {/* ADD-ONS TAB */}
+                  {editorTab === 'addons' && editingWidget.pricingConfig && (
+                    <AddOnsConfigurator
+                      addOns={editingWidget.pricingConfig.addOns}
+                      onChange={(addOns) => updateEditingWidget({
+                        pricingConfig: { ...editingWidget.pricingConfig!, addOns }
+                      })}
+                    />
+                  )}
 
-                  {/* Promotion Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="tag" size="lg" />
-                      Promotion
-                    </h3>
-                    <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-lg">
-                      <Label>Enable Promotion Banner</Label>
-                      <Switch
-                        checked={editingWidget.promotionEnabled}
-                        onCheckedChange={(checked) => updateEditingWidget({ promotionEnabled: checked })}
+                  {editorTab === 'addons' && !editingWidget.pricingConfig && (
+                    <div className="text-center py-8">
+                      <Icon name="plus" size="2xl" className="mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground mb-4">Enable advanced pricing to configure add-ons</p>
+                      <Button
+                        onClick={() => updateEditingWidget({ pricingConfig: DEFAULT_PRICING_CONFIG })}
+                      >
+                        Enable Advanced Pricing
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* TRUST BADGES TAB */}
+                  {editorTab === 'trust' && (
+                    <div>
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Icon name="shield" size="lg" />
+                        Trust Badges & Credentials
+                      </h3>
+                      <TrustBadgeEditor
+                        badges={editingWidget.trustBadges}
+                        onChange={(badges) => updateEditingWidget({ trustBadges: badges })}
                       />
                     </div>
-                    {editingWidget.promotionEnabled && (
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Headline</Label>
-                          <Input
-                            value={editingWidget.promotionHeadline}
-                            onChange={(e) => updateEditingWidget({ promotionHeadline: e.target.value })}
-                            className="mt-1"
+                  )}
+
+                  {/* PROMOTION TAB */}
+                  {editorTab === 'promotion' && (
+                    <>
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="tag" size="lg" />
+                          Promotion Banner
+                        </h3>
+                        <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-lg">
+                          <Label>Enable Promotion Banner</Label>
+                          <Switch
+                            checked={editingWidget.promotionEnabled}
+                            onCheckedChange={(checked) => updateEditingWidget({ promotionEnabled: checked })}
                           />
                         </div>
+                        {editingWidget.promotionEnabled && (
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Headline</Label>
+                              <Input
+                                value={editingWidget.promotionHeadline}
+                                onChange={(e) => updateEditingWidget({ promotionHeadline: e.target.value })}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label>Subheadline</Label>
+                              <Input
+                                value={editingWidget.promotionSubheadline}
+                                onChange={(e) => updateEditingWidget({ promotionSubheadline: e.target.value })}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>Discount %</Label>
+                                <Input
+                                  type="number"
+                                  value={editingWidget.discountPercent}
+                                  onChange={(e) => updateEditingWidget({ discountPercent: Number(e.target.value) })}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label>Expiry Date</Label>
+                                <Input
+                                  type="date"
+                                  value={editingWidget.promotionExpiry.split('T')[0]}
+                                  onChange={(e) => updateEditingWidget({ promotionExpiry: new Date(e.target.value).toISOString() })}
+                                  className="mt-1"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <Separator />
+
+                      {/* Services Section */}
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="layers" size="lg" />
+                          Service Types
+                        </h3>
+                        <div className="space-y-3">
+                          {editingWidget.services.map((service, idx) => (
+                            <div 
+                              key={service.id}
+                              className={cn(
+                                "p-4 rounded-xl border transition-colors",
+                                service.enabled ? "bg-white border-gray-200" : "bg-gray-50 border-gray-100 opacity-70"
+                              )}
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <Switch
+                                    checked={service.enabled}
+                                    onCheckedChange={(checked) => {
+                                      const newServices = [...editingWidget.services];
+                                      newServices[idx] = { ...service, enabled: checked };
+                                      updateEditingWidget({ services: newServices });
+                                    }}
+                                  />
+                                  <div>
+                                    <p className="font-medium">{service.name}</p>
+                                    <p className="text-xs text-muted-foreground">{service.description}</p>
+                                  </div>
+                                </div>
+                                {service.popular && (
+                                  <Badge className="bg-violet-100 text-violet-700">Popular</Badge>
+                                )}
+                              </div>
+                              
+                              {service.enabled && (
+                                <div className="pl-12 space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <Label className="text-xs">Service Name</Label>
+                                      <Input
+                                        value={service.name}
+                                        onChange={(e) => {
+                                          const newServices = [...editingWidget.services];
+                                          newServices[idx] = { ...service, name: e.target.value };
+                                          updateEditingWidget({ services: newServices });
+                                        }}
+                                        className="h-8 text-sm"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs">Add-on Price ($)</Label>
+                                      <Input
+                                        type="number"
+                                        value={service.basePrice}
+                                        onChange={(e) => {
+                                          const newServices = [...editingWidget.services];
+                                          newServices[idx] = { ...service, basePrice: Number(e.target.value) };
+                                          updateEditingWidget({ services: newServices });
+                                        }}
+                                        className="h-8 text-sm"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Switch
+                                      checked={service.popular}
+                                      onCheckedChange={(checked) => {
+                                        const newServices = [...editingWidget.services];
+                                        newServices[idx] = { ...service, popular: checked };
+                                        updateEditingWidget({ services: newServices });
+                                      }}
+                                    />
+                                    <Label className="text-xs">Mark as Popular</Label>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* SERVICE ZONES TAB */}
+                  {editorTab === 'zones' && (
+                    <>
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="mapPin" size="lg" />
+                          Service Zones
+                        </h3>
                         <div>
-                          <Label>Subheadline</Label>
-                          <Input
-                            value={editingWidget.promotionSubheadline}
-                            onChange={(e) => updateEditingWidget({ promotionSubheadline: e.target.value })}
-                            className="mt-1"
+                          <Label>Service ZIP Codes</Label>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Enter ZIP codes separated by commas. Leave empty to service all areas.
+                          </p>
+                          <Textarea
+                            value={editingWidget.serviceZips.join(', ')}
+                            onChange={(e) => {
+                              const zips = e.target.value.split(',').map(z => z.trim()).filter(Boolean);
+                              updateEditingWidget({ serviceZips: zips });
+                            }}
+                            placeholder="90210, 90211, 90212..."
+                            className="min-h-[80px]"
                           />
                         </div>
+                      </div>
+
+                      <Separator />
+
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Icon name="dollarSign" size="lg" />
+                          Deposit & Minimum
+                        </h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>Discount %</Label>
+                            <Label>Minimum Price ($)</Label>
                             <Input
                               type="number"
-                              value={editingWidget.discountPercent}
-                              onChange={(e) => updateEditingWidget({ discountPercent: Number(e.target.value) })}
+                              value={editingWidget.minimumPrice}
+                              onChange={(e) => updateEditingWidget({ minimumPrice: Number(e.target.value) })}
                               className="mt-1"
                             />
                           </div>
                           <div>
-                            <Label>Expiry Date</Label>
-                            <Input
-                              type="date"
-                              value={editingWidget.promotionExpiry.split('T')[0]}
-                              onChange={(e) => updateEditingWidget({ promotionExpiry: new Date(e.target.value).toISOString() })}
-                              className="mt-1"
+                            <Label>Deposit Percentage: {editingWidget.depositPercent}%</Label>
+                            <Slider
+                              value={[editingWidget.depositPercent]}
+                              onValueChange={([v]) => updateEditingWidget({ depositPercent: v })}
+                              min={0}
+                              max={100}
+                              step={5}
+                              className="mt-3"
                             />
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  {/* Service Zones */}
-                  <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Icon name="mapPin" size="lg" />
-                      Service Zones
-                    </h3>
-                    <div>
-                      <Label>Service ZIP Codes</Label>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Enter ZIP codes separated by commas
-                      </p>
-                      <Textarea
-                        value={editingWidget.serviceZips.join(', ')}
-                        onChange={(e) => {
-                          const zips = e.target.value.split(',').map(z => z.trim()).filter(Boolean);
-                          updateEditingWidget({ serviceZips: zips });
-                        }}
-                        placeholder="90210, 90211, 90212..."
-                        className="min-h-[80px]"
-                      />
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
