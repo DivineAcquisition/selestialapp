@@ -15,17 +15,17 @@ export default function DashboardLayoutClient({
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading: authLoading, initialized: authInitialized } = useAuth();
-  const { business, loading: businessLoading } = useBusiness();
+  const { business, loading: businessLoading, initialized: businessInitialized } = useBusiness();
   const [isReady, setIsReady] = useState(false);
   const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Wait for auth to be fully initialized first
-    if (!authInitialized) {
+    // Wait for both auth and business to be fully initialized
+    if (!authInitialized || !businessInitialized) {
       return;
     }
 
-    // Wait for both auth and business to finish loading
+    // Wait for loading to complete
     if (authLoading || businessLoading) {
       return;
     }
@@ -51,24 +51,24 @@ export default function DashboardLayoutClient({
 
     // Everything is ready - user has account and business
     setIsReady(true);
-  }, [user, business, authLoading, businessLoading, authInitialized, router, pathname]);
+  }, [user, business, authLoading, businessLoading, authInitialized, businessInitialized, router, pathname]);
 
   // Reset redirect flag when pathname changes
   useEffect(() => {
     hasRedirected.current = false;
   }, [pathname]);
 
-  // Show loading while auth is initializing or loading
-  if (!authInitialized || authLoading) {
+  // Show loading while auth or business is initializing
+  if (!authInitialized || !businessInitialized) {
     return <PageLoading message="Loading..." />;
   }
 
-  // Show loading while business is loading (only if user exists)
-  if (user && businessLoading) {
+  // Show loading while auth or business is still loading
+  if (authLoading || businessLoading) {
     return <PageLoading message="Loading your workspace..." />;
   }
 
-  // If user exists and business exists, show content even if isReady hasn't updated yet
+  // If user exists and business exists, show content
   if (user && business) {
     return (
       <>

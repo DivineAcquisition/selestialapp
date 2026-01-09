@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthProvider';
 import type { Tables } from '@/integrations/supabase/types';
@@ -10,6 +10,7 @@ type Business = Tables<'businesses'>;
 interface BusinessContextType {
   business: Business | null;
   loading: boolean;
+  initialized: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   updateBusiness: (updates: Partial<Business>) => Promise<{ error: Error | null }>;
@@ -18,15 +19,23 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export function BusinessProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, initialized: authInitialized } = useAuth();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   const fetchBusiness = useCallback(async () => {
+    // Don't fetch until auth is initialized
+    if (!authInitialized) {
+      return;
+    }
+
     if (!user) {
       setBusiness(null);
       setLoading(false);
+      setInitialized(true);
       return;
     }
 
@@ -45,12 +54,14 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       }
       
       setBusiness(data);
+      hasFetched.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load business');
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
-  }, [user]);
+  }, [user, authInitialized]);
 
   const updateBusiness = async (updates: Partial<Business>) => {
     if (!business) return { error: new Error('No business to update') };
@@ -71,11 +82,14 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchBusiness();
-  }, [fetchBusiness]);
+    // Only fetch when auth is initialized
+    if (authInitialized) {
+      fetchBusiness();
+    }
+  }, [fetchBusiness, authInitialized]);
 
   return (
-    <BusinessContext.Provider value={{ business, loading, error, refetch: fetchBusiness, updateBusiness }}>
+    <BusinessContext.Provider value={{ business, loading, initialized, error, refetch: fetchBusiness, updateBusiness }}>
       {children}
     </BusinessContext.Provider>
   );
