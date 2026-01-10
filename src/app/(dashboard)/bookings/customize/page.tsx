@@ -46,7 +46,6 @@ import { Icon, IconName } from '@/components/ui/icon';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { 
   PricingConfigurator, 
   AddOnsConfigurator, 
@@ -389,17 +388,10 @@ export default function BookingCustomizePage() {
 
     const loadConfig = async () => {
       try {
-        const { data, error } = await (supabase as any)
-          .from('booking_widget_configs')
-          .select('*')
-          .eq('business_id', businessId)
-          .single();
+        const res = await fetch(`/api/booking/widget-config?businessId=${businessId}`);
+        const data = await res.json();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error loading config:', error);
-        }
-
-        if (data?.config) {
+        if (data.config) {
           setConfig(data.config);
         } else {
           // Create new config
@@ -428,22 +420,29 @@ export default function BookingCustomizePage() {
 
     setSaving(true);
     try {
-      const { error } = await (supabase as any)
-        .from('booking_widget_configs')
-        .upsert({
-          id: config.id,
-          business_id: businessId,
-          config: config,
-          updated_at: new Date().toISOString(),
-        });
+      const res = await fetch('/api/booking/widget-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId,
+          config: {
+            ...config,
+            updatedAt: new Date().toISOString(),
+          },
+        }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save');
+      }
 
       toast.success('Widget configuration saved!');
       setHasUnsavedChanges(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving config:', err);
-      toast.error('Failed to save configuration. Please try again.');
+      toast.error(err.message || 'Failed to save configuration. Please try again.');
     }
     setSaving(false);
   };
