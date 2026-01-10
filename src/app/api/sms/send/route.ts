@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { twilioClient, TWILIO_MESSAGING_SERVICE_SID, isTwilioConfigured } from '@/lib/twilio/client'
+import { getTwilioClient, TWILIO_MESSAGING_SERVICE_SID, isTwilioConfigured } from '@/lib/twilio/client'
 
 export async function POST(req: NextRequest) {
   try {
+    const twilioClient = getTwilioClient()
     if (!isTwilioConfigured() || !twilioClient) {
       return NextResponse.json({ error: 'SMS not configured' }, { status: 503 })
     }

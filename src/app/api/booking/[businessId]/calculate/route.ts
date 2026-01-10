@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { calculatePrice, PricingInput, validatePricingInput } from '@/lib/booking/pricing-engine';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // POST - Calculate price dynamically
 export async function POST(
@@ -14,6 +9,7 @@ export async function POST(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = getSupabaseAdmin();
     const body = await request.json();
 
     const {
@@ -40,7 +36,7 @@ export async function POST(
     }
 
     // Fetch service type
-    const { data: serviceType, error: serviceError } = await supabase
+    const { data: serviceTypeData, error: serviceError } = await supabase
       .from('cleaning_service_types')
       .select('*')
       .eq('id', serviceTypeId)
@@ -48,9 +44,9 @@ export async function POST(
       .eq('active', true)
       .single();
 
-    // If not found, try templates
-    let finalServiceType = serviceType;
-    if (serviceError || !serviceType) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let finalServiceType: any = serviceTypeData;
+    if (serviceError || !serviceTypeData) {
       const { data: template } = await supabase
         .from('cleaning_service_templates')
         .select('*')
@@ -59,7 +55,7 @@ export async function POST(
       
       if (template) {
         finalServiceType = {
-          ...template,
+          ...(template as Record<string, unknown>),
           business_id: businessId,
           price_per_half_bath: 10,
           price_per_sqft: 0.10,

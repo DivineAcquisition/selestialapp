@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 // ============================================================================
 // GET - Fetch all customization data for a business
@@ -11,6 +11,7 @@ export async function GET(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = getSupabaseAdmin();
     
     // Fetch all customization data in parallel
     const [
@@ -21,32 +22,32 @@ export async function GET(
       copyResult,
       settingsResult,
     ] = await Promise.all([
-      (supabase as any)
+      supabase
         .from('cleaning_service_areas')
         .select('*')
         .eq('business_id', businessId)
         .order('display_order'),
-      (supabase as any)
+      supabase
         .from('cleaning_pricing_models')
         .select('*')
         .eq('business_id', businessId)
         .single(),
-      (supabase as any)
+      supabase
         .from('cleaning_promotions')
         .select('*')
         .eq('business_id', businessId)
         .order('priority', { ascending: false }),
-      (supabase as any)
+      supabase
         .from('cleaning_widget_branding')
         .select('*')
         .eq('business_id', businessId)
         .single(),
-      (supabase as any)
+      supabase
         .from('cleaning_widget_copy')
         .select('*')
         .eq('business_id', businessId)
         .single(),
-      (supabase as any)
+      supabase
         .from('cleaning_widget_settings')
         .select('*')
         .eq('business_id', businessId)
@@ -80,6 +81,7 @@ export async function PATCH(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = getSupabaseAdmin();
     const body = await request.json();
     const { type, data } = body;
     
@@ -95,13 +97,13 @@ export async function PATCH(
     switch (type) {
       case 'service_areas':
         // Delete existing and insert new
-        await (supabase as any)
+        await supabase
           .from('cleaning_service_areas')
           .delete()
           .eq('business_id', businessId);
         
         if (data.length > 0) {
-          result = await (supabase as any)
+          result = await supabase
             .from('cleaning_service_areas')
             .insert(
               data.map((area: any, index: number) => ({
@@ -114,7 +116,7 @@ export async function PATCH(
         break;
         
       case 'pricing_model':
-        result = await (supabase as any)
+        result = await supabase
           .from('cleaning_pricing_models')
           .upsert({
             ...data,
@@ -125,13 +127,13 @@ export async function PATCH(
         
       case 'promotions':
         // Delete existing and insert new
-        await (supabase as any)
+        await supabase
           .from('cleaning_promotions')
           .delete()
           .eq('business_id', businessId);
         
         if (data.length > 0) {
-          result = await (supabase as any)
+          result = await supabase
             .from('cleaning_promotions')
             .insert(
               data.map((promo: any) => ({
@@ -143,7 +145,7 @@ export async function PATCH(
         break;
         
       case 'branding':
-        result = await (supabase as any)
+        result = await supabase
           .from('cleaning_widget_branding')
           .upsert({
             ...data,
@@ -153,7 +155,7 @@ export async function PATCH(
         break;
         
       case 'copy':
-        result = await (supabase as any)
+        result = await supabase
           .from('cleaning_widget_copy')
           .upsert({
             ...data,
@@ -163,7 +165,7 @@ export async function PATCH(
         break;
         
       case 'settings':
-        result = await (supabase as any)
+        result = await supabase
           .from('cleaning_widget_settings')
           .upsert({
             ...data,
@@ -174,7 +176,7 @@ export async function PATCH(
         
       case 'full_config':
         // Save complete booking widget configuration as JSON
-        result = await (supabase as any)
+        result = await supabase
           .from('booking_widget_configs')
           .upsert({
             business_id: businessId,

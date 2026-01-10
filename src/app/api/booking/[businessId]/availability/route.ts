@@ -1,10 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Type definitions for booking config
+interface DayConfig {
+  start: string | null;
+  end: string | null;
+  enabled: boolean;
+}
+
+interface OperatingHours {
+  mon: DayConfig;
+  tue: DayConfig;
+  wed: DayConfig;
+  thu: DayConfig;
+  fri: DayConfig;
+  sat: DayConfig;
+  sun: DayConfig;
+}
+
+interface BookingConfig {
+  operating_hours: OperatingHours;
+  blocked_dates: string[];
+  lead_time_hours: number;
+  max_advance_days: number;
+  slot_duration_minutes: number;
+}
+
+interface ExistingBooking {
+  scheduled_time_start: string | null;
+  scheduled_time_end: string | null;
+  estimated_duration_minutes: number | null;
+}
 
 // Helper functions for date manipulation
 function addDays(date: Date, days: number): Date {
@@ -37,6 +63,7 @@ export async function GET(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = getSupabaseAdmin();
     const { searchParams } = new URL(request.url);
     
     const dateParam = searchParams.get('date'); // YYYY-MM-DD
@@ -52,14 +79,14 @@ export async function GET(
     const requestedDate = parseDate(dateParam);
 
     // Fetch config
-    const { data: config } = await supabase
+    const { data: configData } = await supabase
       .from('cleaning_booking_config')
       .select('operating_hours, blocked_dates, lead_time_hours, max_advance_days, slot_duration_minutes')
       .eq('business_id', businessId)
       .single();
 
     // Use defaults if no config
-    const finalConfig = config || {
+    const finalConfig: BookingConfig = (configData as unknown as BookingConfig) || {
       operating_hours: {
         mon: { start: '08:00', end: '17:00', enabled: true },
         tue: { start: '08:00', end: '17:00', enabled: true },
@@ -138,18 +165,20 @@ export async function GET(
     endTime.setHours(endHour, endMin, 0, 0);
 
     // Fetch existing bookings for this date
-    const { data: existingBookings } = await supabase
+    const { data: existingBookingsData } = await supabase
       .from('cleaning_bookings')
       .select('scheduled_time_start, scheduled_time_end, estimated_duration_minutes')
       .eq('business_id', businessId)
       .eq('scheduled_date', dateParam)
       .in('status', ['pending', 'confirmed']);
 
+    const existingBookings = (existingBookingsData || []) as ExistingBooking[];
+
     while (isBefore(currentTime, endTime)) {
       const timeString = formatTime(currentTime);
       
       // Check if slot conflicts with existing booking
-      const isBooked = existingBookings?.some((booking) => {
+      const isBooked = existingBookings.some((booking) => {
         const bookingStart = booking.scheduled_time_start?.slice(0, 5);
         const bookingDuration = booking.estimated_duration_minutes || 120;
         
