@@ -159,27 +159,31 @@ const SelectTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, children, ...props }, ref) => {
   const { open, onOpenChange, triggerRef } = useSelect();
+  const internalRef = React.useRef<HTMLButtonElement | null>(null);
 
-  // Combine refs
-  const combinedRef = React.useCallback(
+  // Sync internal ref with context triggerRef using effect
+  React.useEffect(() => {
+    if (triggerRef && 'current' in triggerRef && internalRef.current) {
+      (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = internalRef.current;
+    }
+  });
+
+  // Handle forwarded ref
+  const setRefs = React.useCallback(
     (node: HTMLButtonElement | null) => {
-      // Update triggerRef
-      if (triggerRef && 'current' in triggerRef) {
-        (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
-      }
-      // Update forwarded ref
+      internalRef.current = node;
       if (typeof ref === 'function') {
         ref(node);
       } else if (ref) {
         (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
       }
     },
-    [triggerRef, ref]
+    [ref]
   );
 
   return (
     <button
-      ref={combinedRef}
+      ref={setRefs}
       type="button"
       data-select-trigger
       className={cn(

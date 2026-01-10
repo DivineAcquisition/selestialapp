@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -99,19 +99,28 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
 
 const STORAGE_KEY = 'selestial-launch-checklist';
 
-export default function LaunchChecklistPage() {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-
-  // Load from localStorage
-  useEffect(() => {
+// Lazy initializer for localStorage
+function getInitialCheckedItems(): Record<string, boolean> {
+  if (typeof window === 'undefined') return {};
+  try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setCheckedItems(JSON.parse(saved));
-    }
-  }, []);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
 
-  // Save to localStorage
+export default function LaunchChecklistPage() {
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(getInitialCheckedItems);
+  const isHydratedRef = useRef(false);
+
+  // Save to localStorage whenever checkedItems change (after hydration)
   useEffect(() => {
+    // Skip first render to avoid saving initial state
+    if (!isHydratedRef.current) {
+      isHydratedRef.current = true;
+      return;
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedItems));
   }, [checkedItems]);
 
