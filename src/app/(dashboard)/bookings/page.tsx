@@ -479,7 +479,9 @@ export default function BookingsPage() {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const { data, error } = await (supabase as any)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const client = supabase as any;
+        const { data, error } = await client
           .from('cleaning_bookings')
           .select('*')
           .eq('business_id', business.id)
@@ -487,13 +489,24 @@ export default function BookingsPage() {
           .order('scheduled_time_start', { ascending: true });
         
         if (error) {
-          console.error('Error fetching bookings:', error);
-          toast.error('Failed to load bookings');
+          // Check if the error is because the table doesn't exist
+          if (error.code === '42P01' || error.message?.includes('does not exist')) {
+            console.log('Bookings table not yet created - this is normal for new setups');
+            setBookings([]);
+          } else {
+            console.error('Error fetching bookings:', error);
+            // Don't show error toast for permission issues on empty tables
+            if (error.code !== 'PGRST116') {
+              toast.error('Failed to load bookings');
+            }
+          }
         } else {
           setBookings(data || []);
         }
       } catch (err) {
         console.error('Error fetching bookings:', err);
+        // Silently fail - table might not exist yet
+        setBookings([]);
       }
       setLoading(false);
     };
