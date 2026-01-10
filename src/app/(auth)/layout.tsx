@@ -28,11 +28,11 @@ export default function AuthLayout({
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image 
-              src="/logo-icon-white.png" 
+              src="/logo-icon-new.png" 
               alt="Selestial" 
               width={44} 
               height={44} 
-              className="drop-shadow-lg"
+              className="drop-shadow-lg brightness-0 invert"
             />
             <span className="text-2xl font-bold text-white">Selestial</span>
           </Link>

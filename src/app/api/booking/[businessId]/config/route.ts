@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // GET - Fetch booking configuration for widget
 export async function GET(
@@ -13,6 +8,7 @@ export async function GET(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = createAdminClient();
 
     // Fetch all configuration in parallel
     const [

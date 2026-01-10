@@ -34,7 +34,7 @@ export default function PasswordResetEmail({ resetLink = 'https://selestial.io/r
           </Section>
 
           <Text style={text}>
-            This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+            This link will expire in 1 hour. If you didn&apos;t request a password reset, you can safely ignore this email.
           </Text>
 
           <Text style={footer}>

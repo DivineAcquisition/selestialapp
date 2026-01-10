@@ -100,17 +100,19 @@ const CHECKLIST_SECTIONS: ChecklistSection[] = [
 const STORAGE_KEY = 'selestial-launch-checklist';
 
 export default function LaunchChecklistPage() {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setCheckedItems(JSON.parse(saved));
+  // Use lazy initializer to load from localStorage only once
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
     }
-  }, []);
+  });
 
-  // Save to localStorage
+  // Save to localStorage when items change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedItems));
   }, [checkedItems]);

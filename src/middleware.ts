@@ -10,9 +10,6 @@ const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', 
 // Routes that require authentication
 const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing']
 
-// Subdomains that map to specific routes (these are PUBLIC - no auth)
-const PUBLIC_SUBDOMAINS = ['docs', 'access', 'book']
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''

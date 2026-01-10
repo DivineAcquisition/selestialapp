@@ -20,7 +20,7 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Welcome to Selestial - Let's get you set up!</Preview>
+      <Preview>Welcome to Selestial - Let&apos;s get you set up!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>Welcome to Selestial!</Heading>
@@ -28,11 +28,11 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
           <Text style={text}>Hi {name},</Text>
           
           <Text style={text}>
-            Thanks for signing up! We're excited to help you turn more quotes into paying customers.
+            Thanks for signing up! We&apos;re excited to help you turn more quotes into paying customers.
           </Text>
 
           <Text style={text}>
-            Here's what you can do with Selestial:
+            Here&apos;s what you can do with Selestial:
           </Text>
 
           <ul style={list}>
@@ -53,7 +53,7 @@ export default function WelcomeEmail({ name }: WelcomeEmailProps) {
             <Link href="https://selestial.io/docs" style={link}>
               quick start guide
             </Link>{' '}
-            or reply to this email - we're here to help!
+            or reply to this email - we&apos;re here to help!
           </Text>
 
           <Hr style={hr} />

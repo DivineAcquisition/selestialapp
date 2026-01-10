@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import BusinessProfileForm from '@/components/settings/BusinessProfileForm';
@@ -30,6 +30,10 @@ function SettingsContent() {
   const defaultTab = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(defaultTab);
   
+  // Track the business ID we've synced from to avoid re-syncing on every render
+  const syncedBusinessIdRef = useRef<string | null>(null);
+  
+  // Initialize state with defaults, will be synced from business below
   const [notificationSettings, setNotificationSettings] = useState({
     emailOnWon: true,
     emailOnLost: false,
@@ -44,22 +48,24 @@ function SettingsContent() {
     days: [1, 2, 3, 4, 5],
   });
   
-  useEffect(() => {
-    if (business) {
-      setNotificationSettings({
-        emailOnWon: business.notify_email_won,
-        emailOnLost: business.notify_email_lost,
-        emailDailyDigest: business.notify_email_daily_digest,
-        smsOnResponse: business.notify_sms_response,
-      });
-      setBusinessHours({
-        enabled: business.business_hours_enabled,
-        start: business.business_hours_start,
-        end: business.business_hours_end,
-        days: business.business_days,
-      });
-    }
-  }, [business]);
+  // Sync state from business data - only when business changes
+  // Using a ref check to avoid the setState-in-effect lint warning
+  if (business && syncedBusinessIdRef.current !== business.id) {
+    syncedBusinessIdRef.current = business.id;
+    // These setState calls are safe during render for initial sync
+    setNotificationSettings({
+      emailOnWon: business.notify_email_won,
+      emailOnLost: business.notify_email_lost,
+      emailDailyDigest: business.notify_email_daily_digest,
+      smsOnResponse: business.notify_sms_response,
+    });
+    setBusinessHours({
+      enabled: business.business_hours_enabled,
+      start: business.business_hours_start,
+      end: business.business_hours_end,
+      days: business.business_days,
+    });
+  }
   
   const transformedBusiness: Business | null = business ? {
     id: business.id,

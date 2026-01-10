@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { calculatePrice, PricingInput, validatePricingInput } from '@/lib/booking/pricing-engine';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // POST - Calculate price dynamically
 export async function POST(
@@ -15,6 +10,7 @@ export async function POST(
   try {
     const { businessId } = await params;
     const body = await request.json();
+    const supabase = createAdminClient();
 
     const {
       serviceTypeId,

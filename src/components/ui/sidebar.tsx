@@ -31,17 +31,32 @@ interface SlotProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const Slot = React.forwardRef<HTMLElement, SlotProps>(
-  ({ children, ...props }, ref) => {
+  ({ children, ...props }, forwardedRef) => {
     if (React.isValidElement(children)) {
       const childProps = children.props as Record<string, unknown>
+      // Merge refs properly using a callback
+      const mergedRef = (node: HTMLElement | null) => {
+        if (typeof forwardedRef === 'function') {
+          forwardedRef(node)
+        } else if (forwardedRef) {
+          forwardedRef.current = node
+        }
+        // Also call child's ref if it exists
+        const childRef = (children as any).ref
+        if (typeof childRef === 'function') {
+          childRef(node)
+        } else if (childRef) {
+          childRef.current = node
+        }
+      }
       return React.cloneElement(children, {
         ...props,
         ...childProps,
-        ref,
+        ref: mergedRef,
         className: cn(props.className as string, childProps.className as string),
       } as React.HTMLAttributes<HTMLElement>)
     }
-    return <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>{children}</span>
+    return <span ref={forwardedRef as React.Ref<HTMLSpanElement>} {...props}>{children}</span>
   }
 )
 Slot.displayName = "Slot"
@@ -670,9 +685,9 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
+  // Use a stable width value
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
+    return `70%` // Fixed width for skeleton to avoid hydration issues
   }, [])
 
   return (

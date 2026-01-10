@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service role for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // ============================================================================
 // GET - Fetch booking widget config for a business
@@ -21,6 +15,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabaseAdmin = createAdminClient();
 
     // Try to fetch existing config
     const { data, error } = await supabaseAdmin
@@ -65,6 +61,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabaseAdmin = createAdminClient();
 
     // First check if a config exists for this business
     const { data: existing } = await supabaseAdmin
@@ -164,6 +162,8 @@ export async function DELETE(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabaseAdmin = createAdminClient();
 
     const { error } = await supabaseAdmin
       .from('booking_widget_configs')

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth, useBusiness } from '@/providers';
 import PageLoading from '@/components/PageLoading';
@@ -16,8 +16,12 @@ export default function DashboardLayoutClient({
   const pathname = usePathname();
   const { user, loading: authLoading, initialized: authInitialized } = useAuth();
   const { business, loading: businessLoading, initialized: businessInitialized } = useBusiness();
-  const [isReady, setIsReady] = useState(false);
   const hasRedirected = useRef(false);
+
+  // Compute ready state from dependencies
+  const isReady = useMemo(() => {
+    return authInitialized && businessInitialized && !authLoading && !businessLoading && !!user && !!business;
+  }, [authInitialized, businessInitialized, authLoading, businessLoading, user, business]);
 
   useEffect(() => {
     // Wait for both auth and business to be fully initialized
@@ -48,9 +52,6 @@ export default function DashboardLayoutClient({
       }
       return;
     }
-
-    // Everything is ready - user has account and business
-    setIsReady(true);
   }, [user, business, authLoading, businessLoading, authInitialized, businessInitialized, router, pathname]);
 
   // Reset redirect flag when pathname changes

@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // Helper functions for date manipulation
 function addDays(date: Date, days: number): Date {
@@ -38,6 +33,7 @@ export async function GET(
   try {
     const { businessId } = await params;
     const { searchParams } = new URL(request.url);
+    const supabase = createAdminClient();
     
     const dateParam = searchParams.get('date'); // YYYY-MM-DD
     const durationMinutes = parseInt(searchParams.get('duration') || '120');

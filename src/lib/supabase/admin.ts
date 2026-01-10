@@ -30,3 +30,22 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient<Database>, {
     return (admin as unknown as Record<string | symbol, unknown>)[prop]
   }
 })
+
+// Helper function for creating admin client dynamically (for use in API routes)
+// This prevents build-time errors by not instantiating at module level
+// Note: Using untyped client to support tables not in the generated types
+export function createAdminClient(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !serviceKey) {
+    throw new Error('Missing Supabase configuration. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.')
+  }
+  
+  return createClient(url, serviceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}

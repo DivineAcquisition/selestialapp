@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'framer-motion';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Tabs,
   TabsContent,
@@ -49,7 +40,6 @@ import { toast } from 'sonner';
 import { 
   PricingConfigurator, 
   AddOnsConfigurator, 
-  PriceCalculatorPreview,
   DEFAULT_PRICING_CONFIG,
   type PricingConfig,
 } from '@/components/booking/pricing-configurator';
@@ -112,10 +102,10 @@ interface BookingWidgetConfig {
 // ============================================================================
 
 const DEFAULT_TRUST_BADGES: TrustBadgeConfig[] = [
-  { id: '1', type: 'google_guaranteed', enabled: false, label: 'Google Guaranteed', sublabel: "Backed by Google's guarantee" },
+  { id: '1', type: 'google_guaranteed', enabled: false, label: 'Google Guaranteed', sublabel: 'Backed by Google guarantee' },
   { id: '2', type: 'google_screened', enabled: false, label: 'Google Screened', sublabel: 'Background checked' },
   { id: '3', type: 'bbb', enabled: false, label: 'BBB Accredited', sublabel: 'A+ Rating' },
-  { id: '4', type: 'angies_list', enabled: false, label: "Angi's List", sublabel: 'Super Service Award' },
+  { id: '4', type: 'angies_list', enabled: false, label: 'Angi List', sublabel: 'Super Service Award' },
   { id: '5', type: 'thumbtack', enabled: false, label: 'Thumbtack Pro', sublabel: 'Top Pro' },
   { id: '6', type: 'homeadvisor', enabled: false, label: 'HomeAdvisor', sublabel: 'Screened & Approved' },
 ];
@@ -199,7 +189,7 @@ function StripeConnectionBanner({ businessId }: { businessId: string }) {
       <Icon name="checkCircle" size="lg" className="text-green-600" />
       <AlertTitle className="text-green-800">Stripe Connected</AlertTitle>
       <AlertDescription className="text-green-700">
-        You're ready to accept payments through your booking widget.
+        You are ready to accept payments through your booking widget.
       </AlertDescription>
     </Alert>
   );
@@ -366,7 +356,6 @@ function WidgetPreviewPanel({ config }: { config: BookingWidgetConfig }) {
 
 export default function BookingCustomizePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { business } = useBusiness();
   const businessId = business?.id || '';
   const businessName = business?.name || 'My Business';
