@@ -246,6 +246,46 @@
   50% { transform: translateY(-3px); }
 }
 
+/* Aceternity UI Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes spotlight {
+  0% { opacity: 0; transform: translate(-72%, -62%) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, -40%) scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3), 
+                0 0 40px rgba(124, 58, 237, 0.2), 
+                0 0 60px rgba(124, 58, 237, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.4), 
+                0 0 60px rgba(124, 58, 237, 0.3), 
+                0 0 90px rgba(124, 58, 237, 0.15);
+  }
+}
+
+@keyframes border-beam {
+  0% { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+}
+
 @layer utilities {
   .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
   .animate-fade-out { animation: fade-out 0.2s ease-out forwards; }
@@ -258,6 +298,14 @@
   .animate-shimmer { animation: shimmer 2s infinite; }
   .animate-float { animation: float 3s ease-in-out infinite; }
   .animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
+  
+  /* Aceternity UI Animations */
+  .animate-shimmer { animation: shimmer 2s linear infinite; }
+  .animate-gradient-x { animation: gradient-x 3s ease infinite; background-size: 200% auto; }
+  .animate-aurora { animation: aurora 8s ease infinite; background-size: 300% 200%; }
+  .animate-spotlight { animation: spotlight 2s ease 0.75s 1 forwards; }
+  .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+  .animate-border-beam { animation: border-beam 4s linear infinite; }
 
   /* Scrollbar */
   .scrollbar-thin {

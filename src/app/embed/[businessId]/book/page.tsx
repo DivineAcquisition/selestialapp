@@ -1,11 +1,11 @@
 'use client';
 
 import { use, useState, useEffect } from 'react';
-import { ResponsiveBookingWidget } from '@/components/booking/responsive-booking-widget';
+import { AceternetyBookingWidget } from '@/components/booking/aceternity-booking-widget';
 
 interface PageProps {
   params: Promise<{ businessId: string }>;
-  searchParams: Promise<{ theme?: string; state?: string }>;
+  searchParams: Promise<{ theme?: string; state?: string; style?: string }>;
 }
 
 export default function EmbedBookingPage({ params, searchParams }: PageProps) {
@@ -13,6 +13,7 @@ export default function EmbedBookingPage({ params, searchParams }: PageProps) {
   const { theme = 'light', state = 'TX' } = use(searchParams);
   const [businessName, setBusinessName] = useState('Cleaning Service');
   const [primaryColor, setPrimaryColor] = useState<string | undefined>();
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // Fetch business details
   useEffect(() => {
@@ -30,6 +31,8 @@ export default function EmbedBookingPage({ params, searchParams }: PageProps) {
         }
       } catch (error) {
         console.error('Failed to fetch business details:', error);
+      } finally {
+        setIsLoaded(true);
       }
     };
     
@@ -56,14 +59,23 @@ export default function EmbedBookingPage({ params, searchParams }: PageProps) {
   };
   
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-gray-100'} p-4 sm:p-6 md:p-8 flex items-center justify-center`}>
-      <ResponsiveBookingWidget 
-        businessId={businessId}
-        businessName={businessName}
-        stateCode={state}
-        primaryColor={primaryColor}
-        onComplete={handleComplete}
-      />
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-slate-50 via-white to-purple-50'} p-4 sm:p-6 md:p-8 flex items-center justify-center`}>
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-blue-500/20 to-primary/20 rounded-full blur-3xl" />
+      </div>
+      
+      {/* Widget */}
+      <div className={`relative z-10 w-full transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+        <AceternetyBookingWidget 
+          businessId={businessId}
+          businessName={businessName}
+          stateCode={state}
+          primaryColor={primaryColor}
+          onComplete={handleComplete}
+        />
+      </div>
     </div>
   );
 }
