@@ -1,51 +1,86 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Marketing/public routes - always accessible (no auth required)
-const publicRoutes = ['/welcome', '/docs', '/book', '/embed', '/pay']
+// =============================================================================
+// SELESTIAL MULTI-DOMAIN ARCHITECTURE
+// =============================================================================
+// Domain                  | Purpose                    | Auth Required
+// ------------------------|----------------------------|---------------
+// app.selestial.io        | Main SaaS application      | Yes
+// docs.selestial.io       | Documentation & guides     | No
+// access.selestial.io     | Marketing, beta signup     | No
+// book.selestial.io       | Customer booking widget    | No
+// paylink.selestial.io    | Payment link pages         | No
+// =============================================================================
 
 // Auth routes - redirect to dashboard if already logged in  
 const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification']
 
-// Routes that require authentication
-const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing']
+// Routes that require authentication (app.selestial.io)
+const protectedPrefixes = [
+  '/inbox', '/quotes', '/customers', '/sequences', '/retention', 
+  '/campaigns', '/analytics', '/connections', '/billing', '/settings', 
+  '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing'
+]
 
-// Subdomains that map to specific routes (these are PUBLIC - no auth)
-const PUBLIC_SUBDOMAINS = ['docs', 'access', 'book']
+// Public routes within app domain (no auth required)
+const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
   
-  // Extract subdomain (e.g., "docs" from "docs.selestial.io")
-  // Handle cases like "docs.selestial.io", "localhost:3000", "app.selestial.io"
+  // Extract subdomain
+  // Handle: "docs.selestial.io", "app.selestial.io", "localhost:3000"
   const hostParts = hostname.split('.')
-  const subdomain = hostParts.length > 2 ? hostParts[0] : 
-                    (hostParts[0] !== 'localhost' && hostParts[0] !== 'app' ? hostParts[0] : null)
+  let subdomain: string | null = null
   
-  // =========================================================================
-  // SUBDOMAIN ROUTING (Public - No Auth Required)
-  // =========================================================================
-  
-  // docs.selestial.io - Documentation site
-  // Routes to /docs/* for any path
+  if (hostname.includes('selestial.io')) {
+    // Production: extract subdomain from selestial.io
+    subdomain = hostParts.length > 2 ? hostParts[0] : 'app'
+  } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+    // Development: check for subdomain parameter or default to app
+    const subdomainParam = request.nextUrl.searchParams.get('subdomain')
+    subdomain = subdomainParam || 'app'
+  } else {
+    // Other environments (Vercel preview, etc.)
+    subdomain = hostParts.length > 2 ? hostParts[0] : 'app'
+  }
+
+  // ==========================================================================
+  // SUBDOMAIN ROUTING
+  // ==========================================================================
+
+  // docs.selestial.io - Documentation (PUBLIC)
   if (subdomain === 'docs') {
     const newPath = pathname === '/' ? '/docs' : `/docs${pathname}`
     return NextResponse.rewrite(new URL(newPath, request.url))
   }
-  
-  // access.selestial.io - Marketing landing page ONLY
-  // Always routes to /welcome regardless of path
+
+  // access.selestial.io - Marketing landing page (PUBLIC)
   if (subdomain === 'access') {
-    return NextResponse.rewrite(new URL('/welcome', request.url))
+    // access.selestial.io routes to /welcome for all paths
+    if (pathname === '/' || !pathname.startsWith('/welcome')) {
+      return NextResponse.rewrite(new URL('/welcome', request.url))
+    }
+    return NextResponse.rewrite(new URL(pathname, request.url))
   }
-  
-  // book.selestial.io - Public booking widget
-  // Routes to /book/* for booking paths
+
+  // book.selestial.io - Customer booking widget (PUBLIC)
   if (subdomain === 'book') {
     const newPath = pathname === '/' ? '/book' : `/book${pathname}`
     return NextResponse.rewrite(new URL(newPath, request.url))
   }
+
+  // paylink.selestial.io - Payment links (PUBLIC)
+  if (subdomain === 'paylink') {
+    const newPath = pathname === '/' ? '/pay' : `/pay${pathname}`
+    return NextResponse.rewrite(new URL(newPath, request.url))
+  }
+
+  // ==========================================================================
+  // app.selestial.io - Main Application (AUTHENTICATED)
+  // ==========================================================================
 
   // Skip middleware if Supabase is not configured (build time)
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
@@ -94,8 +129,8 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  // Check if it's a public marketing route
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+  // Check if it's a public route within app domain
+  const isAppPublicRoute = appPublicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
   
   // Check if it's an auth route
   const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
@@ -105,21 +140,19 @@ export async function middleware(request: NextRequest) {
     pathname === prefix || pathname.startsWith(prefix + '/')
   )
 
-  // Root path (/) handling:
-  // - If logged in: show dashboard (protected)
+  // Root path (/) handling for app.selestial.io:
+  // - If logged in: show dashboard
   // - If not logged in: redirect to login
   if (pathname === '/') {
     if (session) {
-      // User is logged in - the dashboard page will handle this
       return response
     } else {
-      // User is not logged in - redirect to login
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
-  // Public routes are always accessible
-  if (isPublicRoute) {
+  // Public routes within app are always accessible
+  if (isAppPublicRoute) {
     return response
   }
 
