@@ -4,12 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useBusiness } from '@/providers';
+import { useBusiness, useFeatureAwareness } from '@/providers';
 import { useAuth } from '@/providers';
 import { useConversations } from '@/hooks/useConversations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Icon } from '@/components/ui/icon';
+import { FEATURE_REGISTRY, type FeatureKey } from '@/lib/features/feature-registry';
 
 import type { IconName } from '@/components/ui/icon';
 
@@ -19,6 +20,7 @@ interface NavItem {
   icon: IconName;
   showBadge?: boolean;
   badge?: string;
+  feature?: FeatureKey; // Optional feature key for feature-gated items
 }
 
 const mainNavigation: NavItem[] = [
@@ -27,20 +29,20 @@ const mainNavigation: NavItem[] = [
 ];
 
 const manageNavigation: NavItem[] = [
-  { name: 'Bookings', href: '/bookings', icon: 'calendar' },
+  { name: 'Bookings', href: '/bookings', icon: 'calendar', feature: 'calendar' },
   { name: 'Quotes', href: '/quotes', icon: 'quote' },
-  { name: 'Payment Links', href: '/payments', icon: 'link' },
+  { name: 'Payment Links', href: '/payments', icon: 'link', feature: 'payment_links' },
   { name: 'Customers', href: '/customers', icon: 'users' },
 ];
 
 const engageNavigation: NavItem[] = [
-  { name: 'Sequences', href: '/sequences', icon: 'sequence' },
+  { name: 'Sequences', href: '/sequences', icon: 'sequence', feature: 'sequences' },
   { name: 'Campaigns', href: '/campaigns', icon: 'megaphone' },
 ];
 
 const analyzeNavigation: NavItem[] = [
-  { name: 'Analytics', href: '/analytics', icon: 'chart' },
-  { name: 'Pricing Wizard', href: '/pricing', icon: 'sparkles' },
+  { name: 'Analytics', href: '/analytics', icon: 'chart', feature: 'reports' },
+  { name: 'Pricing Wizard', href: '/pricing', icon: 'sparkles', feature: 'pricing_engine' },
 ];
 
 const settingsNavigation: NavItem[] = [
@@ -56,6 +58,7 @@ export default function Sidebar() {
   const { business } = useBusiness();
   const { user, signOut } = useAuth();
   const { totalUnread } = useConversations();
+  const { isFeatureAvailable, isFeatureEnabled, canUseFeature } = useFeatureAwareness();
   
   const initials = business?.owner_name
     ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -69,11 +72,24 @@ export default function Sidebar() {
   // Routes that should only match exactly (have sub-routes in nav)
   const exactMatchRoutes = ['/settings'];
   
+  // Check if a nav item should be shown based on feature availability
+  const shouldShowNavItem = (item: NavItem): boolean => {
+    if (!item.feature) return true; // No feature requirement
+    return isFeatureAvailable(item.feature);
+  };
+  
+  // Check if a nav item has issues (enabled but missing dependencies)
+  const hasNavItemWarning = (item: NavItem): boolean => {
+    if (!item.feature) return false;
+    return isFeatureEnabled(item.feature) && !canUseFeature(item.feature);
+  };
+  
   const NavLink = ({ item }: { item: NavItem }) => {
     const isExactMatchOnly = exactMatchRoutes.includes(item.href);
     const isActive = isExactMatchOnly 
       ? pathname === item.href
       : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
+    const hasWarning = hasNavItemWarning(item);
     
     return (
       <Link
@@ -100,6 +116,9 @@ export default function Sidebar() {
               {item.badge}
             </span>
           )}
+          {hasWarning && (
+            <span className="w-2 h-2 rounded-full bg-amber-500" title="Setup required" />
+          )}
         </div>
         
         {item.showBadge && totalUnread > 0 && (
@@ -111,14 +130,19 @@ export default function Sidebar() {
     );
   };
 
-  const NavSection = ({ label, items }: { label: string; items: NavItem[] }) => (
-    <div className="space-y-1">
-      <p className="px-3 mb-2 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">{label}</p>
-      {items.map((item) => (
-        <NavLink key={item.name} item={item} />
-      ))}
-    </div>
-  );
+  const NavSection = ({ label, items }: { label: string; items: NavItem[] }) => {
+    const visibleItems = items.filter(shouldShowNavItem);
+    if (visibleItems.length === 0) return null;
+    
+    return (
+      <div className="space-y-1">
+        <p className="px-3 mb-2 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">{label}</p>
+        {visibleItems.map((item) => (
+          <NavLink key={item.name} item={item} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="flex h-screen w-60 flex-col bg-card border-r border-border">
