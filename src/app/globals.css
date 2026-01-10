@@ -458,3 +458,219 @@
     @apply bg-destructive/10 text-destructive-foreground border border-destructive/20;
   }
 }
+
+/* ==================== GLASS MORPHISM ==================== */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.dark .glass {
+  background: rgba(9, 9, 11, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dark .glass-card {
+  background: rgba(9, 9, 11, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ==================== GRADIENT TEXT ==================== */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-subtle {
+    @apply bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent;
+  }
+}
+
+/* ==================== HOVER EFFECTS ==================== */
+@layer components {
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1), 
+                0 0 20px rgba(124, 58, 237, 0.2);
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+  
+  .hover-scale:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ==================== SKELETON LOADING ==================== */
+@layer components {
+  .skeleton {
+    @apply relative overflow-hidden bg-muted/50 rounded-lg;
+  }
+  
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+  
+  .dark .skeleton::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+  }
+}
+
+/* ==================== FOCUS STATES ==================== */
+@layer utilities {
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-background;
+    @apply focus-visible:ring-2 focus-visible:ring-ring;
+  }
+  
+  .focus-ring-primary {
+    @apply outline-none ring-offset-2 ring-offset-background;
+    @apply focus-visible:ring-2 focus-visible:ring-primary;
+  }
+}
+
+/* ==================== SECTION DIVIDERS ==================== */
+@layer components {
+  .divider-gradient {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border),
+      transparent
+    );
+  }
+  
+  .divider-dashed {
+    @apply border-t border-dashed border-border;
+  }
+}
+
+/* ==================== DATA TABLE STYLES ==================== */
+@layer components {
+  .data-table {
+    @apply w-full border-collapse;
+  }
+  
+  .data-table th {
+    @apply text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider;
+    @apply px-4 py-3 border-b border-border bg-muted/30;
+  }
+  
+  .data-table td {
+    @apply px-4 py-3 border-b border-border/50;
+  }
+  
+  .data-table tbody tr {
+    @apply transition-colors hover:bg-muted/50;
+  }
+  
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+}
+
+/* ==================== STATUS INDICATORS ==================== */
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.status-dot-active {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--success);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.status-dot-inactive {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--muted-foreground);
+}
+
+.status-dot-warning {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--warning);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.status-dot-error {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--destructive);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==================== CONTAINER QUERIES ==================== */
+@layer utilities {
+  .container-sm {
+    @apply max-w-screen-sm mx-auto;
+  }
+  
+  .container-md {
+    @apply max-w-screen-md mx-auto;
+  }
+  
+  .container-lg {
+    @apply max-w-screen-lg mx-auto;
+  }
+  
+  .container-xl {
+    @apply max-w-screen-xl mx-auto;
+  }
+}
