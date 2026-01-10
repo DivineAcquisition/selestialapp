@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { stripe } from '@/lib/stripe/server';
 import { calculatePrice } from '@/lib/booking/pricing-engine';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // POST - Create booking
 export async function POST(
@@ -15,6 +10,7 @@ export async function POST(
 ) {
   try {
     const { businessId } = await params;
+    const supabase = getSupabaseAdmin();
     const body = await request.json();
 
     const {
@@ -61,12 +57,15 @@ export async function POST(
     }
 
     // Fetch service type
-    let { data: serviceType } = await supabase
+    const { data: serviceTypeData } = await supabase
       .from('cleaning_service_types')
       .select('*')
       .eq('id', serviceTypeId)
       .eq('business_id', businessId)
       .single();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let serviceType: any = serviceTypeData;
 
     // Try templates if not found
     if (!serviceType) {
@@ -78,7 +77,7 @@ export async function POST(
       
       if (template) {
         serviceType = {
-          ...template,
+          ...(template as Record<string, unknown>),
           business_id: businessId,
           price_per_half_bath: 10,
           price_per_sqft: 0.10,
@@ -105,20 +104,23 @@ export async function POST(
     if (addonSelections?.length > 0) {
       const addonIds = addonSelections.map((a: { addonId: string }) => a.addonId);
       
-      let { data: addonData } = await supabase
+      const { data: addonDataResult } = await supabase
         .from('cleaning_addons')
         .select('*')
         .in('id', addonIds)
         .eq('business_id', businessId);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let addonData: any[] = addonDataResult as any[] || [];
+      
       // Try templates if not found
-      if (!addonData || addonData.length === 0) {
+      if (addonData.length === 0) {
         const { data: addonTemplates } = await supabase
           .from('cleaning_addon_templates')
           .select('*')
           .in('id', addonIds);
         
-        addonData = (addonTemplates || []).map((t: any) => ({
+        addonData = ((addonTemplates as any[]) || []).map((t: any) => ({
           ...t,
           min_units: 1,
           max_units: 10,
@@ -127,7 +129,7 @@ export async function POST(
       }
       
       addons = addonSelections.map((selection: { addonId: string; quantity?: number }) => ({
-        addon: addonData?.find((a: any) => a.id === selection.addonId),
+        addon: addonData.find((a: any) => a.id === selection.addonId),
         quantity: selection.quantity || 1,
       })).filter((a: { addon: any }) => a.addon);
     }
