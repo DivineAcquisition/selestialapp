@@ -31,17 +31,23 @@ interface SlotProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const Slot = React.forwardRef<HTMLElement, SlotProps>(
-  ({ children, ...props }, ref) => {
+  function SlotComponent({ children, ...props }, forwardedRef) {
     if (React.isValidElement(children)) {
       const childProps = children.props as Record<string, unknown>
+      const mergedClassName = cn(props.className as string, childProps.className as string)
+      
+      // Use callback ref to handle ref forwarding properly
+      const childRef = (children as React.ReactElement & { ref?: React.Ref<HTMLElement> }).ref
+      const mergedRef = forwardedRef || childRef
+      
       return React.cloneElement(children, {
         ...props,
         ...childProps,
-        ref,
-        className: cn(props.className as string, childProps.className as string),
-      } as React.HTMLAttributes<HTMLElement>)
+        ref: mergedRef,
+        className: mergedClassName,
+      } as React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> })
     }
-    return <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>{children}</span>
+    return <span ref={forwardedRef as React.Ref<HTMLSpanElement>} {...props}>{children}</span>
   }
 )
 Slot.displayName = "Slot"
@@ -668,13 +674,9 @@ const SidebarMenuSkeleton = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     showIcon?: boolean
+    width?: string
   }
->(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
-
+>(({ className, showIcon = false, width = "70%", ...props }, ref) => {
   return (
     <div
       ref={ref}

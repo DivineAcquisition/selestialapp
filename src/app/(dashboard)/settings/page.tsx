@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import BusinessProfileForm from '@/components/settings/BusinessProfileForm';
@@ -30,36 +30,20 @@ function SettingsContent() {
   const defaultTab = searchParams.get('tab') || 'general';
   const [activeTab, setActiveTab] = useState(defaultTab);
   
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailOnWon: true,
-    emailOnLost: false,
-    emailDailyDigest: true,
-    smsOnResponse: true,
-  });
+  // Use business values directly when available, with defaults as fallback
+  const notificationSettings = {
+    emailOnWon: business?.notify_email_won ?? true,
+    emailOnLost: business?.notify_email_lost ?? false,
+    emailDailyDigest: business?.notify_email_daily_digest ?? true,
+    smsOnResponse: business?.notify_sms_response ?? true,
+  };
   
-  const [businessHours, setBusinessHours] = useState({
-    enabled: true,
-    start: '08:00',
-    end: '18:00',
-    days: [1, 2, 3, 4, 5],
-  });
-  
-  useEffect(() => {
-    if (business) {
-      setNotificationSettings({
-        emailOnWon: business.notify_email_won,
-        emailOnLost: business.notify_email_lost,
-        emailDailyDigest: business.notify_email_daily_digest,
-        smsOnResponse: business.notify_sms_response,
-      });
-      setBusinessHours({
-        enabled: business.business_hours_enabled,
-        start: business.business_hours_start,
-        end: business.business_hours_end,
-        days: business.business_days,
-      });
-    }
-  }, [business]);
+  const businessHours = {
+    enabled: business?.business_hours_enabled ?? true,
+    start: business?.business_hours_start ?? '08:00',
+    end: business?.business_hours_end ?? '18:00',
+    days: business?.business_days ?? [1, 2, 3, 4, 5],
+  };
   
   const transformedBusiness: Business | null = business ? {
     id: business.id,
@@ -86,7 +70,6 @@ function SettingsContent() {
   };
   
   const handleNotificationChange = async (settings: typeof notificationSettings) => {
-    setNotificationSettings(settings);
     await updateBusiness({
       notify_email_won: settings.emailOnWon,
       notify_email_lost: settings.emailOnLost,
@@ -96,7 +79,6 @@ function SettingsContent() {
   };
   
   const handleBusinessHoursChange = async (settings: typeof businessHours) => {
-    setBusinessHours(settings);
     await updateBusiness({
       business_hours_enabled: settings.enabled,
       business_hours_start: settings.start,

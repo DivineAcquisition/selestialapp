@@ -14,7 +14,7 @@ export default function VerifyEmailPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
           <p className="text-muted-foreground max-w-sm mx-auto">
-            We've sent you a verification link. Click the link in your email to verify your account.
+            We&apos;ve sent you a verification link. Click the link in your email to verify your account.
           </p>
         </div>
       </div>
@@ -22,7 +22,7 @@ export default function VerifyEmailPage() {
       {/* Help section */}
       <div className="space-y-4">
         <div className="p-5 rounded-xl bg-muted/50 space-y-3">
-          <p className="font-medium text-foreground">Didn't receive the email?</p>
+          <p className="font-medium text-foreground">Didn&apos;t receive the email?</p>
           <ul className="text-sm text-muted-foreground space-y-2">
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
