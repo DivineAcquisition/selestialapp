@@ -35,7 +35,7 @@ const docCategories = [
   {
     title: 'Quotes & Invoicing',
     description: 'Create and manage quotes and payment links',
-    icon: 'file-text' as const,
+    icon: 'fileText' as const,
     color: 'emerald',
     links: [
       { title: 'Creating Quotes', href: '/docs/quotes', description: 'Build professional quotes' },
@@ -46,7 +46,7 @@ const docCategories = [
   {
     title: 'Sequences & Automation',
     description: 'Automate your customer communication workflows',
-    icon: 'git-branch' as const,
+    icon: 'gitBranch' as const,
     color: 'amber',
     links: [
       { title: 'Sequence Builder', href: '/docs/sequences', description: 'Create automated workflows' },
@@ -110,7 +110,7 @@ export default function DocsIndexPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/docs" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-violet-600 flex items-center justify-center">
-              <Icon name="book-open" className="h-4 w-4 text-white" />
+              <Icon name="book" className="h-4 w-4 text-white" />
             </div>
             <span className="font-bold text-xl">Selestial Docs</span>
           </Link>
@@ -203,7 +203,7 @@ export default function DocsIndexPage() {
                                 {link.description}
                               </p>
                             </div>
-                            <Icon name="chevron-right" className="h-4 w-4 text-muted-foreground group-hover:text-violet-600 transition-colors" />
+                            <Icon name="chevronRight" className="h-4 w-4 text-muted-foreground group-hover:text-violet-600 transition-colors" />
                           </Link>
                         </li>
                       ))}
@@ -223,8 +223,8 @@ export default function DocsIndexPage() {
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { title: 'How to set up your booking widget', views: '2.4k views', icon: 'calendar' as const },
-              { title: 'Configure Stripe for payments', views: '1.8k views', icon: 'credit-card' as const },
-              { title: 'Create your first automated sequence', views: '1.5k views', icon: 'git-branch' as const },
+              { title: 'Configure Stripe for payments', views: '1.8k views', icon: 'creditCard' as const },
+              { title: 'Create your first automated sequence', views: '1.5k views', icon: 'gitBranch' as const },
               { title: 'Import customers from CSV', views: '1.2k views', icon: 'upload' as const },
             ].map((article) => (
               <Link
@@ -239,7 +239,7 @@ export default function DocsIndexPage() {
                   <p className="font-medium truncate">{article.title}</p>
                   <p className="text-sm text-muted-foreground">{article.views}</p>
                 </div>
-                <Icon name="chevron-right" className="h-5 w-5 text-muted-foreground" />
+                <Icon name="chevronRight" className="h-5 w-5 text-muted-foreground" />
               </Link>
             ))}
           </div>

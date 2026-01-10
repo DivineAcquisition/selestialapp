@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Marketing/public routes - always accessible
+// Marketing/public routes - always accessible (no auth required)
 const publicRoutes = ['/welcome', '/docs', '/book', '/embed', '/pay']
 
 // Auth routes - redirect to dashboard if already logged in  
@@ -10,41 +10,41 @@ const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', 
 // Routes that require authentication
 const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing']
 
-// Subdomain configuration
-const SUBDOMAIN_ROUTES: Record<string, string> = {
-  'docs': '/docs',
-  'access': '/welcome',
-  'book': '/book',
-}
+// Subdomains that map to specific routes (these are PUBLIC - no auth)
+const PUBLIC_SUBDOMAINS = ['docs', 'access', 'book']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || ''
   
   // Extract subdomain (e.g., "docs" from "docs.selestial.io")
-  const subdomain = hostname.split('.')[0]
+  // Handle cases like "docs.selestial.io", "localhost:3000", "app.selestial.io"
+  const hostParts = hostname.split('.')
+  const subdomain = hostParts.length > 2 ? hostParts[0] : 
+                    (hostParts[0] !== 'localhost' && hostParts[0] !== 'app' ? hostParts[0] : null)
   
-  // Handle subdomain routing
-  if (SUBDOMAIN_ROUTES[subdomain] && !pathname.startsWith(SUBDOMAIN_ROUTES[subdomain])) {
-    // Rewrite to the appropriate path for the subdomain
-    const targetPath = SUBDOMAIN_ROUTES[subdomain]
-    
-    // For docs subdomain, allow any path under /docs
-    if (subdomain === 'docs') {
-      const newPath = pathname === '/' ? '/docs' : `/docs${pathname}`
-      return NextResponse.rewrite(new URL(newPath, request.url))
-    }
-    
-    // For access subdomain, rewrite to /welcome
-    if (subdomain === 'access') {
-      return NextResponse.rewrite(new URL('/welcome', request.url))
-    }
-    
-    // For book subdomain, allow booking paths
-    if (subdomain === 'book') {
-      const newPath = pathname === '/' ? '/book' : `/book${pathname}`
-      return NextResponse.rewrite(new URL(newPath, request.url))
-    }
+  // =========================================================================
+  // SUBDOMAIN ROUTING (Public - No Auth Required)
+  // =========================================================================
+  
+  // docs.selestial.io - Documentation site
+  // Routes to /docs/* for any path
+  if (subdomain === 'docs') {
+    const newPath = pathname === '/' ? '/docs' : `/docs${pathname}`
+    return NextResponse.rewrite(new URL(newPath, request.url))
+  }
+  
+  // access.selestial.io - Marketing landing page ONLY
+  // Always routes to /welcome regardless of path
+  if (subdomain === 'access') {
+    return NextResponse.rewrite(new URL('/welcome', request.url))
+  }
+  
+  // book.selestial.io - Public booking widget
+  // Routes to /book/* for booking paths
+  if (subdomain === 'book') {
+    const newPath = pathname === '/' ? '/book' : `/book${pathname}`
+    return NextResponse.rewrite(new URL(newPath, request.url))
   }
 
   // Skip middleware if Supabase is not configured (build time)
