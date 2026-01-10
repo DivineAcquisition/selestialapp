@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Marketing/public routes - always accessible (archived for now)
-const publicRoutes: string[] = []
+// Marketing/public routes - always accessible
+const publicRoutes = ['/welcome', '/docs', '/book', '/embed', '/pay']
 
 // Auth routes - redirect to dashboard if already logged in  
 const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification']
@@ -10,8 +10,42 @@ const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', 
 // Routes that require authentication
 const protectedPrefixes = ['/inbox', '/quotes', '/customers', '/sequences', '/retention', '/campaigns', '/analytics', '/connections', '/billing', '/settings', '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing']
 
+// Subdomain configuration
+const SUBDOMAIN_ROUTES: Record<string, string> = {
+  'docs': '/docs',
+  'access': '/welcome',
+  'book': '/book',
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const hostname = request.headers.get('host') || ''
+  
+  // Extract subdomain (e.g., "docs" from "docs.selestial.io")
+  const subdomain = hostname.split('.')[0]
+  
+  // Handle subdomain routing
+  if (SUBDOMAIN_ROUTES[subdomain] && !pathname.startsWith(SUBDOMAIN_ROUTES[subdomain])) {
+    // Rewrite to the appropriate path for the subdomain
+    const targetPath = SUBDOMAIN_ROUTES[subdomain]
+    
+    // For docs subdomain, allow any path under /docs
+    if (subdomain === 'docs') {
+      const newPath = pathname === '/' ? '/docs' : `/docs${pathname}`
+      return NextResponse.rewrite(new URL(newPath, request.url))
+    }
+    
+    // For access subdomain, rewrite to /welcome
+    if (subdomain === 'access') {
+      return NextResponse.rewrite(new URL('/welcome', request.url))
+    }
+    
+    // For book subdomain, allow booking paths
+    if (subdomain === 'book') {
+      const newPath = pathname === '/' ? '/book' : `/book${pathname}`
+      return NextResponse.rewrite(new URL(newPath, request.url))
+    }
+  }
 
   // Skip middleware if Supabase is not configured (build time)
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
