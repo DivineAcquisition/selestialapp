@@ -2,3 +2,4 @@ export { CleaningBookingWidget } from './cleaning-booking-widget';
 export { ResponsiveBookingWidget } from './responsive-booking-widget';
 export { AceternetyBookingWidget } from './aceternity-booking-widget';
 export { IntegratedBookingWidget } from './integrated-booking-widget';
+export { ModernBookingWidget } from './modern-booking-widget';
