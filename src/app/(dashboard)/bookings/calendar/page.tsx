@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for some type casts until database types are regenerated
+
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -15,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
@@ -25,16 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Icon } from '@/components/ui/icon';
-import { useBusiness } from '@/providers';
 import { useBookings, useStaff } from '@/hooks/useBookings';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -56,8 +50,6 @@ import {
   subWeeks,
   parseISO,
   setHours,
-  setMinutes,
-  differenceInMinutes,
 } from 'date-fns';
 import type { 
   Booking, 
@@ -117,53 +109,16 @@ function BookingModal({
 }) {
   const { staff } = useStaff();
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<CreateBookingForm>({
-    customer_name: '',
-    customer_email: '',
-    customer_phone: '',
-    service_type: 'standard',
-    frequency: 'one_time',
-    address_line1: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    bedrooms: 3,
-    bathrooms: 2,
-    property_type: 'house',
-    has_pets: false,
-    scheduled_date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
-    scheduled_time_start: selectedTime || '09:00',
-    addon_ids: [],
-  });
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (open && !booking) {
-      setForm({
-        customer_name: '',
-        customer_email: '',
-        customer_phone: '',
-        service_type: 'standard',
-        frequency: 'one_time',
-        address_line1: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        bedrooms: 3,
-        bathrooms: 2,
-        property_type: 'house',
-        has_pets: false,
-        scheduled_date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
-        scheduled_time_start: selectedTime || '09:00',
-        addon_ids: [],
-      });
-    } else if (booking) {
-      setForm({
+  
+  // Compute initial form based on whether we're editing or creating
+  const initialForm = useMemo((): CreateBookingForm => {
+    if (booking) {
+      return {
         customer_name: booking.customer_name,
         customer_email: booking.customer_email,
         customer_phone: booking.customer_phone,
         service_type: booking.service_type as CleaningServiceType,
-        frequency: (booking as any).frequency_name || 'one_time',
+        frequency: ((booking as unknown as Record<string, unknown>).frequency_name as CleaningFrequency) || 'one_time',
         address_line1: booking.address_line1,
         city: booking.city,
         state: booking.state,
@@ -175,9 +130,38 @@ function BookingModal({
         scheduled_date: booking.scheduled_date,
         scheduled_time_start: booking.scheduled_time_start,
         addon_ids: [],
-      });
+      };
     }
-  }, [open, booking, selectedDate, selectedTime]);
+    return {
+      customer_name: '',
+      customer_email: '',
+      customer_phone: '',
+      service_type: 'standard',
+      frequency: 'one_time',
+      address_line1: '',
+      city: '',
+      state: '',
+      zip_code: '',
+      bedrooms: 3,
+      bathrooms: 2,
+      property_type: 'house',
+      has_pets: false,
+      scheduled_date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
+      scheduled_time_start: selectedTime || '09:00',
+      addon_ids: [],
+    };
+  }, [booking, selectedDate, selectedTime]);
+  
+  const [form, setForm] = useState<CreateBookingForm>(initialForm);
+  
+  // Reset form when initial values change (modal opens/closes or booking changes)
+  const formKey = `${open}-${booking?.id || 'new'}-${selectedDate?.toISOString()}-${selectedTime}`;
+  useMemo(() => {
+    if (open) {
+      setForm(initialForm);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formKey]);
 
   const handleSubmit = async () => {
     if (!form.customer_name || !form.customer_phone || !form.address_line1) {
@@ -828,7 +812,6 @@ function MonthView({
 
 export default function CalendarPage() {
   const router = useRouter();
-  const { business } = useBusiness();
   const [view, setView] = useState<CalendarView>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modalOpen, setModalOpen] = useState(false);
@@ -856,7 +839,6 @@ export default function CalendarPage() {
     updateBooking,
     updateStatus,
     getCalendarEvents,
-    refetch 
   } = useBookings(dateRange);
 
   const events = useMemo(() => 

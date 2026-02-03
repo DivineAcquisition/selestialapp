@@ -1,5 +1,9 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for Supabase calls because database types for new tables
+// (cleaning_bookings, staff_members, etc.) need to be regenerated after migration
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useBusiness } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,16 +14,13 @@ import type {
   Staff,
   CleaningService,
   CleaningAddon,
-  BlockedTime,
   CalendarEvent,
 } from '@/types/booking';
 import { 
   startOfDay, 
   endOfDay, 
   startOfWeek, 
-  endOfWeek, 
   startOfMonth, 
-  endOfMonth,
   parseISO,
   format,
   addMinutes,
@@ -133,8 +134,9 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [services, setServices] = useState<CleaningService[]>([]);
-  const [addons, setAddons] = useState<CleaningAddon[]>([]);
+  // Services and addons for pricing (to be loaded from DB in future)
+  const [services] = useState<CleaningService[]>([]);
+  const [addons] = useState<CleaningAddon[]>([]);
 
   // Fetch bookings
   const fetchBookings = useCallback(async (fetchOptions?: UseBookingsOptions) => {

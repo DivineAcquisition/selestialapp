@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Note: Using 'any' for Supabase calls until database types are regenerated
+
+import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -24,24 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
-import { useBusiness } from '@/providers';
 import { useStaff } from '@/hooks/useBookings';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import type { Staff, StaffAvailability } from '@/types/booking';
 
 // ============================================================================
@@ -105,41 +95,41 @@ function StaffModal({
   onSave: (data: Partial<Staff>) => Promise<boolean>;
 }) {
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<StaffFormData>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    role: 'cleaner',
-    color: STAFF_COLORS[0],
-    hourly_rate: '',
-  });
-
-  useEffect(() => {
-    if (open) {
-      if (staff) {
-        setForm({
-          first_name: staff.first_name,
-          last_name: staff.last_name,
-          email: staff.email || '',
-          phone: staff.phone || '',
-          role: staff.role,
-          color: staff.color,
-          hourly_rate: staff.hourly_rate ? String(staff.hourly_rate / 100) : '',
-        });
-      } else {
-        setForm({
-          first_name: '',
-          last_name: '',
-          email: '',
-          phone: '',
-          role: 'cleaner',
-          color: STAFF_COLORS[Math.floor(Math.random() * STAFF_COLORS.length)],
-          hourly_rate: '',
-        });
-      }
+  
+  // Compute initial form
+  const initialForm = useMemo((): StaffFormData => {
+    if (staff) {
+      return {
+        first_name: staff.first_name,
+        last_name: staff.last_name,
+        email: staff.email || '',
+        phone: staff.phone || '',
+        role: staff.role,
+        color: staff.color,
+        hourly_rate: staff.hourly_rate ? String(staff.hourly_rate / 100) : '',
+      };
     }
-  }, [open, staff]);
+    return {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      role: 'cleaner',
+      color: STAFF_COLORS[Math.floor(Math.random() * STAFF_COLORS.length)],
+      hourly_rate: '',
+    };
+  }, [staff]);
+  
+  const [form, setForm] = useState<StaffFormData>(initialForm);
+  
+  // Reset form when modal opens
+  const formKey = `${open}-${staff?.id || 'new'}`;
+  useMemo(() => {
+    if (open) {
+      setForm(initialForm);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formKey]);
 
   const handleSubmit = async () => {
     if (!form.first_name || !form.last_name) {
@@ -487,8 +477,7 @@ function StaffCard({
 // ============================================================================
 
 export default function StaffPage() {
-  const { business } = useBusiness();
-  const { staff, loading, createStaff, updateStaff, deleteStaff, refetch } = useStaff();
+  const { staff, loading, createStaff, updateStaff, deleteStaff } = useStaff();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
@@ -680,7 +669,7 @@ export default function StaffPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {selectedStaff?.first_name}'s Availability
+              {selectedStaff?.first_name}&apos;s Availability
             </DialogTitle>
             <DialogDescription>
               Set working hours for each day of the week
