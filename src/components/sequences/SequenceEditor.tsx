@@ -244,7 +244,6 @@ export default function SequenceEditor({ open, onClose, onSave, sequence }: Sequ
         open={showTemplates}
         onClose={() => setShowTemplates(false)}
         onSelect={handleSelectTemplate}
-        defaultType="quote_followup"
       />
     </Sheet>
   );

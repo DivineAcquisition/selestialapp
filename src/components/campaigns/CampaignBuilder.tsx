@@ -67,18 +67,26 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
 
   useEffect(() => {
     if (campaign) {
+      // Safely extract send_time as string
+      const sendTimeValue = campaign.send_time as unknown;
+      const sendTimeStr = typeof sendTimeValue === 'string' 
+        ? sendTimeValue 
+        : typeof sendTimeValue === 'number'
+          ? String(sendTimeValue)
+          : '10:00';
+      
       setFormData({
         name: campaign.name,
         description: campaign.description || '',
         campaign_type: campaign.campaign_type || 'seasonal',
-        target_audience: campaign.target_audience || 'past_customers',
+        target_audience: (campaign.target_audience as string) || 'past_customers',
         min_days_since_service: campaign.min_days_since_service || undefined,
         max_days_since_service: campaign.max_days_since_service || undefined,
         exclude_recent_days: campaign.exclude_recent_days || 7,
         start_date: campaign.started_at?.split('T')[0] || '',
         end_date: campaign.completed_at?.split('T')[0] || '',
-        send_time: campaign.send_time?.toString() || '10:00',
-        channel: campaign.channel || 'sms',
+        send_time: sendTimeStr,
+        channel: (campaign.channel as 'sms' | 'email') || 'sms',
         sms_message: campaign.sms_message || '',
         email_subject: campaign.email_subject || '',
         email_body: campaign.email_body || '',

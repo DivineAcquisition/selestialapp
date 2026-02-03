@@ -16,6 +16,70 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Bell, Clock, Phone, Send, Loader2, Star, CreditCard, Sparkles } from 'lucide-react';
 import type { Business } from '@/types';
+import type { Json } from '@/integrations/supabase/types';
+
+// Helper to parse business_hours JSON
+function parseBusinessHours(businessHours: Json | null): { 
+  enabled: boolean; 
+  start: string; 
+  end: string; 
+  days: number[];
+} {
+  const defaultHours = {
+    enabled: true,
+    start: '09:00',
+    end: '17:00',
+    days: [1, 2, 3, 4, 5],
+  };
+  
+  if (!businessHours || typeof businessHours !== 'object' || Array.isArray(businessHours)) {
+    return defaultHours;
+  }
+  
+  const hours = businessHours as Record<string, unknown>;
+  
+  // Parse day-based format from DB
+  const daysOpen: number[] = [];
+  const dayMap: Record<string, number> = {
+    sunday: 0, monday: 1, tuesday: 2, wednesday: 3, 
+    thursday: 4, friday: 5, saturday: 6
+  };
+  
+  let startTime = '09:00';
+  let endTime = '17:00';
+  
+  for (const [day, value] of Object.entries(hours)) {
+    if (value && typeof value === 'object' && dayMap[day] !== undefined) {
+      daysOpen.push(dayMap[day]);
+      const dayHours = value as Record<string, string>;
+      if (dayHours.open) startTime = dayHours.open;
+      if (dayHours.close) endTime = dayHours.close;
+    }
+  }
+  
+  return {
+    enabled: daysOpen.length > 0,
+    start: startTime,
+    end: endTime,
+    days: daysOpen.length > 0 ? daysOpen : defaultHours.days,
+  };
+}
+
+// Convert business hours settings back to DB format
+function toBusinessHoursJson(settings: { enabled: boolean; start: string; end: string; days: number[] }): Json {
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const result: Record<string, { open: string; close: string } | null> = {};
+  
+  for (let i = 0; i < 7; i++) {
+    if (settings.enabled && settings.days.includes(i)) {
+      result[dayNames[i]] = { open: settings.start, close: settings.end };
+    } else {
+      result[dayNames[i]] = null;
+    }
+  }
+  
+  return result as Json;
+}
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -43,18 +107,16 @@ export default function SettingsPage() {
   // Sync settings from business
   useEffect(() => {
     if (business) {
+      // Use notify_quote_won/lost as fallback for email notifications
       setNotificationSettings({
-        emailOnWon: business.notify_email_won,
-        emailOnLost: business.notify_email_lost,
-        emailDailyDigest: business.notify_email_daily_digest,
-        smsOnResponse: business.notify_sms_response,
+        emailOnWon: business.notify_quote_won ?? true,
+        emailOnLost: business.notify_quote_lost ?? false,
+        emailDailyDigest: true,
+        smsOnResponse: business.notify_new_message ?? true,
       });
-      setBusinessHours({
-        enabled: business.business_hours_enabled,
-        start: business.business_hours_start,
-        end: business.business_hours_end,
-        days: business.business_days,
-      });
+      
+      // Parse business_hours JSON
+      setBusinessHours(parseBusinessHours(business.business_hours));
     }
   }, [business]);
   
@@ -62,13 +124,13 @@ export default function SettingsPage() {
   const transformedBusiness: Business | null = business ? {
     id: business.id,
     name: business.name,
-    owner_name: business.owner_name,
-    phone: business.phone,
-    email: business.email,
-    industry: business.industry as any,
-    timezone: business.timezone,
-    default_sequence_id: business.default_sequence_id || undefined,
-    auto_start_sequence: business.auto_start_sequence,
+    owner_name: business.owner_name || '',
+    phone: business.phone || '',
+    email: business.email || '',
+    industry: (business.industry || 'other') as Business['industry'],
+    timezone: business.timezone || 'America/New_York',
+    default_sequence_id: undefined,
+    auto_start_sequence: false,
   } : null;
   
   const handleSaveBusiness = async (updatedBusiness: Business) => {
@@ -77,7 +139,8 @@ export default function SettingsPage() {
       owner_name: updatedBusiness.owner_name,
       email: updatedBusiness.email,
       phone: updatedBusiness.phone,
-      industry: updatedBusiness.industry,
+      // Cast to the DB enum type
+      industry: updatedBusiness.industry as any,
     });
     
     if (error) {
@@ -90,10 +153,9 @@ export default function SettingsPage() {
     setNotificationSettings(settings);
     
     await updateBusiness({
-      notify_email_won: settings.emailOnWon,
-      notify_email_lost: settings.emailOnLost,
-      notify_email_daily_digest: settings.emailDailyDigest,
-      notify_sms_response: settings.smsOnResponse,
+      notify_quote_won: settings.emailOnWon,
+      notify_quote_lost: settings.emailOnLost,
+      notify_new_message: settings.smsOnResponse,
     });
   };
   
@@ -101,10 +163,7 @@ export default function SettingsPage() {
     setBusinessHours(settings);
     
     await updateBusiness({
-      business_hours_enabled: settings.enabled,
-      business_hours_start: settings.start,
-      business_hours_end: settings.end,
-      business_days: settings.days,
+      business_hours: toBusinessHoursJson(settings),
     });
   };
   

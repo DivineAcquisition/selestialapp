@@ -225,7 +225,7 @@ export default function CampaignsPage() {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Users className="w-4 h-4" />
-                        {campaign.recipient_count || 0} targeted
+                        {campaign.total_recipients || 0} targeted
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Send className="w-4 h-4" />

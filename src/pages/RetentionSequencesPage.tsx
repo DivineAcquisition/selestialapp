@@ -61,18 +61,21 @@ export default function RetentionSequencesPage() {
     try {
       if (editingSequence) {
         const { error } = await updateSequence(editingSequence.id, {
-          ...data,
+          name: data.name,
+          description: data.description,
+          trigger_type: data.trigger_type,
+          trigger_days_after: data.trigger_days,
           steps: data.steps,
         });
         if (error) throw error;
         toast.success('Retention sequence updated');
       } else {
         const { error } = await createSequence({
-          ...data,
-          conditions: {},
-          is_active: true,
-          is_default: false,
+          name: data.name,
+          description: data.description,
+          trigger_type: data.trigger_type,
           steps: data.steps,
+          is_active: true,
         });
         if (error) throw error;
         toast.success('Retention sequence created');
@@ -169,9 +172,6 @@ export default function RetentionSequencesPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <CardTitle className="text-lg">{sequence.name}</CardTitle>
-                          {sequence.is_default && (
-                            <Badge variant="secondary">Default</Badge>
-                          )}
                         </div>
                         {sequence.description && (
                           <CardDescription>{sequence.description}</CardDescription>
@@ -210,9 +210,9 @@ export default function RetentionSequencesPage() {
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Calendar className="h-4 w-4" />
                         <span>{getTriggerLabel(sequence.trigger_type)}</span>
-                        {sequence.trigger_days > 0 && (
+                        {sequence.trigger_days_after > 0 && (
                           <span className="text-foreground font-medium">
-                            +{sequence.trigger_days} days
+                            +{sequence.trigger_days_after} days
                           </span>
                         )}
                       </div>

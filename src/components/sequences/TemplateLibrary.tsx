@@ -22,7 +22,7 @@ import {
   Copy,
 } from 'lucide-react';
 
-interface TemplateLibraryProps {
+export interface TemplateLibraryProps {
   open: boolean;
   onClose: () => void;
   onSelect: (steps: SequenceStep[], name: string, description: string) => void;
@@ -61,12 +61,6 @@ export default function TemplateLibrary({
     ).join(' ');
   };
 
-  const handleClose = () => {
-    setSelectedTemplate(null);
-    onClose();
-  };
-
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
@@ -80,123 +74,110 @@ export default function TemplateLibrary({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeType} onValueChange={(v) => setActiveType(v as TemplateType)} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="quote_followup">Quote Follow-Up</TabsTrigger>
-            <TabsTrigger value="post_job">Post-Job</TabsTrigger>
-            <TabsTrigger value="reengagement">Re-engagement</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value={activeType} className="flex-1 min-h-0 mt-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : templates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-muted-foreground">No templates available for this category.</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-3">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      onClick={() => setSelectedTemplate(template)}
-                      className={cn(
-                        'p-4 border rounded-xl cursor-pointer transition-all',
-                        selectedTemplate?.id === template.id
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                          : 'border-border hover:border-primary/50'
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <h3 className="font-medium text-foreground truncate">
-                              {template.name}
-                            </h3>
-                            {template.is_default && (
-                              <Badge variant="secondary" className="text-xs">
-                                Default
-                              </Badge>
-                            )}
-                            {template.industry_slug && (
-                              <Badge variant="outline" className="text-xs">
-                                {formatIndustryLabel(template.industry_slug)}
-                              </Badge>
-                            )}
-                          </div>
-                          {template.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">
-                              {template.description}
-                            </p>
+        <div className="flex-1 min-h-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : templates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-muted-foreground">No templates available.</p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-3">
+                {templates.map((template) => (
+                  <div
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template)}
+                    className={cn(
+                      'p-4 border rounded-xl cursor-pointer transition-all',
+                      selectedTemplate?.id === template.id
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-border hover:border-primary/50'
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <h3 className="font-medium text-foreground truncate">
+                            {template.name}
+                          </h3>
+                          {template.industry && (
+                            <Badge variant="outline" className="text-xs">
+                              {formatIndustryLabel(template.industry as string)}
+                            </Badge>
                           )}
-                          
-                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" />
-                              {template.steps.length} messages
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {calculateSequenceDuration(template.steps)}
-                            </span>
-                          </div>
                         </div>
-                        
-                        {selectedTemplate?.id === template.id && (
-                          <Check className="w-5 h-5 text-primary shrink-0" />
-                        )}
-                      </div>
-
-                      {/* Preview steps when selected */}
-                      {selectedTemplate?.id === template.id && (
-                        <div className="mt-4 pt-4 border-t border-border">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">
-                            PREVIEW
+                        {template.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {template.description}
                           </p>
-                          <div className="space-y-2">
-                            {template.steps.slice(0, 3).map((step, index) => (
-                              <div 
-                                key={step.id} 
-                                className="p-2 bg-background rounded border border-border"
-                              >
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-medium text-muted-foreground">
-                                    Step {index + 1}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {step.delay_days > 0 
-                                      ? `Day ${step.delay_days}` 
-                                      : step.delay_hours > 0 
-                                        ? `${step.delay_hours}h later` 
-                                        : 'Immediately'}
-                                  </span>
-                                  <Badge variant="outline" className="text-xs">
-                                    {step.channel.toUpperCase()}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-foreground line-clamp-2">
-                                  {step.message}
-                                </p>
-                              </div>
-                            ))}
-                            {template.steps.length > 3 && (
-                              <p className="text-xs text-muted-foreground text-center py-1">
-                                +{template.steps.length - 3} more steps
-                              </p>
-                            )}
-                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            {template.steps.length} messages
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {calculateSequenceDuration(template.steps)}
+                          </span>
                         </div>
+                      </div>
+                      
+                      {selectedTemplate?.id === template.id && (
+                        <Check className="w-5 h-5 text-primary shrink-0" />
                       )}
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-          </TabsContent>
-        </Tabs>
+
+                    {/* Preview steps when selected */}
+                    {selectedTemplate?.id === template.id && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">
+                          PREVIEW
+                        </p>
+                        <div className="space-y-2">
+                          {template.steps.slice(0, 3).map((step, index) => (
+                            <div 
+                              key={step.id} 
+                              className="p-2 bg-background rounded border border-border"
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  Step {index + 1}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {step.delay_days > 0 
+                                    ? `Day ${step.delay_days}` 
+                                    : step.delay_hours > 0 
+                                      ? `${step.delay_hours}h later` 
+                                      : 'Immediately'}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {step.channel.toUpperCase()}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-foreground line-clamp-2">
+                                {step.message}
+                              </p>
+                            </div>
+                          ))}
+                          {template.steps.length > 3 && (
+                            <p className="text-xs text-muted-foreground text-center py-1">
+                              +{template.steps.length - 3} more steps
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
 
         <DialogFooter className="gap-3 sm:gap-2 pt-4 border-t">
           <Button variant="outline" onClick={handleClose}>

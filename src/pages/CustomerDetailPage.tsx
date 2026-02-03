@@ -271,23 +271,23 @@ export default function CustomerDetailPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <DollarSign className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-lg font-bold">{formatCurrency(customer.total_spent / 100)}</p>
+                    <p className="text-lg font-bold">{formatCurrency((customer.total_revenue || 0) / 100)}</p>
                     <p className="text-xs text-muted-foreground">Total Spent</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <Briefcase className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-lg font-bold">{customer.total_jobs}</p>
+                    <p className="text-lg font-bold">{customer.jobs_completed || 0}</p>
                     <p className="text-xs text-muted-foreground">Jobs</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <TrendingUp className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-lg font-bold">{formatCurrency(customer.average_job_value / 100)}</p>
+                    <p className="text-lg font-bold">{formatCurrency((customer.avg_job_value || 0) / 100)}</p>
                     <p className="text-xs text-muted-foreground">Avg Job</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
                     <RefreshCw className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-lg font-bold">{customer.referral_count}</p>
-                    <p className="text-xs text-muted-foreground">Referrals</p>
+                    <p className="text-lg font-bold">{customer.quotes_won || 0}</p>
+                    <p className="text-xs text-muted-foreground">Jobs Won</p>
                   </div>
                 </div>
 
@@ -296,11 +296,12 @@ export default function CustomerDetailPage() {
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground mb-1">Customer Type</p>
-                    <Select value={customer.customer_type} onValueChange={handleTypeChange}>
+                    <Select value={customer.customer_type || 'prospect'} onValueChange={handleTypeChange}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="prospect">Prospect</SelectItem>
                         <SelectItem value="one_time">One-time</SelectItem>
                         <SelectItem value="recurring">Recurring</SelectItem>
                         <SelectItem value="vip">VIP</SelectItem>
@@ -309,12 +310,10 @@ export default function CustomerDetailPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {customer.is_recurring && customer.recurring_frequency && (
+                  {customer.is_recurring && (
                     <div className="flex-1">
                       <p className="text-sm text-muted-foreground mb-1">Recurring</p>
-                      <Badge variant="outline" className="capitalize">
-                        {customer.recurring_frequency}
-                      </Badge>
+                      <Badge variant="outline">Active</Badge>
                     </div>
                   )}
                 </div>

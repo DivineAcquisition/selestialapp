@@ -108,7 +108,16 @@ export default function QuotesPage() {
   const handleStatusChange = async (newStatus: 'won' | 'lost' | 'paused' | 'active', additionalData?: any) => {
     if (!selectedQuote) return;
     
-    const { error } = await updateQuoteStatus(selectedQuote.id, newStatus, additionalData);
+    // Map UI status to database status
+    const statusMap: Record<string, 'new' | 'following_up' | 'won' | 'lost' | 'expired'> = {
+      'active': 'following_up',
+      'paused': 'new',
+      'won': 'won',
+      'lost': 'lost',
+    };
+    const dbStatus = statusMap[newStatus] || 'new';
+    
+    const { error } = await updateQuoteStatus(selectedQuote.id, dbStatus, additionalData);
     
     if (error) {
       console.error('Failed to update status:', error);
