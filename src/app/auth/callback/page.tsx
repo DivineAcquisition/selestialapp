@@ -16,15 +16,26 @@ function AuthCallbackContent() {
   
   const handleCallback = useCallback(async () => {
     try {
+      // Get all URL parameters for debugging
       const code = searchParams.get('code');
       const tokenHash = searchParams.get('token_hash');
       const type = searchParams.get('type');
       const redirectTo = searchParams.get('redirect') || searchParams.get('redirect_to') || '/';
       const errorDescription = searchParams.get('error_description');
       const error_param = searchParams.get('error');
+      const accessToken = searchParams.get('access_token');
       
-      console.log('Auth callback - code:', !!code, 'tokenHash:', !!tokenHash, 'type:', type);
-      console.log('URL hash:', typeof window !== 'undefined' ? window.location.hash : 'N/A');
+      // Debug logging
+      console.log('=== Auth Callback Debug ===');
+      console.log('Full URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+      console.log('Search params:', typeof window !== 'undefined' ? window.location.search : 'SSR');
+      console.log('Hash:', typeof window !== 'undefined' ? window.location.hash : 'SSR');
+      console.log('code:', code);
+      console.log('access_token in params:', accessToken);
+      console.log('token_hash:', tokenHash);
+      console.log('type:', type);
+      console.log('error:', error_param);
+      console.log('error_description:', errorDescription);
       
       // Check for errors from Supabase/OAuth
       if (errorDescription || error_param) {
@@ -32,20 +43,40 @@ function AuthCallbackContent() {
       }
       
       // For implicit flow, tokens come in the URL hash fragment
-      // Supabase client auto-detects and processes these
-      // Give it a moment to process the hash
+      // Parse hash manually if present
       if (typeof window !== 'undefined' && window.location.hash) {
-        console.log('Processing URL hash for implicit flow...');
-        // The Supabase client should automatically detect and process the hash
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Found URL hash, parsing...');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashAccessToken = hashParams.get('access_token');
+        const hashRefreshToken = hashParams.get('refresh_token');
+        
+        console.log('Hash access_token:', !!hashAccessToken);
+        console.log('Hash refresh_token:', !!hashRefreshToken);
+        
+        if (hashAccessToken) {
+          console.log('Setting session from hash tokens...');
+          const { data, error } = await supabase.auth.setSession({
+            access_token: hashAccessToken,
+            refresh_token: hashRefreshToken || '',
+          });
+          
+          if (error) {
+            console.error('setSession error:', error);
+          } else if (data.session) {
+            console.log('Session set successfully from hash!');
+            setStatus('success');
+            setMessage('Signed in successfully!');
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            setTimeout(() => router.push(redirectTo), 1000);
+            return;
+          }
+        }
       }
       
-      // Check if we have a session (from implicit flow hash or existing session)
+      // Check if we have a session already
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-      }
+      console.log('Existing session check:', !!session, sessionError?.message);
       
       if (session) {
         console.log('Session found!');
@@ -55,15 +86,16 @@ function AuthCallbackContent() {
         return;
       }
       
-      // Handle PKCE code exchange if present (fallback)
+      // Handle PKCE code exchange if present
       if (code) {
         console.log('Attempting PKCE code exchange...');
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         
         if (error) {
           console.error('Code exchange error:', error);
-          // Don't throw - might still work via other means
+          setMessage(`Code exchange failed: ${error.message}`);
         } else if (data.session) {
+          console.log('Session established via code exchange!');
           setStatus('success');
           setMessage('Signed in successfully!');
           setTimeout(() => router.push(redirectTo), 1000);
@@ -101,8 +133,9 @@ function AuthCallbackContent() {
       }
       
       // Final check for session after all processing
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       const { data: finalCheck } = await supabase.auth.getSession();
+      console.log('Final session check:', !!finalCheck.session);
       
       if (finalCheck.session) {
         setStatus('success');
@@ -111,7 +144,9 @@ function AuthCallbackContent() {
         return;
       }
       
-      // No valid auth found
+      // No valid auth found - show debug info
+      const debugInfo = `No session found. URL had: code=${!!code}, hash=${typeof window !== 'undefined' && !!window.location.hash}`;
+      console.error(debugInfo);
       throw new Error('Unable to complete authentication. Please try again.');
       
     } catch (error) {
