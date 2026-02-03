@@ -60,13 +60,6 @@ function getSupabaseClient() {
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
         storageKey: 'selestial-auth',
       },
-      cookieOptions: {
-        name: 'sb-auth',
-        lifetime: 60 * 60 * 24 * 7, // 1 week
-        domain: '',
-        sameSite: 'lax',
-        path: '/',
-      }
     }
   );
   
