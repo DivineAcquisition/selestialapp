@@ -540,8 +540,8 @@ export default function BookingCustomizePage() {
         <StripeConnectionBanner businessId={businessId} />
 
         {/* Status & Links */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card>
+          <div className="grid md:grid-cols-3 gap-4">
+          <Card className="ring-1 ring-white/50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
