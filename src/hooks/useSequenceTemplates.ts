@@ -1,9 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { SequenceTemplate, TemplateType, SequenceStep } from '@/types';
 import { useBusiness } from '@/contexts/BusinessContext';
+import type { Tables, Json } from '@/integrations/supabase/types';
+import type { SequenceStep } from '@/types';
 
-export function useSequenceTemplates(templateType?: TemplateType) {
+type DbSequenceTemplate = Tables<'sequence_templates'>;
+
+export interface SequenceTemplate {
+  id: string;
+  industry: DbSequenceTemplate['industry'] | null;
+  name: string;
+  description: string | null;
+  steps: SequenceStep[];
+  times_used: number;
+}
+
+export function useSequenceTemplates() {
   const { business } = useBusiness();
   const [templates, setTemplates] = useState<SequenceTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,17 +29,12 @@ export function useSequenceTemplates(templateType?: TemplateType) {
       let query = supabase
         .from('sequence_templates')
         .select('*')
-        .order('is_default', { ascending: false })
+        .order('times_used', { ascending: false })
         .order('name');
-
-      // Filter by type if specified
-      if (templateType) {
-        query = query.eq('template_type', templateType);
-      }
 
       // Filter by industry (show universal + industry-specific)
       if (business?.industry) {
-        query = query.or(`industry_slug.eq.${business.industry},industry_slug.is.null`);
+        query = query.or(`industry.eq.${business.industry},industry.is.null`);
       }
 
       const { data, error: fetchError } = await query;
@@ -37,16 +44,11 @@ export function useSequenceTemplates(templateType?: TemplateType) {
       // Transform the data to match our types
       const transformedTemplates: SequenceTemplate[] = (data || []).map(template => ({
         id: template.id,
-        industry_slug: template.industry_slug,
+        industry: template.industry,
         name: template.name,
         description: template.description,
-        template_type: template.template_type as TemplateType,
-        trigger_type: template.trigger_type,
-        trigger_delay_days: template.trigger_delay_days || 0,
         steps: (template.steps as unknown as SequenceStep[]) || [],
-        is_default: template.is_default || false,
-        is_premium: template.is_premium || false,
-        usage_count: template.usage_count || 0,
+        times_used: template.times_used || 0,
       }));
 
       setTemplates(transformedTemplates);
@@ -56,7 +58,7 @@ export function useSequenceTemplates(templateType?: TemplateType) {
     } finally {
       setLoading(false);
     }
-  }, [business?.industry, templateType]);
+  }, [business?.industry]);
 
   useEffect(() => {
     fetchTemplates();
@@ -69,7 +71,7 @@ export function useSequenceTemplates(templateType?: TemplateType) {
 
       await supabase
         .from('sequence_templates')
-        .update({ usage_count: (template.usage_count || 0) + 1 })
+        .update({ times_used: (template.times_used || 0) + 1 })
         .eq('id', templateId);
     } catch (err) {
       console.error('Failed to update usage count:', err);

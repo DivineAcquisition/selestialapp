@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useCampaigns, CampaignTemplate } from '@/hooks/useCampaigns';
-import { Loader2, Sparkles, Calendar, Tag, ArrowRight } from 'lucide-react';
+import { Loader2, Sparkles, Calendar, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CampaignTemplateLibraryProps {
@@ -27,7 +27,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
     }
   }, [open, fetchTemplates]);
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type: string | null) => {
     switch (type) {
       case 'seasonal': return 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400';
       case 'holiday': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
@@ -47,7 +47,7 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
   };
 
   const groupedTemplates = templates.reduce((acc, template) => {
-    const key = template.campaign_type;
+    const key = template.campaign_type || 'other';
     if (!acc[key]) acc[key] = [];
     acc[key].push(template);
     return acc;
@@ -114,12 +114,6 @@ export default function CampaignTemplateLibrary({ open, onClose, onSelect }: Cam
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
                                   Month {template.month}
-                                </span>
-                              )}
-                              {template.suggested_promotion_type && (
-                                <span className="flex items-center gap-1">
-                                  <Tag className="w-3 h-3" />
-                                  {template.suggested_promotion_value}% off suggested
                                 </span>
                               )}
                             </div>

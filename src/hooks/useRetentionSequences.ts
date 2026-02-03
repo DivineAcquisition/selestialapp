@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
-import type { Json } from '@/integrations/supabase/types';
+import type { Tables, Json } from '@/integrations/supabase/types';
+
+type DbRetentionSequence = Tables<'retention_sequences'>;
 
 export interface RetentionStep {
   delay_days: number;
@@ -12,17 +14,8 @@ export interface RetentionStep {
   is_active: boolean;
 }
 
-export interface RetentionSequence {
-  id: string;
-  created_at: string;
-  name: string;
-  description: string | null;
-  trigger_type: string;
-  trigger_days: number;
-  conditions: Record<string, unknown>;
+export interface RetentionSequence extends Omit<DbRetentionSequence, 'steps'> {
   steps: RetentionStep[];
-  is_active: boolean;
-  is_default: boolean;
 }
 
 export const TRIGGER_TYPES = [
@@ -75,16 +68,14 @@ export function useRetentionSequences() {
         .from('retention_sequences')
         .select('*')
         .eq('business_id', business.id)
-        .order('is_default', { ascending: false })
         .order('name');
 
       if (fetchError) throw fetchError;
       
       // Transform the data to ensure steps is properly typed
-      const transformedData = (data || []).map(seq => ({
+      const transformedData: RetentionSequence[] = (data || []).map(seq => ({
         ...seq,
         steps: (seq.steps as unknown as RetentionStep[]) || [],
-        conditions: (seq.conditions as Record<string, unknown>) || {},
       }));
       
       setSequences(transformedData);
@@ -95,7 +86,13 @@ export function useRetentionSequences() {
     }
   }, [business]);
 
-  const createSequence = async (sequence: Omit<RetentionSequence, 'id' | 'created_at'>) => {
+  const createSequence = async (sequence: { 
+    name: string;
+    description?: string;
+    trigger_type: string;
+    steps: RetentionStep[];
+    is_active: boolean;
+  }) => {
     if (!business) return { data: null, error: new Error('No business') };
 
     try {
@@ -104,13 +101,10 @@ export function useRetentionSequences() {
         .insert([{
           business_id: business.id,
           name: sequence.name,
-          description: sequence.description,
+          description: sequence.description || null,
           trigger_type: sequence.trigger_type,
-          trigger_days: sequence.trigger_days,
-          conditions: sequence.conditions as Json,
           steps: sequence.steps as unknown as Json,
           is_active: sequence.is_active,
-          is_default: sequence.is_default,
         }])
         .select()
         .single();
@@ -128,7 +122,7 @@ export function useRetentionSequences() {
     try {
       const updateData: Record<string, unknown> = { ...updates };
       if (updates.steps) {
-        updateData.steps = updates.steps as unknown as Record<string, unknown>[];
+        updateData.steps = updates.steps as unknown as Json;
       }
       
       const { data, error: updateError } = await supabase

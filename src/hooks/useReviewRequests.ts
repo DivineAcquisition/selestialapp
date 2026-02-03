@@ -1,25 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface ReviewRequest {
-  id: string;
-  created_at: string;
-  customer_id: string;
-  quote_id: string | null;
-  platform: string;
-  review_link: string;
-  sent_at: string | null;
-  sent_via: string | null;
-  clicked_at: string | null;
-  click_count: number;
-  review_received: boolean;
-  review_rating: number | null;
-  status: string;
+type DbReviewRequest = Tables<'review_requests'>;
+
+interface ReviewRequest extends DbReviewRequest {
   customers?: {
     name: string;
     phone: string;
-  };
+  } | null;
 }
 
 interface ReviewStats {
@@ -64,7 +54,7 @@ export function useReviewRequests() {
       // Calculate stats
       const sent = typedData.filter(r => r.sent_at);
       const clicked = typedData.filter(r => r.clicked_at);
-      const reviewed = typedData.filter(r => r.review_received);
+      const reviewed = typedData.filter(r => r.status === 'reviewed');
 
       setStats({
         total_sent: sent.length,
@@ -103,16 +93,8 @@ export function useReviewRequests() {
       if (!customer) throw new Error('Customer not found');
 
       // Determine review link
-      const reviewPlatform = platform || business.default_review_platform || 'google';
-      let reviewLink = '';
-      
-      if (reviewPlatform === 'google') {
-        reviewLink = (business as any).google_review_link || '';
-      } else if (reviewPlatform === 'yelp') {
-        reviewLink = (business as any).yelp_review_link || '';
-      } else if (reviewPlatform === 'facebook') {
-        reviewLink = (business as any).facebook_review_link || '';
-      }
+      const reviewPlatform = platform || 'google';
+      const reviewLink = business.google_review_link || '';
 
       if (!reviewLink) {
         throw new Error('No review link configured for ' + reviewPlatform);
@@ -135,7 +117,7 @@ export function useReviewRequests() {
       if (insertError) throw insertError;
 
       // Build message with merge fields replaced
-      const messageTemplate = (business as any).review_request_message || 
+      const messageTemplate = 
         "Hi {{customer_first_name}}, thank you for choosing {{business_name}}! If you were happy with our service, we'd really appreciate a quick review: {{review_link}} - {{owner_first_name}}";
       
       const firstName = customer.name?.split(' ')[0] || customer.name || 'there';
@@ -149,30 +131,20 @@ export function useReviewRequests() {
         .replace(/\{\{owner_name\}\}/g, business.owner_name || '')
         .replace(/\{\{review_link\}\}/g, reviewLink);
 
-      // Queue the message
+      // Queue the message via message_queue instead
       const scheduledFor = sendImmediately 
         ? new Date().toISOString()
-        : new Date(Date.now() + ((business as any).review_request_delay_days || 1) * 24 * 60 * 60 * 1000).toISOString();
+        : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
       await supabase
-        .from('retention_queue')
+        .from('message_queue')
         .insert({
           business_id: business.id,
-          customer_id: customerId,
           quote_id: quoteId || null,
-          sequence_id: null,
-          step_index: 0,
           channel: 'sms',
-          to_phone: customer.phone,
-          from_phone: business.twilio_phone_number,
           content: message,
           scheduled_for: scheduledFor,
-          trigger_type: 'review_request',
-          metadata: {
-            review_request_id: request.id,
-            platform: reviewPlatform,
-            review_link: reviewLink,
-          },
+          status: 'pending',
         });
 
       await fetchRequests();
@@ -187,7 +159,6 @@ export function useReviewRequests() {
       const { error } = await supabase
         .from('review_requests')
         .update({
-          review_received: true,
           review_rating: rating,
           review_received_at: new Date().toISOString(),
           status: 'reviewed',

@@ -2,70 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useToast } from '@/hooks/use-toast';
+import type { Tables } from '@/integrations/supabase/types';
 
-export interface Campaign {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  business_id: string;
-  name: string;
-  description: string | null;
-  campaign_type: string;
-  target_audience: string;
-  target_customer_types: string[];
-  min_days_since_service: number | null;
-  max_days_since_service: number | null;
-  exclude_recent_days: number | null;
-  start_date: string | null;
-  end_date: string | null;
-  send_time: string | null;
-  timezone: string;
-  is_recurring: boolean;
-  recurrence_pattern: string | null;
-  channel: string;
-  sms_message: string | null;
-  email_subject: string | null;
-  email_body: string | null;
-  has_promotion: boolean;
-  promotion_type: string | null;
-  promotion_value: number | null;
-  promotion_code: string | null;
-  promotion_expires_days: number | null;
-  promotion_max_uses: number | null;
-  promotion_uses: number;
-  status: string;
-  total_targeted: number;
-  total_sent: number;
-  total_delivered: number;
-  total_responses: number;
-  total_bookings: number;
-  total_revenue: number;
-  template_id: string | null;
-  metadata: Record<string, unknown>;
-}
+type Campaign = Tables<'seasonal_campaigns'>;
+type CampaignTemplate = Tables<'campaign_templates'>;
 
-export interface CampaignTemplate {
-  id: string;
-  created_at: string;
-  industry_slug: string | null;
-  name: string;
-  description: string | null;
-  campaign_type: string;
-  season: string | null;
-  month: number | null;
-  holiday: string | null;
-  default_audience: string;
-  default_min_days: number | null;
-  default_max_days: number | null;
-  sms_template: string;
-  email_subject_template: string | null;
-  email_body_template: string | null;
-  suggested_promotion_type: string | null;
-  suggested_promotion_value: number | null;
-  tags: string[];
-  effectiveness_score: number | null;
-  times_used: number;
-}
+export type { Campaign, CampaignTemplate };
 
 export interface CampaignFormData {
   name: string;
@@ -109,7 +51,7 @@ export function useCampaigns() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCampaigns((data || []) as Campaign[]);
+      setCampaigns(data || []);
     } catch (err) {
       console.error('Failed to fetch campaigns:', err);
       toast({
@@ -130,10 +72,10 @@ export function useCampaigns() {
         .from('campaign_templates')
         .select('*')
         .or(`industry_slug.eq.${business.industry},industry_slug.is.null`)
-        .order('effectiveness_score', { ascending: false, nullsFirst: false });
+        .order('usage_count', { ascending: false });
 
       if (error) throw error;
-      setTemplates((data || []) as CampaignTemplate[]);
+      setTemplates(data || []);
     } catch (err) {
       console.error('Failed to fetch templates:', err);
     } finally {
@@ -185,7 +127,7 @@ export function useCampaigns() {
       });
       
       await fetchCampaigns();
-      return campaign as Campaign;
+      return campaign;
     } catch (err) {
       console.error('Failed to create campaign:', err);
       toast({
@@ -292,10 +234,10 @@ export function useCampaigns() {
     total: campaigns.length,
     active: campaigns.filter(c => c.status === 'active').length,
     scheduled: campaigns.filter(c => c.status === 'scheduled').length,
-    totalSent: campaigns.reduce((sum, c) => sum + c.total_sent, 0),
-    totalResponses: campaigns.reduce((sum, c) => sum + c.total_responses, 0),
-    totalBookings: campaigns.reduce((sum, c) => sum + c.total_bookings, 0),
-    totalRevenue: campaigns.reduce((sum, c) => sum + c.total_revenue, 0),
+    totalSent: campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0),
+    totalResponses: campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0),
+    totalBookings: campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0),
+    totalRevenue: 0,
   };
 
   return {

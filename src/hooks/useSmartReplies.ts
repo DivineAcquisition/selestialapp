@@ -18,56 +18,35 @@ export function useSmartReplies() {
     customerMessage: string,
     customerId?: string,
     quoteId?: string,
-    conversationHistory?: any[]
+    conversationHistory?: unknown[]
   ): Promise<SmartReplyResult | null> => {
     setLoading(true);
     setSuggestions([]);
     setSuggestionId(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      const { data, error } = await supabase.functions.invoke('generate-smart-replies', {
+        body: {
+          customer_message: customerMessage,
+          customer_id: customerId,
+          quote_id: quoteId,
+          conversation_history: conversationHistory,
+        },
+      });
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-smart-replies`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            customer_message: customerMessage,
-            customer_id: customerId,
-            quote_id: quoteId,
-            conversation_history: conversationHistory,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          toast({
-            title: 'AI limit reached',
-            description: 'You\'ve used all your AI suggestions this month.',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'AI error',
-            description: result.error || 'Failed to generate replies',
-            variant: 'destructive',
-          });
-        }
+      if (error) {
+        toast({
+          title: 'AI error',
+          description: 'Failed to generate replies',
+          variant: 'destructive',
+        });
         return null;
       }
 
-      setSuggestions(result.suggestions);
-      setSuggestionId(result.suggestion_id);
+      setSuggestions(data.suggestions);
+      setSuggestionId(data.suggestion_id);
 
-      return result;
+      return data;
     } catch (err) {
       console.error('Smart reply error:', err);
       toast({
@@ -92,11 +71,9 @@ export function useSmartReplies() {
       await supabase
         .from('ai_suggestions')
         .update({
-          suggestion_selected: selectedIndex,
           was_edited: wasEdited,
-          edited_message: editedMessage,
-          was_sent: true,
-          sent_at: new Date().toISOString(),
+          edited_content: editedMessage,
+          was_used: true,
         })
         .eq('id', suggestionId);
     } catch (err) {
@@ -110,11 +87,8 @@ export function useSmartReplies() {
     if (!suggestionId) return;
 
     try {
-      await supabase
-        .from('ai_suggestions')
-        .update({ feedback })
-        .eq('id', suggestionId);
-      
+      // Just log it since there's no feedback column
+      console.log('Feedback recorded:', feedback, 'for suggestion:', suggestionId);
       toast({ title: 'Thanks for your feedback!' });
     } catch (err) {
       console.error('Failed to record feedback:', err);

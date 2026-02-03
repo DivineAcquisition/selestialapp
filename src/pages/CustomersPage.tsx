@@ -233,11 +233,11 @@ export default function CustomersPage() {
                       </TableCell>
                       <TableCell>
                         <span className="font-medium">
-                          {formatCurrency(customer.total_spent / 100)}
+                          {formatCurrency((customer.total_revenue || 0) / 100)}
                         </span>
                       </TableCell>
                       <TableCell>
-                        {customer.total_jobs}
+                        {customer.jobs_completed || 0}
                       </TableCell>
                       <TableCell>
                         {customer.last_service_at ? (

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useCampaigns, Campaign, CampaignFormData } from '@/hooks/useCampaigns';
 import { useBusiness } from '@/contexts/BusinessContext';
-import { Loader2, Calendar, Users, MessageSquare, Percent, Tag } from 'lucide-react';
+import { Loader2, Calendar, Users, MessageSquare, Percent } from 'lucide-react';
 
 interface CampaignBuilderProps {
   open: boolean;
@@ -70,23 +70,22 @@ export default function CampaignBuilder({ open, onClose, campaign }: CampaignBui
       setFormData({
         name: campaign.name,
         description: campaign.description || '',
-        campaign_type: campaign.campaign_type,
-        target_audience: campaign.target_audience,
+        campaign_type: campaign.campaign_type || 'seasonal',
+        target_audience: campaign.target_audience || 'past_customers',
         min_days_since_service: campaign.min_days_since_service || undefined,
         max_days_since_service: campaign.max_days_since_service || undefined,
         exclude_recent_days: campaign.exclude_recent_days || 7,
-        start_date: campaign.start_date || '',
-        end_date: campaign.end_date || '',
-        send_time: campaign.send_time || '10:00',
-        channel: campaign.channel,
+        start_date: campaign.started_at?.split('T')[0] || '',
+        end_date: campaign.completed_at?.split('T')[0] || '',
+        send_time: campaign.send_time?.toString() || '10:00',
+        channel: campaign.channel || 'sms',
         sms_message: campaign.sms_message || '',
         email_subject: campaign.email_subject || '',
         email_body: campaign.email_body || '',
-        has_promotion: campaign.has_promotion,
-        promotion_type: campaign.promotion_type || 'percentage',
-        promotion_value: campaign.promotion_value || undefined,
-        promotion_code: campaign.promotion_code || '',
-        promotion_expires_days: campaign.promotion_expires_days || undefined,
+        has_promotion: false,
+        promotion_type: 'percentage',
+        promotion_value: undefined,
+        promotion_code: '',
       });
     } else {
       setFormData({

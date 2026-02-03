@@ -28,7 +28,6 @@ interface RetentionSequenceEditorProps {
     name: string;
     description: string;
     trigger_type: string;
-    trigger_days: number;
     steps: RetentionStep[];
   }) => Promise<void>;
   sequence: RetentionSequence | null;
@@ -54,7 +53,7 @@ export default function RetentionSequenceEditor({
         setName(sequence.name);
         setDescription(sequence.description || '');
         setTriggerType(sequence.trigger_type);
-        setTriggerDays(sequence.trigger_days);
+        setTriggerDays(sequence.trigger_days_after || 0);
         setSteps(sequence.steps);
       } else {
         setName('');
@@ -120,7 +119,6 @@ export default function RetentionSequenceEditor({
         name,
         description,
         trigger_type: triggerType,
-        trigger_days: triggerDays,
         steps,
       });
     } finally {

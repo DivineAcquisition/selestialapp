@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { SequenceTemplate, TemplateType, SequenceStep } from '@/types';
-import { useSequenceTemplates, calculateSequenceDuration } from '@/hooks/useSequenceTemplates';
+import { SequenceStep } from '@/types';
+import { useSequenceTemplates, calculateSequenceDuration, SequenceTemplate } from '@/hooks/useSequenceTemplates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -11,12 +11,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import {
@@ -32,17 +26,14 @@ interface TemplateLibraryProps {
   open: boolean;
   onClose: () => void;
   onSelect: (steps: SequenceStep[], name: string, description: string) => void;
-  defaultType?: TemplateType;
 }
 
 export default function TemplateLibrary({ 
   open, 
   onClose, 
   onSelect,
-  defaultType = 'quote_followup'
 }: TemplateLibraryProps) {
-  const [activeType, setActiveType] = useState<TemplateType>(defaultType);
-  const { templates, loading, incrementUsageCount } = useSequenceTemplates(activeType);
+  const { templates, loading, incrementUsageCount } = useSequenceTemplates();
   const [selectedTemplate, setSelectedTemplate] = useState<SequenceTemplate | null>(null);
 
   const handleApply = async () => {
@@ -63,30 +54,18 @@ export default function TemplateLibrary({
     onClose();
   };
 
-  const getTypeLabel = (type: TemplateType) => {
-    switch (type) {
-      case 'quote_followup': return 'Quote Follow-Up';
-      case 'post_job': return 'Post-Job';
-      case 'reengagement': return 'Re-engagement';
-      default: return type;
-    }
-  };
-
-  const getTypeColor = (type: TemplateType) => {
-    switch (type) {
-      case 'quote_followup': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'post_job': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-      case 'reengagement': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-      default: return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const formatIndustryLabel = (slug: string | null) => {
-    if (!slug) return 'Universal';
-    return slug.split('_').map(word => 
+  const formatIndustryLabel = (industry: string | null) => {
+    if (!industry) return 'Universal';
+    return industry.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
+
+  const handleClose = () => {
+    setSelectedTemplate(null);
+    onClose();
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

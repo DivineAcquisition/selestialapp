@@ -54,7 +54,7 @@ export function useQuotes() {
         p_business_id: business.id,
         p_action: 'quote_created',
         p_description: `New quote added for ${quote.customer_name}`,
-        p_quote_id: data.id,
+        p_entity_id: data.id,
       });
 
       // Send quote notifications automatically (email + SMS)
@@ -94,15 +94,14 @@ export function useQuotes() {
 
   const updateQuoteStatus = async (
     id: string, 
-    status: string, 
-    additionalData?: { lost_reason?: string; final_job_amount?: number }
+    status: Quote['status'], 
+    additionalData?: { lost_reason?: string; paid_amount?: number }
   ) => {
     if (!business) return { error: new Error('No business') };
 
     const now = new Date().toISOString();
     const updates: QuoteUpdate = {
       status,
-      status_changed_at: now,
       ...(status === 'won' && { won_at: now }),
       ...(status === 'lost' && { lost_at: now }),
       ...additionalData,
@@ -116,7 +115,7 @@ export function useQuotes() {
         p_business_id: business.id,
         p_action: `status_${status}`,
         p_description: `Quote marked as ${status}${quote ? ` - ${quote.customer_name}` : ''}`,
-        p_quote_id: id,
+        p_entity_id: id,
       });
     }
 
