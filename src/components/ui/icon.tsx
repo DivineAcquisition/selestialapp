@@ -673,6 +673,7 @@ interface IconProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   className?: string;
   filled?: boolean;
+  style?: React.CSSProperties;
 }
 
 // Size classes with explicit width/height for proper centering
@@ -687,7 +688,7 @@ const sizeClasses = {
   "4xl": "text-[36px]",
 };
 
-export function Icon({ name, size = "md", className, filled = false }: IconProps) {
+export function Icon({ name, size = "md", className, filled = false, style }: IconProps) {
   let iconClass = icons[name];
   
   if (!iconClass) {
@@ -713,7 +714,8 @@ export function Icon({ name, size = "md", className, filled = false }: IconProps
         sizeClasses[size],
         "inline-flex items-center justify-center leading-none shrink-0",
         className
-      )} 
+      )}
+      style={style}
     />
   );
 }
