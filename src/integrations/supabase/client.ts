@@ -55,12 +55,18 @@ function getSupabaseClient() {
       isSingleton: true,
       auth: {
         // Use implicit flow instead of PKCE to avoid storage issues
-        // The tokens will be returned in the URL hash fragment
         flowType: 'implicit',
         detectSessionInUrl: true,
         persistSession: true,
         autoRefreshToken: true,
-      }
+      },
+      // Cookie settings for OAuth redirect persistence
+      cookieOptions: {
+        name: 'sb-auth',
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+      },
     }
   );
   
