@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +29,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Icon, IconName } from '@/components/ui/icon';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Icon } from '@/components/ui/icon';
 import { useBusiness } from '@/providers';
+import { useBookings, useStaff } from '@/hooks/useBookings';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   format,
   addDays,
+  subDays,
   startOfWeek,
   endOfWeek,
   startOfMonth,
@@ -48,33 +54,24 @@ import {
   subMonths,
   addWeeks,
   subWeeks,
-  getDay,
   parseISO,
   setHours,
   setMinutes,
+  differenceInMinutes,
 } from 'date-fns';
+import type { 
+  Booking, 
+  BookingStatus, 
+  CalendarEvent,
+  CreateBookingForm,
+  CleaningServiceType,
+  CleaningFrequency,
+} from '@/types/booking';
+import { SERVICE_TYPE_LABELS, FREQUENCY_LABELS, STATUS_CONFIG } from '@/types/booking';
 
 // ============================================================================
 // TYPES
 // ============================================================================
-
-interface CalendarEvent {
-  id: string;
-  title: string;
-  description?: string;
-  start: Date;
-  end: Date;
-  type: 'booking' | 'blocked' | 'google' | 'manual';
-  status?: string;
-  customer?: {
-    name: string;
-    phone: string;
-    email?: string;
-  };
-  location?: string;
-  color?: string;
-  googleEventId?: string;
-}
 
 type CalendarView = 'day' | 'week' | 'month';
 
@@ -85,106 +82,497 @@ type CalendarView = 'day' | 'week' | 'month';
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 7); // 7am to 7pm
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const EVENT_COLORS: Record<string, string> = {
-  booking: 'bg-primary/90 border-primary text-white',
-  blocked: 'bg-gray-400/90 border-gray-500 text-white',
-  google: 'bg-blue-500/90 border-blue-600 text-white',
-  manual: 'bg-emerald-500/90 border-emerald-600 text-white',
-};
-
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-function getEventStyle(event: CalendarEvent) {
-  return EVENT_COLORS[event.type] || EVENT_COLORS.booking;
-}
 
 function formatTime(date: Date) {
   return format(date, 'h:mm a');
 }
 
+function getStatusColor(status: BookingStatus) {
+  return STATUS_CONFIG[status]?.bgColor || 'bg-gray-100';
+}
+
 // ============================================================================
-// COMPONENTS
+// BOOKING MODAL
 // ============================================================================
 
-function CalendarHeader({
-  currentDate,
-  view,
-  onViewChange,
-  onNavigate,
-  onToday,
+function BookingModal({
+  open,
+  onClose,
+  booking,
+  selectedDate,
+  selectedTime,
+  onSave,
+  onStatusChange,
 }: {
-  currentDate: Date;
-  view: CalendarView;
-  onViewChange: (view: CalendarView) => void;
-  onNavigate: (direction: 'prev' | 'next') => void;
-  onToday: () => void;
+  open: boolean;
+  onClose: () => void;
+  booking?: Booking | null;
+  selectedDate?: Date;
+  selectedTime?: string;
+  onSave: (data: CreateBookingForm) => Promise<boolean>;
+  onStatusChange: (id: string, status: BookingStatus) => Promise<boolean>;
 }) {
-  const getDateLabel = () => {
-    switch (view) {
-      case 'day':
-        return format(currentDate, 'EEEE, MMMM d, yyyy');
-      case 'week':
-        const weekStart = startOfWeek(currentDate);
-        const weekEnd = endOfWeek(currentDate);
-        return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
-      case 'month':
-        return format(currentDate, 'MMMM yyyy');
+  const { staff } = useStaff();
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<CreateBookingForm>({
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    service_type: 'standard',
+    frequency: 'one_time',
+    address_line1: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    bedrooms: 3,
+    bathrooms: 2,
+    property_type: 'house',
+    has_pets: false,
+    scheduled_date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
+    scheduled_time_start: selectedTime || '09:00',
+    addon_ids: [],
+  });
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open && !booking) {
+      setForm({
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        service_type: 'standard',
+        frequency: 'one_time',
+        address_line1: '',
+        city: '',
+        state: '',
+        zip_code: '',
+        bedrooms: 3,
+        bathrooms: 2,
+        property_type: 'house',
+        has_pets: false,
+        scheduled_date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
+        scheduled_time_start: selectedTime || '09:00',
+        addon_ids: [],
+      });
+    } else if (booking) {
+      setForm({
+        customer_name: booking.customer_name,
+        customer_email: booking.customer_email,
+        customer_phone: booking.customer_phone,
+        service_type: booking.service_type as CleaningServiceType,
+        frequency: (booking as any).frequency_name || 'one_time',
+        address_line1: booking.address_line1,
+        city: booking.city,
+        state: booking.state,
+        zip_code: booking.zip_code,
+        bedrooms: booking.bedrooms,
+        bathrooms: booking.bathrooms,
+        property_type: 'house',
+        has_pets: booking.has_pets,
+        scheduled_date: booking.scheduled_date,
+        scheduled_time_start: booking.scheduled_time_start,
+        addon_ids: [],
+      });
+    }
+  }, [open, booking, selectedDate, selectedTime]);
+
+  const handleSubmit = async () => {
+    if (!form.customer_name || !form.customer_phone || !form.address_line1) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+    
+    setSaving(true);
+    const success = await onSave(form);
+    setSaving(false);
+    
+    if (success) {
+      toast.success(booking ? 'Booking updated' : 'Booking created');
+      onClose();
+    } else {
+      toast.error('Failed to save booking');
+    }
+  };
+
+  const handleStatusChange = async (status: BookingStatus) => {
+    if (!booking) return;
+    const success = await onStatusChange(booking.id, status);
+    if (success) {
+      toast.success(`Booking ${status}`);
+      onClose();
     }
   };
 
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={onToday} className="rounded-xl">
-          Today
-        </Button>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onNavigate('prev')}
-            className="h-9 w-9 rounded-xl"
-          >
-            <Icon name="chevronLeft" size="lg" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onNavigate('next')}
-            className="h-9 w-9 rounded-xl"
-          >
-            <Icon name="chevronRight" size="lg" />
-          </Button>
-        </div>
-        <h2 className="text-xl font-semibold text-gray-900">{getDateLabel()}</h2>
-      </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Icon name="calendar" size="lg" className="text-primary" />
+            {booking ? `Booking #${booking.booking_number}` : 'New Booking'}
+          </DialogTitle>
+          {booking && (
+            <Badge className={cn('w-fit', getStatusColor(booking.status))}>
+              {STATUS_CONFIG[booking.status]?.label}
+            </Badge>
+          )}
+        </DialogHeader>
 
-      <div className="flex items-center gap-3">
-        <Tabs value={view} onValueChange={(v) => onViewChange(v as CalendarView)}>
-          <TabsList className="rounded-xl">
-            <TabsTrigger value="day" className="rounded-lg px-4">Day</TabsTrigger>
-            <TabsTrigger value="week" className="rounded-lg px-4">Week</TabsTrigger>
-            <TabsTrigger value="month" className="rounded-lg px-4">Month</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-    </div>
+        <div className="space-y-6 py-4">
+          {/* Customer Info */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Icon name="user" size="sm" className="text-muted-foreground" />
+              Customer Information
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Name *</Label>
+                <Input
+                  value={form.customer_name}
+                  onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                  placeholder="John Smith"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Phone *</Label>
+                <Input
+                  value={form.customer_phone}
+                  onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                  placeholder="(555) 123-4567"
+                  className="mt-1"
+                />
+              </div>
+              <div className="col-span-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={form.customer_email}
+                  onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
+                  placeholder="john@email.com"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Service */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Icon name="sparkles" size="sm" className="text-muted-foreground" />
+              Service Details
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Service Type *</Label>
+                <Select
+                  value={form.service_type}
+                  onValueChange={(v) => setForm({ ...form, service_type: v as CleaningServiceType })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SERVICE_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Frequency</Label>
+                <Select
+                  value={form.frequency}
+                  onValueChange={(v) => setForm({ ...form, frequency: v as CleaningFrequency })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Property */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Icon name="home" size="sm" className="text-muted-foreground" />
+              Property Details
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <Label>Address *</Label>
+                <Input
+                  value={form.address_line1}
+                  onChange={(e) => setForm({ ...form, address_line1: e.target.value })}
+                  placeholder="123 Main St"
+                  className="mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>City *</Label>
+                  <Input
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>State *</Label>
+                  <Input
+                    value={form.state}
+                    onChange={(e) => setForm({ ...form, state: e.target.value })}
+                    placeholder="TX"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>ZIP *</Label>
+                  <Input
+                    value={form.zip_code}
+                    onChange={(e) => setForm({ ...form, zip_code: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Bedrooms</Label>
+                  <Select
+                    value={String(form.bedrooms)}
+                    onValueChange={(v) => setForm({ ...form, bedrooms: Number(v) })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1,2,3,4,5,6,7,8].map(n => (
+                        <SelectItem key={n} value={String(n)}>{n} BR</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Bathrooms</Label>
+                  <Select
+                    value={String(form.bathrooms)}
+                    onValueChange={(v) => setForm({ ...form, bathrooms: Number(v) })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1,1.5,2,2.5,3,3.5,4,4.5,5].map(n => (
+                        <SelectItem key={n} value={String(n)}>{n} BA</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 pb-2">
+                    <Checkbox
+                      checked={form.has_pets}
+                      onCheckedChange={(c) => setForm({ ...form, has_pets: !!c })}
+                    />
+                    <span className="text-sm">Has Pets</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Schedule */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Icon name="clock" size="sm" className="text-muted-foreground" />
+              Schedule
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Date *</Label>
+                <Input
+                  type="date"
+                  value={form.scheduled_date}
+                  onChange={(e) => setForm({ ...form, scheduled_date: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Time *</Label>
+                <Select
+                  value={form.scheduled_time_start}
+                  onValueChange={(v) => setForm({ ...form, scheduled_time_start: v })}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'].map(t => (
+                      <SelectItem key={t} value={t}>
+                        {format(parseISO(`2000-01-01T${t}`), 'h:mm a')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Staff Assignment */}
+          {staff.length > 0 && (
+            <div>
+              <h3 className="font-medium mb-3 flex items-center gap-2">
+                <Icon name="users" size="sm" className="text-muted-foreground" />
+                Assign Staff
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {staff.map(s => (
+                  <label
+                    key={s.id}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors',
+                      form.assigned_staff_ids?.includes(s.id)
+                        ? 'bg-primary/10 border-primary'
+                        : 'hover:bg-muted'
+                    )}
+                  >
+                    <Checkbox
+                      checked={form.assigned_staff_ids?.includes(s.id)}
+                      onCheckedChange={(c) => {
+                        const ids = form.assigned_staff_ids || [];
+                        setForm({
+                          ...form,
+                          assigned_staff_ids: c
+                            ? [...ids, s.id]
+                            : ids.filter(id => id !== s.id)
+                        });
+                      }}
+                    />
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: s.color }}
+                    />
+                    <span className="text-sm">{s.first_name} {s.last_name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Icon name="fileText" size="sm" className="text-muted-foreground" />
+              Notes
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <Label>Access Instructions</Label>
+                <Textarea
+                  value={form.access_instructions || ''}
+                  onChange={(e) => setForm({ ...form, access_instructions: e.target.value })}
+                  placeholder="Gate code, key location, etc."
+                  className="mt-1"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <Label>Special Requests</Label>
+                <Textarea
+                  value={form.special_requests || ''}
+                  onChange={(e) => setForm({ ...form, special_requests: e.target.value })}
+                  placeholder="Focus areas, allergies, etc."
+                  className="mt-1"
+                  rows={2}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          {booking && (
+            <div className="flex gap-2 mr-auto">
+              {booking.status === 'pending' && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleStatusChange('confirmed')}
+                  className="text-blue-600"
+                >
+                  <Icon name="check" size="sm" className="mr-1" />
+                  Confirm
+                </Button>
+              )}
+              {booking.status === 'confirmed' && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleStatusChange('in_progress')}
+                  className="text-purple-600"
+                >
+                  <Icon name="play" size="sm" className="mr-1" />
+                  Start
+                </Button>
+              )}
+              {booking.status === 'in_progress' && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleStatusChange('completed')}
+                  className="text-green-600"
+                >
+                  <Icon name="checkCircle" size="sm" className="mr-1" />
+                  Complete
+                </Button>
+              )}
+              {!['cancelled', 'completed'].includes(booking.status) && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleStatusChange('cancelled')}
+                  className="text-red-600"
+                >
+                  <Icon name="x" size="sm" className="mr-1" />
+                  Cancel
+                </Button>
+              )}
+            </div>
+          )}
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          <Button onClick={handleSubmit} disabled={saving}>
+            {saving ? (
+              <><Icon name="loader" size="sm" className="mr-2 animate-spin" />Saving...</>
+            ) : (
+              <><Icon name="save" size="sm" className="mr-2" />{booking ? 'Update' : 'Create'} Booking</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
+// ============================================================================
+// CALENDAR COMPONENTS
+// ============================================================================
+
 function TimeColumn() {
   return (
-    <div className="w-20 flex-shrink-0 border-r border-gray-200">
-      <div className="h-12 border-b border-gray-200" /> {/* Header spacer */}
+    <div className="w-16 flex-shrink-0 border-r">
+      <div className="h-10 border-b" />
       {HOURS.map((hour) => (
-        <div
-          key={hour}
-          className="h-16 border-b border-gray-100 pr-3 text-right"
-        >
-          <span className="text-sm text-gray-500">
-            {format(setHours(new Date(), hour), 'h a')}
+        <div key={hour} className="h-14 border-b pr-2 text-right">
+          <span className="text-xs text-muted-foreground">
+            {format(setHours(new Date(), hour), 'ha')}
           </span>
         </div>
       ))}
@@ -211,29 +599,27 @@ function DayColumn({
   const getEventPosition = (event: CalendarEvent) => {
     const startHour = event.start.getHours() + event.start.getMinutes() / 60;
     const endHour = event.end.getHours() + event.end.getMinutes() / 60;
-    const top = (startHour - 7) * 64; // 64px per hour (h-16)
-    const height = (endHour - startHour) * 64;
+    const top = (startHour - 7) * 56;
+    const height = Math.max((endHour - startHour) * 56, 28);
     return { top, height };
   };
 
   return (
-    <div className="flex-1 min-w-[120px] border-r border-gray-200 last:border-r-0">
+    <div className="flex-1 min-w-[100px] border-r last:border-r-0">
       {showHeader && (
         <div
           className={cn(
-            'h-12 border-b border-gray-200 flex flex-col items-center justify-center sticky top-0 bg-white z-10',
+            'h-10 border-b flex flex-col items-center justify-center sticky top-0 bg-background z-10',
             isCurrentDay && 'bg-primary/5'
           )}
         >
-          <span className="text-xs text-gray-500 uppercase">
+          <span className="text-[10px] text-muted-foreground uppercase">
             {format(date, 'EEE')}
           </span>
           <span
             className={cn(
-              'text-lg font-semibold',
-              isCurrentDay
-                ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center'
-                : 'text-gray-900'
+              'text-sm font-medium',
+              isCurrentDay && 'w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs'
             )}
           >
             {format(date, 'd')}
@@ -244,30 +630,39 @@ function DayColumn({
         {HOURS.map((hour) => (
           <div
             key={hour}
-            className="h-16 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+            className="h-14 border-b hover:bg-muted/50 cursor-pointer transition-colors"
             onClick={() => onSlotClick(date, hour)}
           />
         ))}
-        {/* Events */}
         {dayEvents.map((event) => {
           const { top, height } = getEventPosition(event);
+          const statusColor = event.status ? STATUS_CONFIG[event.status] : null;
           return (
             <div
               key={event.id}
               className={cn(
-                'absolute left-1 right-1 rounded-lg px-2 py-1 cursor-pointer overflow-hidden border-l-4 transition-transform hover:scale-[1.02]',
-                getEventStyle(event)
+                'absolute left-0.5 right-0.5 rounded px-1.5 py-0.5 cursor-pointer overflow-hidden text-xs border-l-2 shadow-sm',
+                statusColor?.bgColor || 'bg-primary/10',
+                statusColor?.color || 'text-primary',
+                'hover:shadow-md transition-shadow'
               )}
-              style={{ top, height: Math.max(height, 24) }}
+              style={{ 
+                top, 
+                height,
+                borderLeftColor: event.booking?.status === 'confirmed' ? '#3b82f6' 
+                  : event.booking?.status === 'in_progress' ? '#8b5cf6'
+                  : event.booking?.status === 'completed' ? '#10b981'
+                  : '#eab308'
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 onEventClick(event);
               }}
             >
-              <p className="text-xs font-semibold truncate">{event.title}</p>
-              {height > 40 && (
-                <p className="text-xs opacity-90">
-                  {formatTime(event.start)} - {formatTime(event.end)}
+              <p className="font-medium truncate text-[11px]">{event.title}</p>
+              {height > 35 && (
+                <p className="text-[10px] opacity-75 truncate">
+                  {formatTime(event.start)}
                 </p>
               )}
             </div>
@@ -293,7 +688,7 @@ function WeekView({
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return (
-    <Card className="overflow-hidden rounded-2xl">
+    <Card className="overflow-hidden">
       <div className="flex overflow-x-auto">
         <TimeColumn />
         {days.map((day) => (
@@ -322,8 +717,8 @@ function DayView({
   onSlotClick: (date: Date, hour: number) => void;
 }) {
   return (
-    <Card className="overflow-hidden rounded-2xl">
-      <div className="flex overflow-x-auto">
+    <Card className="overflow-hidden">
+      <div className="flex">
         <TimeColumn />
         <DayColumn
           date={currentDate}
@@ -354,28 +749,18 @@ function MonthView({
   const calendarEnd = endOfWeek(monthEnd);
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const getEventsForDay = (date: Date) => {
-    return events.filter((e) => isSameDay(e.start, date));
-  };
-
   return (
-    <Card className="overflow-hidden rounded-2xl">
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-gray-200">
+    <Card className="overflow-hidden">
+      <div className="grid grid-cols-7 border-b">
         {WEEKDAYS.map((day) => (
-          <div
-            key={day}
-            className="py-3 text-center text-sm font-medium text-gray-500 uppercase"
-          >
+          <div key={day} className="py-2 text-center text-xs font-medium text-muted-foreground uppercase">
             {day}
           </div>
         ))}
       </div>
-
-      {/* Calendar grid */}
       <div className="grid grid-cols-7">
         {days.map((day) => {
-          const dayEvents = getEventsForDay(day);
+          const dayEvents = events.filter((e) => isSameDay(e.start, day));
           const isCurrentMonth = isSameMonth(day, currentDate);
           const isCurrentDay = isToday(day);
 
@@ -383,45 +768,48 @@ function MonthView({
             <div
               key={day.toISOString()}
               className={cn(
-                'min-h-[120px] border-b border-r border-gray-100 p-2 cursor-pointer hover:bg-gray-50 transition-colors',
-                !isCurrentMonth && 'bg-gray-50/50'
+                'min-h-[100px] border-b border-r p-1 cursor-pointer hover:bg-muted/50 transition-colors',
+                !isCurrentMonth && 'bg-muted/30'
               )}
               onClick={() => onDateClick(day)}
             >
-              <div className="flex justify-between items-start mb-1">
+              <div className="flex justify-between items-start">
                 <span
                   className={cn(
-                    'inline-flex items-center justify-center w-7 h-7 text-sm rounded-full',
-                    isCurrentDay
-                      ? 'bg-primary text-white font-semibold'
-                      : isCurrentMonth
-                      ? 'text-gray-900'
-                      : 'text-gray-400'
+                    'inline-flex items-center justify-center w-6 h-6 text-xs rounded-full',
+                    isCurrentDay ? 'bg-primary text-white font-semibold' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   {format(day, 'd')}
                 </span>
+                {dayEvents.length > 0 && (
+                  <Badge variant="secondary" className="text-[10px] h-5">
+                    {dayEvents.length}
+                  </Badge>
+                )}
               </div>
-
-              {/* Events */}
-              <div className="space-y-1">
-                {dayEvents.slice(0, 3).map((event) => (
-                  <div
-                    key={event.id}
-                    className={cn(
-                      'text-xs px-2 py-0.5 rounded truncate cursor-pointer',
-                      getEventStyle(event)
-                    )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEventClick(event);
-                    }}
-                  >
-                    {formatTime(event.start)} {event.title}
-                  </div>
-                ))}
+              <div className="mt-1 space-y-0.5">
+                {dayEvents.slice(0, 3).map((event) => {
+                  const statusColor = event.status ? STATUS_CONFIG[event.status] : null;
+                  return (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        'text-[10px] px-1 py-0.5 rounded truncate',
+                        statusColor?.bgColor || 'bg-primary/10',
+                        statusColor?.color || 'text-primary'
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick(event);
+                      }}
+                    >
+                      {format(event.start, 'h:mma')} {event.booking?.customer_name?.split(' ')[0] || event.title}
+                    </div>
+                  );
+                })}
                 {dayEvents.length > 3 && (
-                  <div className="text-xs text-gray-500 px-2">
+                  <div className="text-[10px] text-muted-foreground px-1">
                     +{dayEvents.length - 3} more
                   </div>
                 )}
@@ -430,208 +818,6 @@ function MonthView({
           );
         })}
       </div>
-    </Card>
-  );
-}
-
-function EventDetailsDialog({
-  event,
-  open,
-  onOpenChange,
-}: {
-  event: CalendarEvent | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  if (!event) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg rounded-2xl">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                'w-3 h-3 rounded-full',
-                event.type === 'booking' && 'bg-primary',
-                event.type === 'google' && 'bg-blue-500',
-                event.type === 'blocked' && 'bg-gray-500',
-                event.type === 'manual' && 'bg-emerald-500'
-              )}
-            />
-            <DialogTitle>{event.title}</DialogTitle>
-          </div>
-          <DialogDescription>
-            {format(event.start, 'EEEE, MMMM d, yyyy')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 mt-4">
-          {/* Time */}
-          <div className="flex items-center gap-3">
-            <Icon name="clock" size="lg" className="text-gray-400" />
-            <div>
-              <p className="font-medium">
-                {formatTime(event.start)} - {formatTime(event.end)}
-              </p>
-            </div>
-          </div>
-
-          {/* Customer info */}
-          {event.customer && (
-            <div className="flex items-start gap-3">
-              <Icon name="user" size="lg" className="text-gray-400" />
-              <div>
-                <p className="font-medium">{event.customer.name}</p>
-                <p className="text-sm text-gray-500">{event.customer.phone}</p>
-                {event.customer.email && (
-                  <p className="text-sm text-gray-500">{event.customer.email}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Location */}
-          {event.location && (
-            <div className="flex items-start gap-3">
-              <Icon name="mapPin" size="lg" className="text-gray-400" />
-              <p className="text-gray-700">{event.location}</p>
-            </div>
-          )}
-
-          {/* Description */}
-          {event.description && (
-            <div className="flex items-start gap-3">
-              <Icon name="fileText" size="lg" className="text-gray-400" />
-              <p className="text-gray-700">{event.description}</p>
-            </div>
-          )}
-
-          {/* Source badge */}
-          <div className="pt-2">
-            <Badge variant="outline" className="rounded-lg">
-              {event.type === 'google' && (
-                <>
-                  <Icon name="google" size="xs" className="mr-1" />
-                  Google Calendar
-                </>
-              )}
-              {event.type === 'booking' && (
-                <>
-                  <Icon name="calendar" size="xs" className="mr-1" />
-                  Booking
-                </>
-              )}
-              {event.type === 'manual' && (
-                <>
-                  <Icon name="plus" size="xs" className="mr-1" />
-                  Manual Event
-                </>
-              )}
-              {event.type === 'blocked' && (
-                <>
-                  <Icon name="x" size="xs" className="mr-1" />
-                  Blocked Time
-                </>
-              )}
-            </Badge>
-          </div>
-        </div>
-
-        <DialogFooter className="mt-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
-            Close
-          </Button>
-          {event.type === 'booking' && (
-            <Button className="rounded-xl">
-              <Icon name="eye" size="sm" className="mr-2" />
-              View Booking
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function GoogleCalendarSync() {
-  const [connecting, setConnecting] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [connected, setConnected] = useState(false);
-
-  const handleConnect = async () => {
-    setConnecting(true);
-    try {
-      const response = await fetch('/api/integrations/google-calendar/connect', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
-      }
-    } catch (error) {
-      toast.error('Failed to connect Google Calendar');
-    } finally {
-      setConnecting(false);
-    }
-  };
-  
-  const handleSync = async () => {
-    setSyncing(true);
-    try {
-      // Sync bookings to Google Calendar
-      toast.success('Bookings synced to Google Calendar');
-    } catch {
-      toast.error('Sync failed');
-    }
-    setSyncing(false);
-  };
-
-  if (connected) {
-    return (
-      <Card className="rounded-2xl border-green-200 bg-green-50/50">
-        <CardContent className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <Icon name="checkCircle" size="lg" className="text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-green-900">Google Calendar Connected</p>
-              <p className="text-xs text-green-700">Bookings will sync automatically</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
-            {syncing ? (
-              <Icon name="loader" size="sm" className="animate-spin" />
-            ) : (
-              <><Icon name="refresh" size="sm" className="mr-1" />Sync Now</>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="rounded-2xl border-dashed border-2">
-      <CardContent className="flex items-center justify-between py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-            <Icon name="calendar" size="lg" className="text-blue-600" />
-          </div>
-          <div>
-            <p className="font-medium text-gray-900">Sync to Google Calendar</p>
-            <p className="text-xs text-gray-500">Push bookings to your Google Calendar</p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={handleConnect} disabled={connecting}>
-          {connecting ? (
-            <Icon name="loader" size="sm" className="animate-spin" />
-          ) : (
-            <><Icon name="plug" size="sm" className="mr-1" />Connect</>
-          )}
-        </Button>
-      </CardContent>
     </Card>
   );
 }
@@ -645,75 +831,49 @@ export default function CalendarPage() {
   const { business } = useBusiness();
   const [view, setView] = useState<CalendarView>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [eventDialogOpen, setEventDialogOpen] = useState(false);
-  const [googleConnected, setGoogleConnected] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>('09:00');
 
-  // Sample events for demonstration
-  useEffect(() => {
-    // Simulate loading events
-    const sampleEvents: CalendarEvent[] = [
-      {
-        id: '1',
-        title: 'Standard Clean - Smith',
-        start: setMinutes(setHours(new Date(), 9), 0),
-        end: setMinutes(setHours(new Date(), 11), 30),
-        type: 'booking',
-        customer: { name: 'John Smith', phone: '(555) 123-4567', email: 'john@example.com' },
-        location: '123 Main St, City, ST 12345',
-        status: 'confirmed',
-      },
-      {
-        id: '2',
-        title: 'Deep Clean - Johnson',
-        start: setMinutes(setHours(addDays(new Date(), 1), 14), 0),
-        end: setMinutes(setHours(addDays(new Date(), 1), 17), 0),
-        type: 'booking',
-        customer: { name: 'Sarah Johnson', phone: '(555) 987-6543' },
-        location: '456 Oak Ave, Town, ST 67890',
-        status: 'pending',
-      },
-      {
-        id: '3',
-        title: 'Team Meeting',
-        start: setMinutes(setHours(addDays(new Date(), 2), 10), 0),
-        end: setMinutes(setHours(addDays(new Date(), 2), 11), 0),
-        type: 'google',
-        description: 'Weekly team sync',
-      },
-      {
-        id: '4',
-        title: 'Lunch Break',
-        start: setMinutes(setHours(new Date(), 12), 0),
-        end: setMinutes(setHours(new Date(), 13), 0),
-        type: 'blocked',
-      },
-    ];
+  // Date range for fetching
+  const dateRange = useMemo(() => {
+    switch (view) {
+      case 'day':
+        return { startDate: currentDate, endDate: currentDate };
+      case 'week':
+        return { startDate: startOfWeek(currentDate), endDate: endOfWeek(currentDate) };
+      case 'month':
+        return { startDate: startOfMonth(currentDate), endDate: endOfMonth(currentDate) };
+    }
+  }, [view, currentDate]);
 
-    setTimeout(() => {
-      setEvents(sampleEvents);
-      setLoading(false);
-    }, 500);
-  }, []);
+  const { 
+    bookings, 
+    loading, 
+    stats, 
+    createBooking, 
+    updateBooking,
+    updateStatus,
+    getCalendarEvents,
+    refetch 
+  } = useBookings(dateRange);
+
+  const events = useMemo(() => 
+    getCalendarEvents(dateRange.startDate, dateRange.endDate),
+    [getCalendarEvents, dateRange]
+  );
 
   const handleNavigate = (direction: 'prev' | 'next') => {
     switch (view) {
       case 'day':
-        setCurrentDate((prev) =>
-          direction === 'prev' ? addDays(prev, -1) : addDays(prev, 1)
-        );
+        setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1));
         break;
       case 'week':
-        setCurrentDate((prev) =>
-          direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
-        );
+        setCurrentDate(prev => direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1));
         break;
       case 'month':
-        setCurrentDate((prev) =>
-          direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
-        );
+        setCurrentDate(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
         break;
     }
   };
@@ -721,13 +881,17 @@ export default function CalendarPage() {
   const handleToday = () => setCurrentDate(new Date());
 
   const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setEventDialogOpen(true);
+    if (event.booking) {
+      setSelectedBooking(event.booking);
+      setModalOpen(true);
+    }
   };
 
   const handleSlotClick = (date: Date, hour: number) => {
-    // Navigate to create new booking
-    toast.info('Create new booking clicked');
+    setSelectedDate(date);
+    setSelectedTime(`${hour.toString().padStart(2, '0')}:00`);
+    setSelectedBooking(null);
+    setModalOpen(true);
   };
 
   const handleDateClick = (date: Date) => {
@@ -735,7 +899,29 @@ export default function CalendarPage() {
     setView('day');
   };
 
-  if (loading) {
+  const handleSave = async (form: CreateBookingForm): Promise<boolean> => {
+    if (selectedBooking) {
+      return await updateBooking(selectedBooking.id, form as any);
+    } else {
+      const result = await createBooking(form);
+      return !!result;
+    }
+  };
+
+  const getDateLabel = () => {
+    switch (view) {
+      case 'day':
+        return format(currentDate, 'EEEE, MMMM d, yyyy');
+      case 'week':
+        const weekStart = startOfWeek(currentDate);
+        const weekEnd = endOfWeek(currentDate);
+        return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
+      case 'month':
+        return format(currentDate, 'MMMM yyyy');
+    }
+  };
+
+  if (loading && bookings.length === 0) {
     return (
       <Layout title="Calendar">
         <div className="flex items-center justify-center min-h-96">
@@ -747,160 +933,139 @@ export default function CalendarPage() {
 
   return (
     <Layout title="Calendar">
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-primary to-[#9D96FF] rounded-xl shadow-lg shadow-primary/20">
-              <Icon name="calendar" size="xl" className="text-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/20">
+              <Icon name="calendar" size="lg" className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-              <p className="text-gray-500">Your booking schedule and appointments</p>
+              <h1 className="text-xl font-bold">Calendar</h1>
+              <p className="text-sm text-muted-foreground">Manage your cleaning schedule</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="rounded-xl" onClick={() => router.push('/bookings')}>
-              <Icon name="list" size="sm" className="mr-2" />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.push('/bookings')}>
+              <Icon name="list" size="sm" className="mr-1" />
               List View
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90">
-              <Icon name="plus" size="sm" className="mr-2" />
-              Block Time
+            <Button 
+              size="sm"
+              onClick={() => {
+                setSelectedBooking(null);
+                setSelectedDate(new Date());
+                setSelectedTime('09:00');
+                setModalOpen(true);
+              }}
+            >
+              <Icon name="plus" size="sm" className="mr-1" />
+              New Booking
             </Button>
           </div>
         </div>
 
-        {/* Google Calendar Sync (optional) */}
-        <GoogleCalendarSync />
-
-        {/* Calendar Header */}
-        <CalendarHeader
-          currentDate={currentDate}
-          view={view}
-          onViewChange={setView}
-          onNavigate={handleNavigate}
-          onToday={handleToday}
-        />
-
-        {/* Calendar Views */}
-        {view === 'week' && (
-          <WeekView
-            currentDate={currentDate}
-            events={events}
-            onEventClick={handleEventClick}
-            onSlotClick={handleSlotClick}
-          />
-        )}
-
-        {view === 'day' && (
-          <DayView
-            currentDate={currentDate}
-            events={events}
-            onEventClick={handleEventClick}
-            onSlotClick={handleSlotClick}
-          />
-        )}
-
-        {view === 'month' && (
-          <MonthView
-            currentDate={currentDate}
-            events={events}
-            onEventClick={handleEventClick}
-            onDateClick={handleDateClick}
-          />
-        )}
-
-        {/* Sidebar with upcoming events */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1 rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Icon name="clock" size="lg" className="text-primary" />
-                Today's Schedule
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {events.filter((e) => isToday(e.start)).length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No events scheduled for today
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {events
-                    .filter((e) => isToday(e.start))
-                    .sort((a, b) => a.start.getTime() - b.start.getTime())
-                    .map((event) => (
-                      <div
-                        key={event.id}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
-                        onClick={() => handleEventClick(event)}
-                      >
-                        <div
-                          className={cn(
-                            'w-1 h-12 rounded-full',
-                            event.type === 'booking' && 'bg-primary',
-                            event.type === 'google' && 'bg-blue-500',
-                            event.type === 'blocked' && 'bg-gray-400'
-                          )}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
-                            {event.title}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {formatTime(event.start)} - {formatTime(event.end)}
-                          </p>
-                        </div>
-                        <Icon name="chevronRight" size="sm" className="text-gray-300" />
-                      </div>
-                    ))}
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            { label: 'Today', value: stats.todayCount, icon: 'calendar', color: 'bg-blue-100 text-blue-600' },
+            { label: 'Pending', value: stats.pending, icon: 'clock', color: 'bg-yellow-100 text-yellow-600' },
+            { label: 'Confirmed', value: stats.confirmed, icon: 'checkCircle', color: 'bg-green-100 text-green-600' },
+            { label: 'This Week', value: `$${stats.weekRevenue.toLocaleString()}`, icon: 'dollarSign', color: 'bg-emerald-100 text-emerald-600' },
+            { label: 'This Month', value: `$${stats.monthRevenue.toLocaleString()}`, icon: 'trendUp', color: 'bg-purple-100 text-purple-600' },
+          ].map((stat) => (
+            <Card key={stat.label} className="p-3">
+              <div className="flex items-center gap-2">
+                <div className={cn('p-1.5 rounded-lg', stat.color)}>
+                  <Icon name={stat.icon as any} size="sm" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2 rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Icon name="trendUp" size="lg" className="text-primary" />
-                Quick Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-50 rounded-xl">
-                  <p className="text-3xl font-bold text-gray-900">
-                    {events.filter((e) => e.type === 'booking').length}
-                  </p>
-                  <p className="text-sm text-gray-500">Bookings This Week</p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-xl">
-                  <p className="text-3xl font-bold text-primary">
-                    {events.filter((e) => isToday(e.start)).length}
-                  </p>
-                  <p className="text-sm text-gray-500">Today</p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-xl">
-                  <p className="text-3xl font-bold text-emerald-600">85%</p>
-                  <p className="text-sm text-gray-500">Availability</p>
-                </div>
-                <div className="text-center p-4 bg-gray-50 rounded-xl">
-                  <p className="text-3xl font-bold text-amber-600">2</p>
-                  <p className="text-sm text-gray-500">Pending Confirmation</p>
+                <div>
+                  <p className="text-lg font-bold">{stat.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{stat.label}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </Card>
+          ))}
+        </div>
+
+        {/* Calendar Controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleToday}>
+              Today
+            </Button>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleNavigate('prev')}>
+                <Icon name="chevronLeft" size="sm" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleNavigate('next')}>
+                <Icon name="chevronRight" size="sm" />
+              </Button>
+            </div>
+            <h2 className="text-lg font-semibold">{getDateLabel()}</h2>
+          </div>
+
+          <Tabs value={view} onValueChange={(v) => setView(v as CalendarView)}>
+            <TabsList className="h-8">
+              <TabsTrigger value="day" className="text-xs px-3 h-7">Day</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs px-3 h-7">Week</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs px-3 h-7">Month</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Calendar View */}
+        <div className="overflow-auto max-h-[calc(100vh-350px)]">
+          {view === 'week' && (
+            <WeekView
+              currentDate={currentDate}
+              events={events}
+              onEventClick={handleEventClick}
+              onSlotClick={handleSlotClick}
+            />
+          )}
+          {view === 'day' && (
+            <DayView
+              currentDate={currentDate}
+              events={events}
+              onEventClick={handleEventClick}
+              onSlotClick={handleSlotClick}
+            />
+          )}
+          {view === 'month' && (
+            <MonthView
+              currentDate={currentDate}
+              events={events}
+              onEventClick={handleEventClick}
+              onDateClick={handleDateClick}
+            />
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-3 text-xs">
+          {Object.entries(STATUS_CONFIG).slice(0, 4).map(([status, config]) => (
+            <div key={status} className="flex items-center gap-1.5">
+              <div className={cn('w-3 h-3 rounded', config.bgColor)} />
+              <span className="text-muted-foreground">{config.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Event Details Dialog */}
-      <EventDetailsDialog
-        event={selectedEvent}
-        open={eventDialogOpen}
-        onOpenChange={setEventDialogOpen}
+      {/* Booking Modal */}
+      <BookingModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedBooking(null);
+        }}
+        booking={selectedBooking}
+        selectedDate={selectedDate}
+        selectedTime={selectedTime}
+        onSave={handleSave}
+        onStatusChange={updateStatus}
       />
     </Layout>
   );
