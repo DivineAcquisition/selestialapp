@@ -448,9 +448,13 @@ export default function BookingsPage() {
               <Icon name="calendar" size="sm" className="mr-1" />
               Calendar
             </Button>
-            <Button variant="outline" size="sm" onClick={() => router.push('/bookings/customize')}>
+            <Button variant="outline" size="sm" onClick={() => router.push('/bookings/staff')}>
+              <Icon name="users" size="sm" className="mr-1" />
+              Team
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => router.push('/bookings/settings')}>
               <Icon name="settings" size="sm" className="mr-1" />
-              Widget
+              Settings
             </Button>
             <Button size="sm" onClick={() => router.push('/bookings/calendar')}>
               <Icon name="plus" size="sm" className="mr-1" />
