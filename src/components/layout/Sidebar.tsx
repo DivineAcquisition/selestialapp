@@ -28,6 +28,7 @@ const mainNavigation: NavItem[] = [
 const manageNavigation: NavItem[] = [
   { name: 'Calendar', href: '/bookings/calendar', icon: 'calendar' },
   { name: 'Bookings', href: '/bookings', icon: 'briefcase' },
+  { name: 'Team', href: '/bookings/staff', icon: 'userGroup' },
   { name: 'Quotes', href: '/quotes', icon: 'quote' },
   { name: 'Payments', href: '/payments', icon: 'creditCard' },
   { name: 'Customers', href: '/customers', icon: 'users' },

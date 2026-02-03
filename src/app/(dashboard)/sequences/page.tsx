@@ -34,14 +34,16 @@ const TEMPLATE_ICONS: Record<string, IconName> = {
   hand: 'loyalty',
   refresh: 'repeat',
   gift: 'gift',
+  repeat: 'repeat',
+  home: 'home',
 };
 
 const sequenceTemplates = [
   {
     id: 'quick-follow-up',
-    name: 'Quick Follow-Up',
+    name: 'Quote Follow-Up',
     icon: 'zap',
-    description: '3 messages over 5 days to convert quotes fast',
+    description: 'Convert cleaning quotes fast with 3 timely messages',
     type: 'quote',
     steps: 3,
     duration: '5 days',
@@ -50,9 +52,9 @@ const sequenceTemplates = [
   },
   {
     id: 'gentle-nurture',
-    name: 'Gentle Nurture',
+    name: 'Cleaning Quote Nurture',
     icon: 'leaf',
-    description: 'Soft touch sequence over 2 weeks',
+    description: 'Gentle 2-week sequence for undecided cleaning prospects',
     type: 'quote',
     steps: 5,
     duration: '14 days',
@@ -60,43 +62,64 @@ const sequenceTemplates = [
   },
   {
     id: 'urgency-builder',
-    name: 'Urgency Builder',
+    name: 'Limited Availability',
     icon: 'flame',
-    description: 'Create FOMO with limited availability',
+    description: 'Fill your cleaning schedule with urgency-driven follow-ups',
     type: 'quote',
     steps: 4,
     duration: '4 days',
     color: 'bg-red-500',
   },
   {
-    id: 'retention-welcome',
-    name: 'Welcome & Thank You',
+    id: 'post-clean-review',
+    name: 'Post-Clean Follow-Up',
     icon: 'hand',
-    description: 'Post-job follow-up for reviews & referrals',
+    description: 'Get reviews & referrals after cleaning jobs',
     type: 'retention',
     steps: 3,
-    duration: '30 days',
+    duration: '7 days',
+    popular: true,
     color: 'bg-purple-500',
   },
   {
     id: 'retention-reactivation',
-    name: 'Customer Reactivation',
+    name: 'Reactivation Campaign',
     icon: 'refresh',
-    description: 'Win back past customers',
+    description: 'Win back past cleaning customers who haven\'t booked',
     type: 'retention',
     steps: 4,
     duration: '90 days',
     color: 'bg-blue-500',
   },
   {
-    id: 'seasonal-promo',
-    name: 'Seasonal Promo',
+    id: 'spring-cleaning',
+    name: 'Spring Cleaning Promo',
     icon: 'gift',
-    description: 'Holiday and seasonal offers',
+    description: 'Seasonal deep cleaning special offers',
     type: 'retention',
     steps: 3,
     duration: '7 days',
     color: 'bg-pink-500',
+  },
+  {
+    id: 'recurring-reminder',
+    name: 'Recurring Service Reminder',
+    icon: 'repeat',
+    description: 'Remind customers when their next cleaning is due',
+    type: 'retention',
+    steps: 2,
+    duration: '3 days',
+    color: 'bg-cyan-500',
+  },
+  {
+    id: 'move-out-upsell',
+    name: 'Move-Out Clean Upsell',
+    icon: 'home',
+    description: 'Offer move-out deep cleaning to existing customers',
+    type: 'retention',
+    steps: 3,
+    duration: '14 days',
+    color: 'bg-indigo-500',
   },
 ];
 
@@ -255,8 +278,8 @@ export default function SequencesPage() {
             <Icon name="bolt" size="xl" className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">AI Sequence Builder</h1>
-            <p className="text-gray-500">Automated follow-ups and customer engagement</p>
+            <h1 className="text-2xl font-bold text-gray-900">Cleaning Sequences</h1>
+            <p className="text-gray-500">Automated follow-ups for quotes, bookings & retention</p>
           </div>
         </div>
 
@@ -325,10 +348,10 @@ export default function SequencesPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  {ALL_TEMPLATES.length}+ Pre-Built Sequence Templates
+                  {ALL_TEMPLATES.length}+ Cleaning Business Templates
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Speed-to-lead, quote follow-up, retention, seasonal campaigns, and more
+                  Quote follow-ups, post-cleaning reviews, reactivation campaigns & more
                 </p>
               </div>
             </div>
@@ -439,7 +462,7 @@ export default function SequencesPage() {
             <p className="text-sm text-gray-500 mb-8 max-w-md">
               {searchQuery || filterType !== 'all' 
                 ? 'Try adjusting your search or filters' 
-                : 'Create automated follow-up sequences to nurture leads and retain customers.'}
+                : 'Create automated sequences to follow up on cleaning quotes and keep customers coming back.'}
             </p>
             {!searchQuery && filterType === 'all' && (
               <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90 rounded-xl">
