@@ -1,32 +1,22 @@
+// Re-export from the main client file to ensure single instance
+// This prevents PKCE issues where different instances have different storage
+export { supabase, isSupabaseConfigured, isServiceRoleKeyError } from '@/integrations/supabase/client'
+
+// Also export createClient for compatibility
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/integrations/supabase/types'
 
-// Use placeholder values during build time to prevent build errors
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
 export function createClient() {
-  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)
+  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    isSingleton: true
+  })
 }
-
-// Lazy singleton for client components
-let _supabase: ReturnType<typeof createClient> | null = null
 
 export function getSupabaseClient() {
-  if (!_supabase) {
-    _supabase = createClient()
-  }
-  return _supabase
+  // Import and return the singleton from integrations
+  const { supabase } = require('@/integrations/supabase/client')
+  return supabase
 }
-
-// For backwards compatibility - uses lazy initialization
-export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
-  get(_target, prop) {
-    const client = getSupabaseClient()
-    const value = (client as unknown as Record<string | symbol, unknown>)[prop]
-    if (typeof value === 'function') {
-      return value.bind(client)
-    }
-    return value
-  }
-})

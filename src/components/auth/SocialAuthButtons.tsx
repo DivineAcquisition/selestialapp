@@ -22,17 +22,14 @@ export default function SocialAuthButtons() {
   const handleGoogleLogin = async () => {
     setLoading('google');
     try {
-      // Use API route for callback - handles PKCE server-side
-      const callbackUrl = `${window.location.origin}/api/auth/callback?redirect=/`
+      // Use client-side callback page - PKCE verifier stays in browser storage
+      const callbackUrl = `${window.location.origin}/auth/callback?redirect=/`
       
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: callbackUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
+          skipBrowserRedirect: false,
         },
       });
     } catch (error) {

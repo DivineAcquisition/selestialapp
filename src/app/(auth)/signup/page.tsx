@@ -98,17 +98,14 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setGoogleLoading(true)
     
-    // Use API route for callback - handles PKCE server-side
-    const callbackUrl = `${window.location.origin}/api/auth/callback?redirect=/onboarding`
+    // Use client-side callback page - PKCE verifier stays in browser storage
+    const callbackUrl = `${window.location.origin}/auth/callback?redirect=/onboarding`
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: callbackUrl,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        skipBrowserRedirect: false,
       },
     })
     

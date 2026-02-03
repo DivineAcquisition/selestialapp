@@ -42,7 +42,7 @@ function validateAnonKey(key: string): boolean {
 // Check key validity on initialization
 const isKeyValid = validateAnonKey(SUPABASE_ANON_KEY);
 
-// Create singleton instance
+// Create singleton instance with isSingleton option to ensure consistent PKCE storage
 let _supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
 
 function getSupabaseClient() {
@@ -52,14 +52,7 @@ function getSupabaseClient() {
     SUPABASE_URL, 
     isKeyValid ? SUPABASE_ANON_KEY : 'invalid-key-detected',
     {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'selestial-auth',
-      },
+      isSingleton: true, // Ensures same instance is used throughout the app
     }
   );
   

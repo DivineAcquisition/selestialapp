@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -14,11 +14,7 @@ function AuthCallbackContent() {
   const [status, setStatus] = useState<CallbackStatus>('loading');
   const [message, setMessage] = useState('');
   
-  useEffect(() => {
-    handleCallback();
-  }, []);
-  
-  const handleCallback = async () => {
+  const handleCallback = useCallback(async () => {
     try {
       const code = searchParams.get('code');
       const tokenHash = searchParams.get('token_hash');
@@ -27,7 +23,9 @@ function AuthCallbackContent() {
       const errorDescription = searchParams.get('error_description');
       const error_param = searchParams.get('error');
       
-      // Check for errors from Supabase
+      console.log('Auth callback - code:', !!code, 'tokenHash:', !!tokenHash, 'type:', type);
+      
+      // Check for errors from Supabase/OAuth
       if (errorDescription || error_param) {
         throw new Error(errorDescription || error_param || 'Authentication error');
       }
@@ -35,10 +33,20 @@ function AuthCallbackContent() {
       // Handle OAuth code exchange (Google, etc.)
       if (code) {
         console.log('Exchanging OAuth code for session...');
+        
+        // The exchangeCodeForSession will use the PKCE verifier stored by the browser client
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         
         if (error) {
           console.error('Code exchange error:', error);
+          // If PKCE fails, try getting session directly (in case auth already completed)
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData.session) {
+            setStatus('success');
+            setMessage('Signed in successfully!');
+            setTimeout(() => router.push(redirectTo), 1000);
+            return;
+          }
           throw error;
         }
         
@@ -46,27 +54,14 @@ function AuthCallbackContent() {
           console.log('Session established successfully');
           setStatus('success');
           setMessage('Signed in successfully!');
-          setTimeout(() => router.push(redirectTo), 1500);
-          return;
-        }
-      }
-      
-      // Check URL hash for implicit OAuth flow (older Supabase versions)
-      if (typeof window !== 'undefined' && window.location.hash) {
-        console.log('Checking URL hash for auth tokens...');
-        // Supabase client will automatically handle hash-based tokens
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setStatus('success');
-          setMessage('Signed in successfully!');
-          setTimeout(() => router.push(redirectTo), 1500);
+          setTimeout(() => router.push(redirectTo), 1000);
           return;
         }
       }
       
       // Handle email verification / magic link (token_hash)
       if (tokenHash && type) {
+        console.log('Verifying OTP token...');
         const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: type as 'signup' | 'recovery' | 'email_change' | 'email',
@@ -74,7 +69,6 @@ function AuthCallbackContent() {
         
         if (error) throw error;
         
-        // Success messages based on type
         switch (type) {
           case 'signup':
             setMessage('Email verified! Welcome to Selestial.');
@@ -90,11 +84,14 @@ function AuthCallbackContent() {
         }
         
         setStatus('success');
-        setTimeout(() => router.push(redirectTo), 2000);
+        setTimeout(() => router.push(redirectTo), 1500);
         return;
       }
       
-      // No code or token - check if we already have a session
+      // No code or token - check if session exists (maybe from URL hash or auto-detection)
+      // Wait a moment for Supabase to process any URL fragments
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) throw sessionError;
@@ -102,19 +99,23 @@ function AuthCallbackContent() {
       if (session) {
         setStatus('success');
         setMessage('Signed in successfully!');
-        setTimeout(() => router.push(redirectTo), 1500);
+        setTimeout(() => router.push(redirectTo), 1000);
         return;
       }
       
-      // No valid auth parameters found
-      throw new Error('Invalid callback parameters. Please try signing in again.');
+      // No valid auth found
+      throw new Error('Unable to complete authentication. Please try again.');
       
     } catch (error) {
       console.error('Auth callback error:', error);
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Verification failed');
+      setMessage(error instanceof Error ? error.message : 'Authentication failed');
     }
-  };
+  }, [searchParams, router]);
+  
+  useEffect(() => {
+    handleCallback();
+  }, [handleCallback]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
