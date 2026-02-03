@@ -45,6 +45,7 @@ const analyzeNavigation: NavItem[] = [
 ];
 
 const settingsNavigation: NavItem[] = [
+  { name: 'Email', href: '/settings/email', icon: 'email' },
   { name: 'Connections', href: '/connections', icon: 'plug' },
   { name: 'Billing', href: '/billing', icon: 'wallet' },
   { name: 'Settings', href: '/settings', icon: 'settings' },

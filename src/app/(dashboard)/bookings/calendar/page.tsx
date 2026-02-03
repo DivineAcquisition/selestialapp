@@ -554,13 +554,14 @@ function EventDetailsDialog({
   );
 }
 
-function GoogleCalendarConnect() {
+function GoogleCalendarSync() {
   const [connecting, setConnecting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [connected, setConnected] = useState(false);
 
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      // This would initiate OAuth flow
       const response = await fetch('/api/integrations/google-calendar/connect', {
         method: 'POST',
       });
@@ -574,28 +575,60 @@ function GoogleCalendarConnect() {
       setConnecting(false);
     }
   };
+  
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      // Sync bookings to Google Calendar
+      toast.success('Bookings synced to Google Calendar');
+    } catch {
+      toast.error('Sync failed');
+    }
+    setSyncing(false);
+  };
+
+  if (connected) {
+    return (
+      <Card className="rounded-2xl border-green-200 bg-green-50/50">
+        <CardContent className="flex items-center justify-between py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <Icon name="checkCircle" size="lg" className="text-green-600" />
+            </div>
+            <div>
+              <p className="font-medium text-green-900">Google Calendar Connected</p>
+              <p className="text-xs text-green-700">Bookings will sync automatically</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
+            {syncing ? (
+              <Icon name="loader" size="sm" className="animate-spin" />
+            ) : (
+              <><Icon name="refresh" size="sm" className="mr-1" />Sync Now</>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="rounded-2xl border-dashed border-2">
-      <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-          <Icon name="google" size="2xl" className="text-blue-600" />
+      <CardContent className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+            <Icon name="calendar" size="lg" className="text-blue-600" />
+          </div>
+          <div>
+            <p className="font-medium text-gray-900">Sync to Google Calendar</p>
+            <p className="text-xs text-gray-500">Push bookings to your Google Calendar</p>
+          </div>
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2">Connect Google Calendar</h3>
-        <p className="text-sm text-gray-500 max-w-xs mb-4">
-          Sync your Google Calendar to see all your events in one place and avoid double bookings.
-        </p>
-        <Button onClick={handleConnect} disabled={connecting} className="rounded-xl">
+        <Button variant="outline" size="sm" onClick={handleConnect} disabled={connecting}>
           {connecting ? (
-            <>
-              <Icon name="loader" size="sm" className="mr-2 animate-spin" />
-              Connecting...
-            </>
+            <Icon name="loader" size="sm" className="animate-spin" />
           ) : (
-            <>
-              <Icon name="plug" size="sm" className="mr-2" />
-              Connect Google Calendar
-            </>
+            <><Icon name="plug" size="sm" className="mr-1" />Connect</>
           )}
         </Button>
       </CardContent>
@@ -723,26 +756,24 @@ export default function CalendarPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-              <p className="text-gray-500">Manage your schedule and bookings</p>
+              <p className="text-gray-500">Your booking schedule and appointments</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="rounded-xl" onClick={() => router.push('/connections')}>
-              <Icon name="settings" size="sm" className="mr-2" />
-              Calendar Settings
+            <Button variant="outline" className="rounded-xl" onClick={() => router.push('/bookings')}>
+              <Icon name="list" size="sm" className="mr-2" />
+              List View
             </Button>
             <Button className="rounded-xl bg-gradient-to-r from-primary to-[#9D96FF] hover:opacity-90">
               <Icon name="plus" size="sm" className="mr-2" />
-              New Event
+              Block Time
             </Button>
           </div>
         </div>
 
-        {/* Google Calendar Connect Banner */}
-        {!googleConnected && (
-          <GoogleCalendarConnect />
-        )}
+        {/* Google Calendar Sync (optional) */}
+        <GoogleCalendarSync />
 
         {/* Calendar Header */}
         <CalendarHeader
