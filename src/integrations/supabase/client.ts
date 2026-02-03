@@ -42,17 +42,48 @@ function validateAnonKey(key: string): boolean {
 // Check key validity on initialization
 const isKeyValid = validateAnonKey(SUPABASE_ANON_KEY);
 
-// Create the client - will fail gracefully if key is invalid
-export const supabase = createBrowserClient<Database>(
-  SUPABASE_URL, 
-  isKeyValid ? SUPABASE_ANON_KEY : 'invalid-key-detected',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+// Create singleton instance
+let _supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
+function getSupabaseClient() {
+  if (_supabaseInstance) return _supabaseInstance;
+  
+  _supabaseInstance = createBrowserClient<Database>(
+    SUPABASE_URL, 
+    isKeyValid ? SUPABASE_ANON_KEY : 'invalid-key-detected',
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        storageKey: 'selestial-auth',
+      },
+      cookieOptions: {
+        name: 'sb-auth',
+        lifetime: 60 * 60 * 24 * 7, // 1 week
+        domain: '',
+        sameSite: 'lax',
+        path: '/',
+      }
     }
+  );
+  
+  return _supabaseInstance;
+}
+
+// Export singleton - ensures same instance is used for OAuth flow
+export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient<Database>>, {
+  get(_target, prop) {
+    const client = getSupabaseClient();
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
   }
-);
+});
 
 // Helper to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
