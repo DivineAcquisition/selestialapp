@@ -45,7 +45,7 @@ export default function Layout({
       </div>
       
       {/* Main content area - offset by sidebar width on desktop */}
-      <div className="flex flex-col min-h-screen md:ml-64 relative">
+      <div className="flex flex-col min-h-screen md:ml-60 relative">
         {/* Background pattern */}
         {showPattern && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -62,7 +62,7 @@ export default function Layout({
         
         <Header title={title} />
         
-        <main className="relative flex-1 p-5 md:p-6 lg:p-8 overflow-auto scrollbar-thin">
+        <main className="relative flex-1 p-4 md:p-5 lg:p-6 overflow-auto scrollbar-thin">
           <div className={cn(
             "mx-auto",
             maxWidthClasses[maxWidth],
