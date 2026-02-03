@@ -209,16 +209,9 @@ export default function CampaignsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-xl">{getTypeIcon(campaign.campaign_type)}</span>
                       <h3 className="font-semibold text-foreground">{campaign.name}</h3>
-                      <Badge className={cn('text-xs', getStatusColor(campaign.status))}>
+                      <Badge className={cn('text-xs', getStatusColor(campaign.status || 'draft'))}>
                         {campaign.status}
                       </Badge>
-                      {campaign.has_promotion && (
-                        <Badge variant="outline" className="text-xs">
-                          {campaign.promotion_type === 'percentage' 
-                            ? `${campaign.promotion_value}% off`
-                            : `$${campaign.promotion_value} off`}
-                        </Badge>
-                      )}
                     </div>
                     {campaign.description && (
                       <p className="text-sm text-muted-foreground mb-3">{campaign.description}</p>
@@ -226,21 +219,21 @@ export default function CampaignsPage() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
-                        {campaign.start_date 
-                          ? format(new Date(campaign.start_date), 'MMM d, yyyy')
+                        {campaign.started_at 
+                          ? format(new Date(campaign.started_at), 'MMM d, yyyy')
                           : 'Not scheduled'}
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Users className="w-4 h-4" />
-                        {campaign.total_targeted} targeted
+                        {campaign.recipient_count || 0} targeted
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Send className="w-4 h-4" />
-                        {campaign.total_sent} sent
+                        {campaign.sent_count || 0} sent
                       </span>
                       <span className="flex items-center gap-1.5">
                         <TrendingUp className="w-4 h-4" />
-                        {campaign.total_bookings} booked
+                        {campaign.clicked_count || 0} clicked
                       </span>
                     </div>
                   </div>

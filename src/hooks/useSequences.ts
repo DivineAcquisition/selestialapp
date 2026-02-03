@@ -93,12 +93,6 @@ export function useSequences() {
 
       if (updateError) throw updateError;
 
-      // Update business default
-      await supabase
-        .from('businesses')
-        .update({ default_sequence_id: id })
-        .eq('id', business.id);
-
       setSequences(prev => prev.map(s => ({
         ...s,
         is_default: s.id === id,

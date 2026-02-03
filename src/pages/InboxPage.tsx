@@ -75,8 +75,8 @@ export default function InboxPage() {
   const handlePauseResume = async () => {
     if (!selectedConversation) return;
     
-    const newStatus = selectedConversation.status === 'paused' ? 'active' : 'paused';
-    await updateQuoteStatus(selectedConversation.id, newStatus);
+    const newStatus = selectedConversation.status === 'following_up' ? 'new' : 'following_up';
+    await updateQuoteStatus(selectedConversation.id, newStatus as any);
     
     setSelectedConversation({
       ...selectedConversation,

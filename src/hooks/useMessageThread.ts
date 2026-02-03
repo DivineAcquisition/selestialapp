@@ -36,7 +36,7 @@ export function useMessageThread(quoteId: string | null) {
       // Fetch inbound messages
       const { data: inbound, error: inError } = await supabase
         .from('inbound_messages')
-        .select('id, created_at, content, is_read')
+        .select('id, created_at, content, is_processed')
         .eq('quote_id', quoteId)
         .order('created_at', { ascending: true });
 
@@ -46,17 +46,17 @@ export function useMessageThread(quoteId: string | null) {
       const combined: ThreadMessage[] = [
         ...(outbound || []).map((m) => ({
           id: m.id,
-          createdAt: m.created_at,
+          createdAt: m.created_at || '',
           content: m.content,
           direction: 'outbound' as const,
-          status: m.status,
+          status: m.status || 'pending',
         })),
         ...(inbound || []).map((m) => ({
           id: m.id,
-          createdAt: m.created_at,
+          createdAt: m.created_at || '',
           content: m.content,
           direction: 'inbound' as const,
-          status: m.is_read ? 'read' : 'unread',
+          status: m.is_processed ? 'read' : 'unread',
         })),
       ].sort((a, b) => 
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -64,9 +64,13 @@ export function useMessageThread(quoteId: string | null) {
 
       setMessages(combined);
 
-      // Mark as read
-      if (inbound && inbound.some(m => !m.is_read)) {
-        await supabase.rpc('mark_conversation_read', { p_quote_id: quoteId });
+      // Mark inbound as processed
+      if (inbound && inbound.some(m => !m.is_processed)) {
+        await supabase
+          .from('inbound_messages')
+          .update({ is_processed: true })
+          .eq('quote_id', quoteId)
+          .eq('is_processed', false);
       }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -133,7 +137,7 @@ export function useMessageThread(quoteId: string | null) {
         .from('phone_numbers')
         .select('phone_number')
         .eq('business_id', business.id)
-        .eq('status', 'active')
+        .eq('is_active', true)
         .single();
 
       if (phoneError || !phone) throw new Error('No active phone number');

@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Payment = Tables<'payments'>;
+type PaymentLink = Tables<'payment_links'>;
 
-interface PaymentWithQuote extends Payment {
+interface PaymentWithQuote extends PaymentLink {
   quotes?: {
     customer_name: string;
     service_type: string;
@@ -31,7 +31,7 @@ export function usePayments() {
     try {
       setLoading(true);
       const { data, error: fetchError } = await supabase
-        .from('payments')
+        .from('payment_links')
         .select(`
           *,
           quotes (
@@ -43,7 +43,7 @@ export function usePayments() {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setPayments(data || []);
+      setPayments((data || []) as PaymentWithQuote[]);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch payments:', err);
@@ -68,7 +68,7 @@ export function usePayments() {
         {
           event: '*',
           schema: 'public',
-          table: 'payments',
+          table: 'payment_links',
           filter: `business_id=eq.${business.id}`,
         },
         () => {
@@ -85,14 +85,10 @@ export function usePayments() {
   const getPaymentStats = useCallback((): PaymentStats => {
     const stats = payments.reduce(
       (acc, payment) => {
-        const refundedAmount = (payment as any).refunded_amount || 0;
-        if (payment.status === 'succeeded') {
-          acc.totalReceived += payment.amount - refundedAmount;
-        } else if (payment.status === 'pending') {
-          acc.totalPending += payment.amount;
-        }
-        if (refundedAmount) {
-          acc.totalRefunded += refundedAmount;
+        if (payment.status === 'paid') {
+          acc.totalReceived += payment.amount || 0;
+        } else if (payment.status === 'active') {
+          acc.totalPending += payment.amount || 0;
         }
         acc.count++;
         return acc;

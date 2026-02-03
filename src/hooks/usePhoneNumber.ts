@@ -1,14 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface PhoneNumber {
-  id: string;
-  phone_number: string;
-  friendly_name: string | null;
-  status: string;
-  sms_enabled: boolean;
-}
+type PhoneNumber = Tables<'phone_numbers'>;
 
 interface AvailableNumber {
   phone_number: string;
@@ -40,7 +35,7 @@ export function usePhoneNumber() {
         .from('phone_numbers')
         .select('*')
         .eq('business_id', business.id)
-        .eq('status', 'active')
+        .eq('is_active', true)
         .single();
 
       if (error && error.code !== 'PGRST116') {

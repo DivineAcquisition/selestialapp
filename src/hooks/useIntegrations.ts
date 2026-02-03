@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Integration {
-  id: string;
-  platform: string;
-  status: string;
-  account_name: string | null;
-  last_sync_at: string | null;
-  sync_error: string | null;
-}
+type Integration = Tables<'integrations'>;
+
+export type { Integration };
 
 export function useIntegrations() {
   const { business } = useBusiness();
@@ -20,10 +16,23 @@ export function useIntegrations() {
     if (!business) return;
 
     try {
+      // Use business_profile_id lookup - need to find the business_profile for this user
+      const { data: profile } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('user_id', business.user_id)
+        .single();
+
+      if (!profile) {
+        setIntegrations([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('integrations')
         .select('*')
-        .eq('business_id', business.id);
+        .eq('business_profile_id', profile.id);
 
       if (error) throw error;
       setIntegrations(data || []);
@@ -46,15 +55,25 @@ export function useIntegrations() {
     if (!business) return;
 
     try {
+      // Get business profile
+      const { data: profile } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('user_id', business.user_id)
+        .single();
+
+      if (!profile) throw new Error('No business profile found');
+
       const { error } = await supabase
         .from('integrations')
         .upsert({
-          business_id: business.id,
-          platform,
+          business_profile_id: profile.id,
+          platform: platform as Integration['platform'],
+          category: 'crm' as Integration['category'],
           status: 'connected',
-          account_name: accountName || null,
-          last_sync_at: new Date().toISOString(),
-        }, { onConflict: 'business_id,platform' });
+          external_name: accountName || null,
+          last_synced_at: new Date().toISOString(),
+        }, { onConflict: 'business_profile_id,platform' });
 
       if (error) throw error;
       await fetchIntegrations();
@@ -68,11 +87,19 @@ export function useIntegrations() {
     if (!business) return;
 
     try {
+      const { data: profile } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('user_id', business.user_id)
+        .single();
+
+      if (!profile) throw new Error('No business profile found');
+
       const { error } = await supabase
         .from('integrations')
         .delete()
-        .eq('business_id', business.id)
-        .eq('platform', platform);
+        .eq('business_profile_id', profile.id)
+        .eq('platform', platform as Integration['platform']);
 
       if (error) throw error;
       await fetchIntegrations();
