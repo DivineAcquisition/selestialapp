@@ -1,9 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Note: Using 'any' for Supabase calls because database types for new tables
-// (cleaning_bookings, staff_members, etc.) need to be regenerated after migration
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useBusiness } from '@/providers';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +12,10 @@ import type {
   CleaningAddon,
   CalendarEvent,
 } from '@/types/booking';
+import type {
+  CleaningBookingRow,
+  StaffMemberRow,
+} from '@/integrations/supabase/types-extended';
 import { 
   startOfDay, 
   endOfDay, 
@@ -25,6 +25,12 @@ import {
   format,
   addMinutes,
 } from 'date-fns';
+
+// Type-safe Supabase client for new tables
+// These casts will be unnecessary once types are regenerated
+const db = supabase as unknown as {
+  from: (table: string) => ReturnType<typeof supabase.from>;
+};
 
 // ============================================================================
 // HOOK OPTIONS
@@ -146,7 +152,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
     setError(null);
     
     try {
-      let query = (supabase as any)
+      let query = db
         .from('cleaning_bookings')
         .select('*')
         .eq('business_id', business.id)
@@ -263,7 +269,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
         updated_at: new Date().toISOString(),
       };
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await db
         .from('cleaning_bookings')
         .insert(bookingData)
         .select()
@@ -286,7 +292,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
   // Update booking
   const updateBooking = useCallback(async (id: string, data: Partial<Booking>): Promise<boolean> => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('cleaning_bookings')
         .update({ ...data, updated_at: new Date().toISOString() })
         .eq('id', id);
@@ -324,7 +330,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
         updates.cancellation_reason = reason;
       }
       
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('cleaning_bookings')
         .update(updates)
         .eq('id', id);
@@ -342,7 +348,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
   // Delete booking
   const deleteBooking = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('cleaning_bookings')
         .delete()
         .eq('id', id);
@@ -360,7 +366,7 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
   // Get booking by ID
   const getBookingById = useCallback(async (id: string): Promise<Booking | null> => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await db
         .from('cleaning_bookings')
         .select('*')
         .eq('id', id)
@@ -437,6 +443,46 @@ export function useBookings(options: UseBookingsOptions = {}): UseBookingsReturn
     }
   }, [business?.id, fetchBookings]);
 
+  // Real-time subscription for live updates
+  useEffect(() => {
+    if (!business?.id) return;
+
+    // Subscribe to changes on cleaning_bookings table
+    const channel = supabase
+      .channel('booking-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cleaning_bookings',
+          filter: `business_id=eq.${business.id}`,
+        },
+        (payload) => {
+          console.log('Booking change:', payload.eventType, payload);
+          
+          if (payload.eventType === 'INSERT') {
+            // Add new booking to state
+            setBookings(prev => [...prev, payload.new as Booking]);
+          } else if (payload.eventType === 'UPDATE') {
+            // Update existing booking
+            setBookings(prev => 
+              prev.map(b => b.id === payload.new.id ? (payload.new as Booking) : b)
+            );
+          } else if (payload.eventType === 'DELETE') {
+            // Remove deleted booking
+            setBookings(prev => prev.filter(b => b.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [business?.id]);
+
   return {
     bookings,
     loading,
@@ -467,7 +513,7 @@ export function useStaff() {
     
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await db
         .from('staff_members')
         .select('*')
         .eq('business_id', business.id)
@@ -488,7 +534,7 @@ export function useStaff() {
     if (!business?.id) return null;
     
     try {
-      const { data: created, error } = await (supabase as any)
+      const { data: created, error } = await db
         .from('staff_members')
         .insert({
           ...data,
@@ -511,7 +557,7 @@ export function useStaff() {
 
   const updateStaff = useCallback(async (id: string, data: Partial<Staff>): Promise<boolean> => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('staff_members')
         .update({ ...data, updated_at: new Date().toISOString() })
         .eq('id', id);
@@ -527,7 +573,7 @@ export function useStaff() {
 
   const deleteStaff = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('staff_members')
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq('id', id);
@@ -546,6 +592,41 @@ export function useStaff() {
       fetchStaff();
     }
   }, [business?.id, fetchStaff]);
+
+  // Real-time subscription for staff changes
+  useEffect(() => {
+    if (!business?.id) return;
+
+    const channel = supabase
+      .channel('staff-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staff_members',
+          filter: `business_id=eq.${business.id}`,
+        },
+        (payload) => {
+          console.log('Staff change:', payload.eventType);
+          
+          if (payload.eventType === 'INSERT') {
+            setStaff(prev => [...prev, payload.new as Staff]);
+          } else if (payload.eventType === 'UPDATE') {
+            setStaff(prev => 
+              prev.map(s => s.id === payload.new.id ? (payload.new as Staff) : s)
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setStaff(prev => prev.filter(s => s.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [business?.id]);
 
   return {
     staff,
@@ -573,7 +654,7 @@ export function useCleaningServices() {
     setLoading(true);
     try {
       // Fetch services
-      const { data: servicesData } = await (supabase as any)
+      const { data: servicesData } = await db
         .from('cleaning_services')
         .select('*')
         .eq('business_id', business.id)
@@ -581,7 +662,7 @@ export function useCleaningServices() {
         .order('display_order');
       
       // Fetch addons
-      const { data: addonsData } = await (supabase as any)
+      const { data: addonsData } = await db
         .from('cleaning_addons')
         .select('*')
         .eq('business_id', business.id)

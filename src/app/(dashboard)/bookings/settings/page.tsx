@@ -25,6 +25,11 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { BusinessHours, AvailabilitySettings } from '@/types/booking';
 
+// Type-safe db helper for new tables
+const db = supabase as unknown as {
+  from: (table: string) => ReturnType<typeof supabase.from>;
+};
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -248,7 +253,7 @@ export default function BookingSettingsPage() {
     const loadSettings = async () => {
       setLoading(true);
       try {
-        const { data } = await (supabase as any)
+        const { data } = await db
           .from('availability_settings')
           .select('*')
           .eq('business_id', business.id)
@@ -283,7 +288,7 @@ export default function BookingSettingsPage() {
 
     setSaving(true);
     try {
-      const { error } = await (supabase as any)
+      const { error } = await db
         .from('availability_settings')
         .upsert({
           business_id: business.id,

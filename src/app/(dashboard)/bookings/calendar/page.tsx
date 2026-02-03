@@ -1,8 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Note: Using 'any' for some type casts until database types are regenerated
-
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
@@ -409,6 +406,51 @@ function BookingModal({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            {/* Recurring Options */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Icon name="repeat" size="sm" className="text-muted-foreground" />
+                  <span className="text-sm font-medium">Make Recurring</span>
+                </div>
+                <Checkbox
+                  checked={form.frequency !== 'one_time'}
+                  onCheckedChange={(checked) => 
+                    setForm({ ...form, frequency: checked ? 'weekly' : 'one_time' })
+                  }
+                />
+              </div>
+              
+              {form.frequency !== 'one_time' && (
+                <div className="mt-3 p-3 rounded-lg bg-muted/50 space-y-3">
+                  <div>
+                    <Label className="text-xs">Frequency</Label>
+                    <Select
+                      value={form.frequency}
+                      onValueChange={(v) => setForm({ ...form, frequency: v as CleaningFrequency })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(FREQUENCY_LABELS).filter(([k]) => k !== 'one_time').map(([value, label]) => (
+                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Icon name="info" size="xs" />
+                    <span>
+                      {form.frequency === 'weekly' && 'Customer will be billed every week on this day'}
+                      {form.frequency === 'bi_weekly' && 'Customer will be billed every 2 weeks on this day'}
+                      {form.frequency === 'monthly' && 'Customer will be billed monthly on this day'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

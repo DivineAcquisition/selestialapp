@@ -1,5 +1,269 @@
 -- ============================================================================
 -- Calendar & Customer Management Infrastructure
+-- Complete Cleaning Business Booking System
+-- ============================================================================
+
+-- ============================================================================
+-- CORE BOOKING TABLE
+-- ============================================================================
+
+-- Cleaning Bookings (main bookings table)
+CREATE TABLE IF NOT EXISTS cleaning_bookings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  booking_number TEXT NOT NULL,
+  
+  -- Customer Info
+  customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT,
+  customer_phone TEXT NOT NULL,
+  
+  -- Service Details
+  service_type TEXT NOT NULL DEFAULT 'standard',
+  service_name TEXT,
+  frequency_name TEXT DEFAULT 'one_time',
+  
+  -- Property Details
+  address_line1 TEXT NOT NULL,
+  address_line2 TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  zip_code TEXT NOT NULL,
+  bedrooms INTEGER NOT NULL DEFAULT 3,
+  bathrooms DECIMAL(3,1) NOT NULL DEFAULT 2,
+  square_feet INTEGER,
+  property_type TEXT DEFAULT 'house',
+  has_pets BOOLEAN DEFAULT false,
+  pet_details TEXT,
+  
+  -- Scheduling
+  scheduled_date DATE NOT NULL,
+  scheduled_time_start TIME NOT NULL,
+  scheduled_time_end TIME,
+  estimated_duration_minutes INTEGER DEFAULT 120,
+  
+  -- Staff Assignment
+  assigned_staff_ids UUID[] DEFAULT '{}',
+  lead_staff_id UUID,
+  
+  -- Add-ons (stored as JSONB array)
+  addons JSONB DEFAULT '[]',
+  
+  -- Pricing (in dollars for display)
+  base_price DECIMAL(10,2) DEFAULT 0,
+  addons_total DECIMAL(10,2) DEFAULT 0,
+  discount_amount DECIMAL(10,2) DEFAULT 0,
+  discount_code TEXT,
+  subtotal DECIMAL(10,2) DEFAULT 0,
+  tax_amount DECIMAL(10,2) DEFAULT 0,
+  total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  deposit_amount DECIMAL(10,2) DEFAULT 0,
+  deposit_required BOOLEAN DEFAULT false,
+  
+  -- Payment
+  payment_status TEXT DEFAULT 'pending',
+  deposit_paid BOOLEAN DEFAULT false,
+  deposit_paid_at TIMESTAMPTZ,
+  paid_in_full_at TIMESTAMPTZ,
+  stripe_payment_intent_id TEXT,
+  
+  -- Status
+  status TEXT NOT NULL DEFAULT 'pending',
+  confirmed_at TIMESTAMPTZ,
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  cancelled_at TIMESTAMPTZ,
+  cancellation_reason TEXT,
+  
+  -- Notes
+  access_instructions TEXT,
+  special_requests TEXT,
+  internal_notes TEXT,
+  
+  -- Recurring
+  is_recurring BOOLEAN DEFAULT false,
+  recurring_parent_id UUID REFERENCES cleaning_bookings(id) ON DELETE SET NULL,
+  recurring_schedule JSONB,
+  
+  -- Source
+  source TEXT DEFAULT 'widget',
+  
+  -- Google Calendar sync
+  google_event_id TEXT,
+  
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for cleaning_bookings
+CREATE INDEX IF NOT EXISTS idx_cleaning_bookings_business 
+  ON cleaning_bookings(business_id);
+CREATE INDEX IF NOT EXISTS idx_cleaning_bookings_date 
+  ON cleaning_bookings(business_id, scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_cleaning_bookings_status 
+  ON cleaning_bookings(business_id, status);
+CREATE INDEX IF NOT EXISTS idx_cleaning_bookings_customer 
+  ON cleaning_bookings(customer_id);
+CREATE INDEX IF NOT EXISTS idx_cleaning_bookings_number 
+  ON cleaning_bookings(booking_number);
+
+-- RLS for cleaning_bookings
+ALTER TABLE cleaning_bookings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their bookings"
+  ON cleaning_bookings FOR SELECT
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can manage their bookings"
+  ON cleaning_bookings FOR ALL
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+-- ============================================================================
+-- AVAILABILITY SETTINGS
+-- ============================================================================
+
+-- Business Availability Settings
+CREATE TABLE IF NOT EXISTS availability_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  
+  -- Booking Window
+  min_advance_hours INTEGER DEFAULT 24,
+  max_advance_days INTEGER DEFAULT 60,
+  
+  -- Buffer Times
+  buffer_between_bookings INTEGER DEFAULT 30,
+  
+  -- Slots
+  slot_duration_minutes INTEGER DEFAULT 30,
+  slots_per_day_limit INTEGER,
+  
+  -- Service Area
+  service_zip_codes TEXT[] DEFAULT '{}',
+  service_radius_miles INTEGER,
+  
+  -- Business Hours (JSONB array of day configs)
+  business_hours JSONB DEFAULT '[
+    {"day_of_week": 0, "is_open": false, "open_time": "09:00", "close_time": "17:00"},
+    {"day_of_week": 1, "is_open": true, "open_time": "08:00", "close_time": "17:00"},
+    {"day_of_week": 2, "is_open": true, "open_time": "08:00", "close_time": "17:00"},
+    {"day_of_week": 3, "is_open": true, "open_time": "08:00", "close_time": "17:00"},
+    {"day_of_week": 4, "is_open": true, "open_time": "08:00", "close_time": "17:00"},
+    {"day_of_week": 5, "is_open": true, "open_time": "08:00", "close_time": "17:00"},
+    {"day_of_week": 6, "is_open": false, "open_time": "09:00", "close_time": "15:00"}
+  ]',
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(business_id)
+);
+
+-- RLS for availability_settings
+ALTER TABLE availability_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their availability settings"
+  ON availability_settings FOR SELECT
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can manage their availability settings"
+  ON availability_settings FOR ALL
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+-- ============================================================================
+-- CLEANING SERVICES CONFIG
+-- ============================================================================
+
+-- Cleaning Services (configurable by business)
+CREATE TABLE IF NOT EXISTS cleaning_services (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL, -- standard, deep, move_in, move_out, etc.
+  description TEXT,
+  
+  -- Pricing (in cents)
+  base_price INTEGER NOT NULL DEFAULT 10000,
+  price_per_bedroom INTEGER DEFAULT 2000,
+  price_per_bathroom INTEGER DEFAULT 1500,
+  price_per_sqft INTEGER,
+  minimum_price INTEGER DEFAULT 8000,
+  
+  -- Duration
+  base_duration_minutes INTEGER DEFAULT 90,
+  duration_per_bedroom INTEGER DEFAULT 20,
+  duration_per_bathroom INTEGER DEFAULT 15,
+  
+  -- Display
+  is_popular BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Cleaning Add-ons
+CREATE TABLE IF NOT EXISTS cleaning_addons (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  price INTEGER NOT NULL, -- in cents
+  duration_minutes INTEGER DEFAULT 15,
+  is_active BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_cleaning_services_business 
+  ON cleaning_services(business_id);
+CREATE INDEX IF NOT EXISTS idx_cleaning_addons_business 
+  ON cleaning_addons(business_id);
+
+-- RLS
+ALTER TABLE cleaning_services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cleaning_addons ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their cleaning services"
+  ON cleaning_services FOR SELECT
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can manage their cleaning services"
+  ON cleaning_services FOR ALL
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can view their cleaning addons"
+  ON cleaning_addons FOR SELECT
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can manage their cleaning addons"
+  ON cleaning_addons FOR ALL
+  USING (business_id IN (
+    SELECT id FROM businesses WHERE user_id = auth.uid()
+  ));
+
+-- ============================================================================
+-- INTEGRATION CONNECTIONS
 -- ============================================================================
 
 -- Integration Connections Table (for Google Calendar, etc.)
@@ -396,6 +660,38 @@ EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;
 
+DO $$ BEGIN
+  CREATE TRIGGER update_cleaning_bookings_updated_at
+    BEFORE UPDATE ON cleaning_bookings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_availability_settings_updated_at
+    BEFORE UPDATE ON availability_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_cleaning_services_updated_at
+    BEFORE UPDATE ON cleaning_services
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TRIGGER update_cleaning_addons_updated_at
+    BEFORE UPDATE ON cleaning_addons
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
 -- Add helpful views
 
 -- Customer with tags view
@@ -428,3 +724,42 @@ FROM staff_members s
 LEFT JOIN staff_availability sa ON s.id = sa.staff_id
 WHERE s.is_active = true
 ORDER BY s.first_name, sa.day_of_week;
+
+-- Upcoming bookings view
+CREATE OR REPLACE VIEW upcoming_bookings AS
+SELECT 
+  b.*,
+  c.email as customer_email_lookup,
+  c.phone as customer_phone_lookup
+FROM cleaning_bookings b
+LEFT JOIN customers c ON b.customer_id = c.id
+WHERE b.scheduled_date >= CURRENT_DATE
+  AND b.status NOT IN ('cancelled', 'completed')
+ORDER BY b.scheduled_date, b.scheduled_time_start;
+
+-- Today's bookings view
+CREATE OR REPLACE VIEW todays_bookings AS
+SELECT 
+  b.*,
+  array_agg(
+    json_build_object(
+      'id', s.id, 
+      'first_name', s.first_name, 
+      'last_name', s.last_name, 
+      'color', s.color
+    )
+  ) FILTER (WHERE s.id IS NOT NULL) as assigned_staff
+FROM cleaning_bookings b
+LEFT JOIN staff_members s ON s.id = ANY(b.assigned_staff_ids)
+WHERE b.scheduled_date = CURRENT_DATE
+GROUP BY b.id
+ORDER BY b.scheduled_time_start;
+
+-- ============================================================================
+-- ENABLE REALTIME FOR KEY TABLES
+-- ============================================================================
+
+-- Enable realtime for bookings (for live calendar updates)
+ALTER PUBLICATION supabase_realtime ADD TABLE cleaning_bookings;
+ALTER PUBLICATION supabase_realtime ADD TABLE staff_members;
+ALTER PUBLICATION supabase_realtime ADD TABLE calendar_blocked_times;

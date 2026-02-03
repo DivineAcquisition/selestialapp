@@ -1,8 +1,5 @@
 'use client';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Note: Using 'any' for Supabase calls until database types are regenerated
-
 import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card } from '@/components/ui/card';
@@ -31,6 +28,11 @@ import { Icon } from '@/components/ui/icon';
 import { useStaff } from '@/hooks/useBookings';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+
+// Type-safe db helper for new tables
+const db = supabase as unknown as {
+  from: (table: string) => ReturnType<typeof supabase.from>;
+};
 import { toast } from 'sonner';
 import type { Staff, StaffAvailability } from '@/types/booking';
 
@@ -299,13 +301,13 @@ function AvailabilityEditor({
       const existing = availability.find((a) => a.day_of_week === dayOfWeek);
       
       if (existing) {
-        await (supabase as any)
+        await db
           .from('staff_availability')
           .update(updates)
           .eq('id', existing.id);
       } else {
         const defaultAvail = DEFAULT_AVAILABILITY[dayOfWeek];
-        await (supabase as any)
+        await db
           .from('staff_availability')
           .insert({
             staff_id: staffId,
@@ -487,7 +489,7 @@ export default function StaffPage() {
   const loadAvailability = async (staffId: string) => {
     setLoadingAvailability(true);
     try {
-      const { data } = await (supabase as any)
+      const { data } = await db
         .from('staff_availability')
         .select('*')
         .eq('staff_id', staffId)
