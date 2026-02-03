@@ -2,6 +2,27 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/integrations/supabase/types'
 
 // ============================================================================
+// TYPE-SAFE QUERY HELPERS FOR ANALYTICS TABLES
+// ============================================================================
+// These tables are defined in migrations but may not be in generated types yet
+
+/**
+ * Get a table reference that bypasses TypeScript strict checking
+ * Use this for tables defined in migrations that aren't in generated types
+ */
+export function fromTable(supabase: SupabaseClient, tableName: string) {
+  return (supabase.from as CallableFunction)(tableName)
+}
+
+/**
+ * Call an RPC function that bypasses TypeScript strict checking
+ * Use this for functions defined in migrations that aren't in generated types
+ */
+export function callRpc(supabase: SupabaseClient, functionName: string, params: Record<string, unknown>) {
+  return (supabase.rpc as CallableFunction)(functionName, params)
+}
+
+// ============================================================================
 // CONNECTION STATUS
 // ============================================================================
 

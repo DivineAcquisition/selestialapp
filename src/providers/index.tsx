@@ -4,6 +4,7 @@ import { AuthProvider } from "./AuthProvider";
 import { BusinessProvider } from "./BusinessProvider";
 import { QueryProvider } from "./QueryProvider";
 import { FeatureAwarenessProvider } from "./FeatureAwarenessProvider";
+import { AnalyticsProvider } from "./AnalyticsProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <BusinessProvider>
             <FeatureAwarenessProvider>
-              {children}
+              <AnalyticsProvider>
+                {children}
+              </AnalyticsProvider>
             </FeatureAwarenessProvider>
           </BusinessProvider>
         </AuthProvider>
@@ -26,3 +29,4 @@ export function Providers({ children }: { children: React.ReactNode }) {
 export { useAuth } from "./AuthProvider";
 export { useBusiness } from "./BusinessProvider";
 export { useFeatureAwareness, useFeature, useIntegration, useConfig } from "./FeatureAwarenessProvider";
+export { useAnalyticsContext } from "./AnalyticsProvider";
