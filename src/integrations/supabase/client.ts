@@ -42,6 +42,31 @@ function validateAnonKey(key: string): boolean {
 // Check key validity on initialization
 const isKeyValid = validateAnonKey(SUPABASE_ANON_KEY);
 
+// Custom storage that uses localStorage with fallback
+const customStorage = typeof window !== 'undefined' ? {
+  getItem: (key: string) => {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      // Ignore storage errors
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // Ignore storage errors
+    }
+  },
+} : undefined;
+
 // Create singleton instance
 let _supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
 
@@ -54,18 +79,13 @@ function getSupabaseClient() {
     {
       isSingleton: true,
       auth: {
-        // Use implicit flow instead of PKCE to avoid storage issues
         flowType: 'implicit',
         detectSessionInUrl: true,
         persistSession: true,
         autoRefreshToken: true,
-      },
-      // Cookie settings for OAuth redirect persistence
-      cookieOptions: {
-        name: 'sb-auth',
-        sameSite: 'lax',
-        secure: true,
-        path: '/',
+        // Use localStorage explicitly for storage
+        storage: customStorage,
+        storageKey: 'supabase-auth',
       },
     }
   );
