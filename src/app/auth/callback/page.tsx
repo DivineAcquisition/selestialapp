@@ -24,34 +24,46 @@ function AuthCallbackContent() {
       const error_param = searchParams.get('error');
       
       console.log('Auth callback - code:', !!code, 'tokenHash:', !!tokenHash, 'type:', type);
+      console.log('URL hash:', typeof window !== 'undefined' ? window.location.hash : 'N/A');
       
       // Check for errors from Supabase/OAuth
       if (errorDescription || error_param) {
         throw new Error(errorDescription || error_param || 'Authentication error');
       }
       
-      // Handle OAuth code exchange (Google, etc.)
+      // For implicit flow, tokens come in the URL hash fragment
+      // Supabase client auto-detects and processes these
+      // Give it a moment to process the hash
+      if (typeof window !== 'undefined' && window.location.hash) {
+        console.log('Processing URL hash for implicit flow...');
+        // The Supabase client should automatically detect and process the hash
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      // Check if we have a session (from implicit flow hash or existing session)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+      }
+      
+      if (session) {
+        console.log('Session found!');
+        setStatus('success');
+        setMessage('Signed in successfully!');
+        setTimeout(() => router.push(redirectTo), 1000);
+        return;
+      }
+      
+      // Handle PKCE code exchange if present (fallback)
       if (code) {
-        console.log('Exchanging OAuth code for session...');
-        
-        // The exchangeCodeForSession will use the PKCE verifier stored by the browser client
+        console.log('Attempting PKCE code exchange...');
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         
         if (error) {
           console.error('Code exchange error:', error);
-          // If PKCE fails, try getting session directly (in case auth already completed)
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData.session) {
-            setStatus('success');
-            setMessage('Signed in successfully!');
-            setTimeout(() => router.push(redirectTo), 1000);
-            return;
-          }
-          throw error;
-        }
-        
-        if (data.session) {
-          console.log('Session established successfully');
+          // Don't throw - might still work via other means
+        } else if (data.session) {
           setStatus('success');
           setMessage('Signed in successfully!');
           setTimeout(() => router.push(redirectTo), 1000);
@@ -88,15 +100,11 @@ function AuthCallbackContent() {
         return;
       }
       
-      // No code or token - check if session exists (maybe from URL hash or auto-detection)
-      // Wait a moment for Supabase to process any URL fragments
+      // Final check for session after all processing
       await new Promise(resolve => setTimeout(resolve, 500));
+      const { data: finalCheck } = await supabase.auth.getSession();
       
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) throw sessionError;
-      
-      if (session) {
+      if (finalCheck.session) {
         setStatus('success');
         setMessage('Signed in successfully!');
         setTimeout(() => router.push(redirectTo), 1000);
