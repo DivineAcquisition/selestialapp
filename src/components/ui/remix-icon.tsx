@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import "remixicon/fonts/remixicon.css";
 
 // Comprehensive Remix Icon mapping
-// Browse all icons: https://remixicon.com/
+// Browse all: https://remixicon.com/
 export const icons = {
   // Navigation & UI
   home: "ri-home-5-line",
@@ -15,7 +15,6 @@ export const icons = {
   menuDotsVertical: "ri-more-2-fill",
   apps: "ri-apps-line",
   appsFill: "ri-apps-fill",
-  appsAdd: "ri-apps-2-line",
   search: "ri-search-line",
   searchFill: "ri-search-fill",
   settings: "ri-settings-3-line",
@@ -38,8 +37,6 @@ export const icons = {
   gridFill: "ri-grid-fill",
   sidebar: "ri-side-bar-line",
   layout: "ri-layout-grid-line",
-  columns: "ri-layout-column-line",
-  rows: "ri-layout-row-line",
   expand: "ri-fullscreen-line",
   compress: "ri-fullscreen-exit-line",
   maximize: "ri-maximize-line",
@@ -52,10 +49,6 @@ export const icons = {
   chevronDown: "ri-arrow-down-s-line",
   chevronsLeft: "ri-arrow-left-double-line",
   chevronsRight: "ri-arrow-right-double-line",
-  chevronsUp: "ri-arrow-up-double-line",
-  chevronsDown: "ri-arrow-down-double-line",
-  angleCircleRight: "ri-arrow-right-circle-line",
-  arrowCircleRight: "ri-arrow-right-circle-line",
   arrowLeft: "ri-arrow-left-line",
   arrowRight: "ri-arrow-right-line",
   arrowUp: "ri-arrow-up-line",
@@ -64,6 +57,7 @@ export const icons = {
   arrowDownLeft: "ri-arrow-left-down-line",
   undo: "ri-arrow-go-back-line",
   redo: "ri-arrow-go-forward-line",
+  refresh: "ri-refresh-line",
   
   // Users & People
   user: "ri-user-line",
@@ -78,7 +72,6 @@ export const icons = {
   usersFill: "ri-group-fill",
   usersAlt: "ri-team-line",
   userGroup: "ri-group-line",
-  following: "ri-user-follow-line",
   portrait: "ri-user-3-line",
   
   // Communication
@@ -89,7 +82,6 @@ export const icons = {
   phoneOutgoing: "ri-phone-line",
   phoneMissed: "ri-phone-line",
   phoneOff: "ri-phone-off-line",
-  phoneCircle: "ri-phone-line",
   email: "ri-mail-line",
   emailFill: "ri-mail-fill",
   envelope: "ri-mail-line",
@@ -154,8 +146,6 @@ export const icons = {
   trashFill: "ri-delete-bin-fill",
   trash2: "ri-delete-bin-6-line",
   delete: "ri-delete-bin-line",
-  refresh: "ri-refresh-line",
-  refreshCw: "ri-refresh-line",
   rotateCw: "ri-rotate-lock-line",
   rotateCcw: "ri-anticlockwise-line",
   download: "ri-download-line",
@@ -197,8 +187,7 @@ export const icons = {
   rewind: "ri-rewind-line",
   fastForward: "ri-speed-line",
   volume: "ri-volume-up-line",
-  volume1: "ri-volume-down-line",
-  volume2: "ri-volume-up-line",
+  volumeFill: "ri-volume-up-fill",
   volumeX: "ri-volume-mute-line",
   volumeMute: "ri-volume-mute-line",
   camera: "ri-camera-line",
@@ -236,13 +225,13 @@ export const icons = {
   
   // Social & Feedback
   heart: "ri-heart-line",
-  heartFilled: "ri-heart-fill",
+  heartFill: "ri-heart-fill",
   heartOff: "ri-dislike-line",
   star: "ri-star-line",
-  starFilled: "ri-star-fill",
+  starFill: "ri-star-fill",
   starHalf: "ri-star-half-line",
   bookmark: "ri-bookmark-line",
-  bookmarkFilled: "ri-bookmark-fill",
+  bookmarkFill: "ri-bookmark-fill",
   flag: "ri-flag-line",
   flagFill: "ri-flag-fill",
   thumbsUp: "ri-thumb-up-line",
@@ -251,8 +240,6 @@ export const icons = {
   smile: "ri-emotion-happy-line",
   frown: "ri-emotion-unhappy-line",
   meh: "ri-emotion-normal-line",
-  laugh: "ri-emotion-laugh-line",
-  angry: "ri-emotion-unhappy-line",
   
   // E-commerce & Business
   cart: "ri-shopping-cart-line",
@@ -292,7 +279,6 @@ export const icons = {
   tagFill: "ri-price-tag-3-fill",
   tags: "ri-price-tag-2-line",
   percent: "ri-percent-line",
-  percentage: "ri-percent-line",
   
   // Time & Calendar
   clock: "ri-time-line",
@@ -325,7 +311,6 @@ export const icons = {
   compass: "ri-compass-line",
   compassFill: "ri-compass-fill",
   navigation: "ri-navigation-line",
-  globe2: "ri-earth-line",
   
   // Security & Privacy
   lock: "ri-lock-line",
@@ -382,7 +367,6 @@ export const icons = {
   chartPie: "ri-pie-chart-line",
   chartPieFill: "ri-pie-chart-fill",
   chartArea: "ri-bar-chart-grouped-line",
-  chartHistogram: "ri-bar-chart-horizontal-line",
   stats: "ri-bar-chart-box-line",
   activity: "ri-pulse-line",
   pulse: "ri-pulse-line",
@@ -392,15 +376,12 @@ export const icons = {
   trendingDown: "ri-arrow-right-down-line",
   target: "ri-focus-3-line",
   crosshair: "ri-crosshair-line",
-  crosshairs: "ri-crosshair-2-line",
   gauge: "ri-dashboard-3-line",
   
   // Tech & Development
   code: "ri-code-line",
   codeFill: "ri-code-fill",
-  codeSimple: "ri-code-s-line",
   codeBranch: "ri-git-branch-line",
-  codeMerge: "ri-git-merge-line",
   terminal: "ri-terminal-line",
   terminalFill: "ri-terminal-fill",
   command: "ri-command-line",
@@ -417,7 +398,6 @@ export const icons = {
   bluetooth: "ri-bluetooth-line",
   cpu: "ri-cpu-line",
   chip: "ri-cpu-line",
-  microchip: "ri-cpu-line",
   monitor: "ri-computer-line",
   laptop: "ri-macbook-line",
   smartphone: "ri-smartphone-line",
@@ -436,9 +416,6 @@ export const icons = {
   magic: "ri-magic-line",
   magicFill: "ri-magic-fill",
   wand: "ri-magic-line",
-  wandSparkles: "ri-magic-line",
-  wandMagic: "ri-magic-line",
-  bahai: "ri-star-line",
   sparkle: "ri-sparkling-line",
   sparkles: "ri-sparkling-2-line",
   sparklesFill: "ri-sparkling-2-fill",
@@ -456,13 +433,11 @@ export const icons = {
   bookFill: "ri-book-fill",
   bookOpen: "ri-book-open-line",
   bookmark2: "ri-bookmark-line",
-  paw: "ri-bear-smile-line",
   rocket: "ri-rocket-line",
   rocketFill: "ri-rocket-fill",
   plane: "ri-plane-line",
   car: "ri-car-line",
   truck: "ri-truck-line",
-  bicycle: "ri-riding-line",
   gift: "ri-gift-line",
   giftFill: "ri-gift-fill",
   present: "ri-gift-line",
@@ -475,22 +450,12 @@ export const icons = {
   sunFill: "ri-sun-fill",
   moon: "ri-moon-line",
   moonFill: "ri-moon-fill",
-  cloudSun: "ri-sun-cloudy-line",
-  rainbow: "ri-rainbow-line",
-  umbrella: "ri-umbrella-line",
-  snowflake: "ri-snowy-line",
-  thermometer: "ri-temp-hot-line",
-  droplet: "ri-drop-line",
-  water: "ri-water-flash-line",
-  waves: "ri-water-flash-line",
   leaf: "ri-leaf-line",
   tree: "ri-plant-line",
-  flower: "ri-flower-line",
-  bug: "ri-bug-line",
+  droplet: "ri-drop-line",
   hammer: "ri-hammer-line",
   wrench: "ri-tools-line",
   tools: "ri-tools-line",
-  screwdriver: "ri-tools-line",
   paintBrush: "ri-brush-line",
   
   // Buildings & Places
@@ -516,18 +481,14 @@ export const icons = {
   rss: "ri-rss-line",
   webhook: "ri-link-m",
   network: "ri-share-circle-line",
-  networkCloud: "ri-cloud-line",
   
   // Sequences & Automation
   sequence: "ri-git-commit-line",
   repeat: "ri-repeat-line",
   repeat1: "ri-repeat-one-line",
-  arrowsRepeat: "ri-repeat-line",
-  arrowsRepeat1: "ri-repeat-one-line",
   shuffle: "ri-shuffle-line",
   automation: "ri-robot-line",
   workflow: "ri-flow-chart",
-  process: "ri-flow-chart",
   gitBranch: "ri-git-branch-line",
   gitMerge: "ri-git-merge-line",
   split: "ri-git-branch-line",
@@ -536,17 +497,14 @@ export const icons = {
   // Campaigns & Marketing
   campaign: "ri-megaphone-line",
   broadcast: "ri-broadcast-line",
-  broadcastTower: "ri-base-station-line",
   antenna: "ri-base-station-line",
   satellite: "ri-signal-tower-line",
   signal: "ri-signal-wifi-line",
-  signalAlt: "ri-signal-wifi-3-line",
   
   // Retention & Loyalty
   retention: "ri-refresh-line",
   loyalty: "ri-hearts-line",
   handshake: "ri-hand-heart-line",
-  handHoldingHeart: "ri-hand-heart-line",
   
   // AI & Intelligence
   ai: "ri-brain-line",
@@ -554,7 +512,6 @@ export const icons = {
   brain: "ri-brain-line",
   robot: "ri-robot-line",
   robotFill: "ri-robot-fill",
-  headSideBrain: "ri-brain-line",
   cpu2: "ri-cpu-line",
   
   // Loading & Progress
@@ -567,11 +524,9 @@ export const icons = {
   logout: "ri-logout-box-line",
   logOut: "ri-logout-box-r-line",
   signOut: "ri-logout-box-r-line",
-  signOutAlt: "ri-logout-box-r-line",
   login: "ri-login-box-line",
   logIn: "ri-login-box-line",
   signIn: "ri-login-box-line",
-  signInAlt: "ri-login-box-line",
   power: "ri-shut-down-line",
   powerOff: "ri-shut-down-line",
   
@@ -583,7 +538,6 @@ export const icons = {
   scissors: "ri-scissors-line",
   crop: "ri-crop-line",
   ruler: "ri-ruler-line",
-  rulerCombined: "ri-ruler-2-line",
   print: "ri-printer-line",
   printer: "ri-printer-line",
   save: "ri-save-line",
@@ -591,69 +545,11 @@ export const icons = {
   disk: "ri-save-line",
   at: "ri-at-line",
   hash: "ri-hashtag",
-  hashtag: "ri-hashtag",
   asterisk: "ri-asterisk",
   circle: "ri-checkbox-blank-circle-line",
   circleFill: "ri-checkbox-blank-circle-fill",
   square: "ri-checkbox-blank-line",
   squareFill: "ri-checkbox-blank-fill",
-  triangle: "ri-triangle-line",
-  octagon: "ri-octagon-line",
-  hexagon: "ri-hexagon-line",
-  
-  // Text & Typography
-  bold: "ri-bold",
-  italic: "ri-italic",
-  underline: "ri-underline",
-  strikethrough: "ri-strikethrough",
-  alignLeft: "ri-align-left",
-  alignCenter: "ri-align-center",
-  alignRight: "ri-align-right",
-  alignJustify: "ri-align-justify",
-  listUl: "ri-list-unordered",
-  listOl: "ri-list-ordered",
-  indent: "ri-indent-increase",
-  outdent: "ri-indent-decrease",
-  quote2: "ri-double-quotes-r",
-  quoteRight: "ri-double-quotes-r",
-  heading: "ri-heading",
-  paragraph: "ri-paragraph",
-  textSize: "ri-font-size",
-  font: "ri-font-size-2",
-  type: "ri-text",
-  text: "ri-text",
-  
-  // Math & Numbers
-  calculator: "ri-calculator-line",
-  plusMinus: "ri-add-line",
-  divide: "ri-divide-line",
-  equal: "ri-equal-line",
-  notEqual: "ri-subtract-line",
-  greaterThan: "ri-arrow-right-line",
-  lessThan: "ri-arrow-left-line",
-  infinity: "ri-infinity-line",
-  
-  // Arrows special
-  arrowLeftRight: "ri-arrow-left-right-line",
-  arrowUpDown: "ri-arrow-up-down-line",
-  arrowsAlt: "ri-fullscreen-line",
-  arrowsAltH: "ri-arrow-left-right-line",
-  arrowsAltV: "ri-arrow-up-down-line",
-  maximize2: "ri-fullscreen-line",
-  minimize2: "ri-fullscreen-exit-line",
-  arrowsMaximize: "ri-fullscreen-line",
-  arrowsMinimize: "ri-fullscreen-exit-line",
-  arrows: "ri-drag-move-2-line",
-  
-  // Cleaning specific icons
-  sprayCan: "ri-ink-bottle-line",
-  hardHat: "ri-user-star-line",
-  chair: "ri-armchair-line",
-  bedDouble: "ri-hotel-bed-line",
-  utensils: "ri-restaurant-line",
-  iron: "ri-shirt-line",
-  dog: "ri-bear-smile-line",
-  boxes: "ri-archive-stack-line",
   
   // Social Media
   twitter: "ri-twitter-x-line",
@@ -663,6 +559,12 @@ export const icons = {
   youtube: "ri-youtube-line",
   github: "ri-github-line",
   google: "ri-google-line",
+  
+  // Cleaning specific
+  sprayCan: "ri-ink-bottle-line",
+  hardHat: "ri-user-star-line",
+  broom: "ri-brush-2-line",
+  cleaning: "ri-brush-3-line",
   
 } as const;
 
@@ -675,27 +577,22 @@ interface IconProps {
   filled?: boolean;
 }
 
-// Size classes with explicit width/height for proper centering
+// Size classes mapped to rem values for consistency
 const sizeClasses = {
-  xs: "text-[12px]",
-  sm: "text-[14px]",
-  md: "text-[16px]",
-  lg: "text-[18px]",
-  xl: "text-[20px]",
-  "2xl": "text-[24px]",
-  "3xl": "text-[30px]",
-  "4xl": "text-[36px]",
+  xs: "text-[0.75rem]",     // 12px
+  sm: "text-[0.875rem]",    // 14px
+  md: "text-[1rem]",        // 16px
+  lg: "text-[1.125rem]",    // 18px
+  xl: "text-[1.25rem]",     // 20px
+  "2xl": "text-[1.5rem]",   // 24px
+  "3xl": "text-[1.875rem]", // 30px
+  "4xl": "text-[2.25rem]",  // 36px
 };
 
 export function Icon({ name, size = "md", className, filled = false }: IconProps) {
   let iconClass = icons[name];
   
-  if (!iconClass) {
-    console.warn(`Icon "${name}" not found`);
-    return null;
-  }
-  
-  // If filled version requested, try to use fill variant
+  // If filled version requested and exists, use it
   if (filled) {
     const filledName = `${name}Fill` as IconName;
     if (icons[filledName]) {
@@ -706,12 +603,17 @@ export function Icon({ name, size = "md", className, filled = false }: IconProps
     }
   }
   
+  if (!iconClass) {
+    console.warn(`Icon "${name}" not found`);
+    return null;
+  }
+  
   return (
     <i 
       className={cn(
         iconClass,
         sizeClasses[size],
-        "inline-flex items-center justify-center leading-none shrink-0",
+        "inline-flex items-center justify-center leading-none",
         className
       )} 
     />
