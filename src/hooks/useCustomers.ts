@@ -1,27 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBusiness } from '@/contexts/BusinessContext';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Customer {
-  id: string;
-  created_at: string;
-  name: string;
-  email: string | null;
-  phone: string;
-  address: string | null;
-  customer_type: string;
-  tags: string[];
-  first_service_at: string | null;
-  last_service_at: string | null;
-  next_service_at: string | null;
-  total_jobs: number;
-  total_spent: number;
-  average_job_value: number;
-  is_recurring: boolean;
-  recurring_frequency: string | null;
-  health_score: number;
-  notes: string | null;
-}
+type Customer = Tables<'customers'>;
 
 interface CustomerFilters {
   type?: string;
@@ -79,21 +61,16 @@ export function useCustomers(filters: CustomerFilters = {}) {
       if (error) throw error;
       setCustomers(data || []);
 
-      // Calculate stats from all customers
-      const { data: allCustomers } = await supabase
-        .from('customers')
-        .select('customer_type, health_score, last_service_at')
-        .eq('business_id', business.id);
-
-      if (allCustomers) {
+      // Calculate stats
+      if (data) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         setStats({
-          total: allCustomers.length,
-          recurring: allCustomers.filter(c => c.customer_type === 'recurring').length,
-          atRisk: allCustomers.filter(c => c.customer_type === 'at_risk' || c.health_score <= 30).length,
-          dormant: allCustomers.filter(c => 
+          total: data.length,
+          recurring: data.filter(c => c.is_recurring).length,
+          atRisk: data.filter(c => (c.health_score || 100) <= 30).length,
+          dormant: data.filter(c => 
             c.last_service_at && new Date(c.last_service_at) < thirtyDaysAgo
           ).length,
         });

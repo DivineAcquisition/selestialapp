@@ -32,11 +32,9 @@ export default function StepComplete() {
     }
     
     try {
-      // Calculate trial end date (14 days from now)
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
-      // 1. Create the business with trial setup
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
@@ -45,9 +43,8 @@ export default function StepComplete() {
           owner_name: data.ownerName,
           email: data.email,
           phone: toE164(data.phone),
-          industry: data.industry,
-          // Trial setup
-          subscription_status: 'trialing',
+          industry: data.industry as any,
+          subscription_status: 'trial',
           subscription_plan: 'starter',
           trial_ends_at: trialEndsAt.toISOString(),
           quotes_limit: 50,
@@ -58,7 +55,6 @@ export default function StepComplete() {
       
       if (businessError) throw businessError;
       
-      // 2. Create the default sequence if selected
       if (data.useDefaultSequence) {
         const { error: sequenceError } = await supabase.rpc('create_default_sequence', {
           p_business_id: business.id,
@@ -66,18 +62,14 @@ export default function StepComplete() {
         
         if (sequenceError) {
           console.error('Failed to create default sequence:', sequenceError);
-          // Non-fatal, continue
         }
       }
       
-      // 3. Log the activity
       await supabase.rpc('log_activity', {
         p_business_id: business.id,
         p_action: 'business_created',
-        p_description: 'Account setup completed',
       });
       
-      // 4. Send welcome email
       try {
         await sendWelcomeEmail(data.email, {
           userName: data.ownerName,
@@ -85,12 +77,9 @@ export default function StepComplete() {
         });
       } catch (emailError) {
         console.error('Failed to send welcome email:', emailError);
-        // Non-fatal, continue
       }
       
-      // 5. Refresh business context
       await refetchBusiness();
-      
       setStatus('success');
     } catch (err) {
       console.error('Onboarding error:', err);
@@ -111,14 +100,12 @@ export default function StepComplete() {
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <img src={selestialLogo} alt="Selestial" className="h-8" />
         </div>
       </header>
       
-      {/* Content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
           {status === 'saving' && (
@@ -146,7 +133,6 @@ export default function StepComplete() {
                 </p>
               </div>
               
-              {/* What's next */}
               <div className="bg-muted/50 rounded-lg p-6 text-left">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
@@ -154,28 +140,16 @@ export default function StepComplete() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
-                      1
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Add your first quote — Enter a recent quote you've given
-                    </span>
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">1</div>
+                    <span className="text-sm text-muted-foreground">Add your first quote — Enter a recent quote you've given</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
-                      2
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Watch the magic — We'll automatically follow up
-                    </span>
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">2</div>
+                    <span className="text-sm text-muted-foreground">Watch the magic — We'll automatically follow up</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
-                      3
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Win more jobs — Mark quotes as won when they convert
-                    </span>
+                    <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">3</div>
+                    <span className="text-sm text-muted-foreground">Win more jobs — Mark quotes as won when they convert</span>
                   </div>
                 </div>
               </div>
@@ -207,40 +181,21 @@ export default function StepComplete() {
               </div>
               
               <div className="flex flex-col gap-3">
-                <Button onClick={handleRetry}>
-                  Try Again
-                </Button>
-                <Button variant="ghost" onClick={() => navigate('/login')}>
-                  Back to Login
-                </Button>
+                <Button onClick={handleRetry}>Try Again</Button>
+                <Button variant="ghost" onClick={() => navigate('/login')}>Back to Login</Button>
               </div>
             </div>
           )}
         </div>
       </main>
       
-      {/* Footer */}
       <footer className="py-4 px-6 border-t border-border">
         <div className="max-w-md mx-auto flex items-center justify-center gap-4 text-sm text-muted-foreground">
           <span>© {new Date().getFullYear()} Selestial</span>
           <span>·</span>
-          <a 
-            href="https://selestial.io/privacy" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            Privacy
-          </a>
+          <a href="https://selestial.io/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Privacy</a>
           <span>·</span>
-          <a 
-            href="https://selestial.io/terms" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            Terms
-          </a>
+          <a href="https://selestial.io/terms" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Terms</a>
         </div>
       </footer>
     </div>
