@@ -16,7 +16,6 @@ export function useBilling() {
       if (error) throw error;
       if (!data.success) throw new Error(data.error);
 
-      // Redirect to Stripe checkout
       window.location.href = data.url;
     } catch (err) {
       setLoading(false);
@@ -34,7 +33,6 @@ export function useBilling() {
       if (error) throw error;
       if (!data.success) throw new Error(data.error);
 
-      // Redirect to Stripe portal
       window.location.href = data.url;
     } catch (err) {
       setLoading(false);
@@ -91,10 +89,8 @@ export function useBilling() {
       if (!data.success) throw new Error(data.error);
 
       if (data.url) {
-        // Redirect to checkout
         window.location.href = data.url;
       } else {
-        // Upgraded in place
         await refetchBusiness();
       }
 
@@ -106,8 +102,8 @@ export function useBilling() {
     }
   }, [refetchBusiness]);
 
-  // Computed properties
-  const isTrialing = business?.subscription_status === 'trialing';
+  // Use 'trial' instead of 'trialing' to match the enum
+  const isTrialing = business?.subscription_status === 'trial';
   const isActive = business?.subscription_status === 'active';
   const isPastDue = business?.subscription_status === 'past_due';
   const isCanceled = business?.subscription_status === 'canceled';

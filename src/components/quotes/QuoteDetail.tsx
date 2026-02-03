@@ -28,25 +28,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency, formatPhone, formatDate, formatDateTime, getDaysSince } from '@/lib/formatters';
 import { LOST_REASONS } from '@/lib/constants';
 import { 
-  Phone, 
-  Mail, 
-  Calendar, 
-  Clock, 
-  Edit2, 
-  Trophy, 
-  XCircle, 
-  Pause, 
-  Play,
-  X,
-  Loader2,
-  CheckCircle,
-  Send,
-  AlertCircle,
-  User,
-  RefreshCw,
-  CreditCard,
-  Copy,
-  ExternalLink
+  Phone, Mail, Calendar, Clock, Trophy, XCircle, Pause, Play,
+  X, Loader2, CheckCircle, Send, AlertCircle, User, RefreshCw,
+  CreditCard, Copy, ExternalLink
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -56,7 +40,7 @@ interface QuoteDetailProps {
   quote: Quote;
   onClose: () => void;
   onEdit: () => void;
-  onStatusChange: (status: 'won' | 'lost' | 'paused' | 'active', additionalData?: any) => Promise<void>;
+  onStatusChange: (status: 'won' | 'lost', additionalData?: any) => Promise<void>;
 }
 
 export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: QuoteDetailProps) {
@@ -75,7 +59,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
     ? LOST_REASONS.find(r => r.value === quote.lost_reason)?.label 
     : null;
   
-  const handleStatusChange = async (status: 'won' | 'lost' | 'paused' | 'active', additionalData?: any) => {
+  const handleStatusChange = async (status: 'won' | 'lost', additionalData?: any) => {
     setUpdating(true);
     try {
       await onStatusChange(status, additionalData);
@@ -96,10 +80,6 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
     await handleStatusChange('lost', { lost_reason: lostReason || 'other' });
     setShowLostDialog(false);
     setLostReason('');
-  };
-  
-  const handleTogglePause = () => {
-    handleStatusChange(quote.status === 'paused' ? 'active' : 'paused');
   };
 
   const handleResendNotifications = async () => {
@@ -138,13 +118,9 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
         description: 'The payment link has been generated and is ready to share.',
       });
       
-      // Copy to clipboard
       if (data?.url) {
         await navigator.clipboard.writeText(data.url);
-        toast({
-          title: 'Copied to clipboard',
-          description: 'Payment link copied to your clipboard.',
-        });
+        toast({ title: 'Copied to clipboard', description: 'Payment link copied to your clipboard.' });
       }
     } catch (err) {
       toast({
@@ -160,17 +136,15 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
   const handleCopyPaymentLink = async () => {
     if (quote.payment_link_url) {
       await navigator.clipboard.writeText(quote.payment_link_url);
-      toast({
-        title: 'Copied',
-        description: 'Payment link copied to clipboard.',
-      });
+      toast({ title: 'Copied', description: 'Payment link copied to clipboard.' });
     }
   };
+  
+  const isActiveQuote = quote.status === 'new' || quote.status === 'following_up';
   
   return (
     <>
       <Card className="h-full flex flex-col">
-        {/* Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-start justify-between">
             <div>
@@ -190,24 +164,16 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
           </div>
         </div>
         
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Contact info */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Contact</h3>
             <div className="space-y-2">
-              <a 
-                href={`tel:${quote.customer_phone}`}
-                className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-              >
+              <a href={`tel:${quote.customer_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                 <Phone className="h-4 w-4 text-muted-foreground" />
                 {formatPhone(quote.customer_phone)}
               </a>
               {quote.customer_email && (
-                <a 
-                  href={`mailto:${quote.customer_email}`}
-                  className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-                >
+                <a href={`mailto:${quote.customer_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   {quote.customer_email}
                 </a>
@@ -215,7 +181,6 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             </div>
           </div>
           
-          {/* Quote details */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Details</h3>
             <div className="space-y-2 text-sm">
@@ -223,7 +188,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 Created {formatDate(quote.created_at)} ({daysSince} days ago)
               </div>
-              {quote.next_message_at && quote.status === 'active' && (
+              {quote.next_message_at && isActiveQuote && (
                 <div className="flex items-center gap-2 text-foreground">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   Next message: {formatDateTime(quote.next_message_at)}
@@ -245,7 +210,6 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             </div>
           </div>
           
-          {/* Notes */}
           {quote.description && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Notes</h3>
@@ -253,22 +217,11 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             </div>
           )}
 
-          {/* Notification Status */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Notifications</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResendNotifications}
-                disabled={resending}
-                className="h-7 text-xs"
-              >
-                {resending ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                ) : (
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                )}
+              <Button variant="ghost" size="sm" onClick={handleResendNotifications} disabled={resending} className="h-7 text-xs">
+                {resending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
                 Resend
               </Button>
             </div>
@@ -304,12 +257,10 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             </div>
           </div>
           
-          {/* Payment Status Section */}
           {stripeStatus.connected && stripeStatus.chargesEnabled && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Payment</h3>
               <div className="space-y-3">
-                {/* Payment Status */}
                 <div className="flex items-center gap-2 text-sm">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   {quote.payment_status === 'paid' ? (
@@ -320,47 +271,24 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                     </span>
                   ) : quote.payment_status === 'pending' ? (
                     <span className="text-amber-600">Payment pending</span>
-                  ) : quote.payment_status === 'refunded' ? (
-                    <span className="text-muted-foreground">Refunded</span>
                   ) : (
                     <span className="text-muted-foreground">Not paid</span>
                   )}
                 </div>
                 
-                {/* Payment Link */}
                 {quote.payment_link_url ? (
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={handleCopyPaymentLink}
-                    >
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={handleCopyPaymentLink}>
                       <Copy className="h-3 w-3 mr-1" />
                       Copy Payment Link
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => window.open(quote.payment_link_url!, '_blank')}
-                    >
+                    <Button variant="ghost" size="sm" className="h-8" onClick={() => window.open(quote.payment_link_url!, '_blank')}>
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
                 ) : quote.status !== 'won' && quote.status !== 'lost' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full h-8 text-xs"
-                    onClick={handleGeneratePaymentLink}
-                    disabled={generatingPaymentLink}
-                  >
-                    {generatingPaymentLink ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    ) : (
-                      <CreditCard className="h-3 w-3 mr-1" />
-                    )}
+                  <Button variant="outline" size="sm" className="w-full h-8 text-xs" onClick={handleGeneratePaymentLink} disabled={generatingPaymentLink}>
+                    {generatingPaymentLink ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CreditCard className="h-3 w-3 mr-1" />}
                     Generate Payment Link
                   </Button>
                 )}
@@ -370,20 +298,15 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
           
           <Separator />
           
-          {/* Message history */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">
-              Message History
-            </h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Message History</h3>
             
             {messagesLoading ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : messages.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No messages yet.
-              </p>
+              <p className="text-sm text-muted-foreground text-center py-4">No messages yet.</p>
             ) : (
               <ScrollArea className="h-48">
                 <div className="space-y-3">
@@ -404,12 +327,8 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground break-words">
-                          {message.content}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {formatDateTime(message.created_at)}
-                        </p>
+                        <p className="text-sm text-foreground break-words">{message.content}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{formatDateTime(message.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -419,9 +338,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
           </div>
         </div>
         
-        {/* Footer actions */}
         <div className="p-4 border-t border-border space-y-3">
-          {/* Status actions */}
           {quote.status !== 'won' && quote.status !== 'lost' && (
             <div className="flex gap-2">
               <Button 
@@ -430,11 +347,7 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
                 onClick={handleMarkWon}
                 disabled={updating}
               >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Trophy className="h-4 w-4 mr-2" />
-                )}
+                {updating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trophy className="h-4 w-4 mr-2" />}
                 Mark Won
               </Button>
               <Button 
@@ -449,68 +362,33 @@ export default function QuoteDetail({ quote, onClose, onEdit, onStatusChange }: 
             </div>
           )}
           
-          {/* Pause/Resume for active quotes */}
-          {(quote.status === 'active' || quote.status === 'paused') && (
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={handleTogglePause}
-              disabled={updating}
-            >
-              {updating ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : quote.status === 'paused' ? (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Resume Sequence
-                </>
-              ) : (
-                <>
-                  <Pause className="h-4 w-4 mr-2" />
-                  Pause Sequence
-                </>
-              )}
-            </Button>
-          )}
-          
-          {/* Edit button */}
-          <Button variant="ghost" className="w-full" onClick={onEdit}>
-            <Edit2 className="h-4 w-4 mr-2" />
+          <Button variant="outline" className="w-full" onClick={onEdit}>
             Edit Quote
           </Button>
         </div>
       </Card>
       
-      {/* Lost reason dialog */}
       <Dialog open={showLostDialog} onOpenChange={setShowLostDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark Quote as Lost</DialogTitle>
-            <DialogDescription>
-              Why did this quote not convert? This helps track patterns.
-            </DialogDescription>
+            <DialogTitle>Mark as Lost</DialogTitle>
+            <DialogDescription>Why did you lose this quote?</DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-2">
-            <Label>Reason (optional)</Label>
+          <div className="py-4">
+            <Label>Reason</Label>
             <Select value={lostReason} onValueChange={setLostReason}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a reason..." />
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select a reason" />
               </SelectTrigger>
               <SelectContent>
                 {LOST_REASONS.map((reason) => (
-                  <SelectItem key={reason.value} value={reason.value}>
-                    {reason.label}
-                  </SelectItem>
+                  <SelectItem key={reason.value} value={reason.value}>{reason.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLostDialog(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setShowLostDialog(false)}>Cancel</Button>
             <Button variant="destructive" onClick={confirmMarkLost} disabled={updating}>
               {updating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Mark as Lost

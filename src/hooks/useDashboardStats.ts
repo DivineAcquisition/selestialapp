@@ -5,7 +5,7 @@ export function useDashboardStats() {
   const { quotes, loading } = useQuotes();
 
   const stats = useMemo(() => {
-    const activeQuotes = quotes.filter(q => ['new', 'active'].includes(q.status)).length;
+    const activeQuotes = quotes.filter(q => ['new', 'following_up'].includes(q.status)).length;
     
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -17,7 +17,7 @@ export function useDashboardStats() {
     );
     
     const wonAmount = wonThisMonth.reduce((sum, q) => 
-      sum + (q.final_job_amount || q.quote_amount), 0
+      sum + (q.final_job_amount || q.quote_amount || 0), 0
     );
     
     const closedQuotes = quotes.filter(q => ['won', 'lost'].includes(q.status));
