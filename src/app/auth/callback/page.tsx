@@ -20,61 +20,94 @@ function AuthCallbackContent() {
   
   const handleCallback = async () => {
     try {
+      const code = searchParams.get('code');
       const tokenHash = searchParams.get('token_hash');
       const type = searchParams.get('type');
-      const redirectTo = searchParams.get('redirect_to') || '/';
+      const redirectTo = searchParams.get('redirect') || searchParams.get('redirect_to') || '/';
       const errorDescription = searchParams.get('error_description');
+      const error_param = searchParams.get('error');
       
       // Check for errors from Supabase
-      if (errorDescription) {
-        throw new Error(errorDescription);
+      if (errorDescription || error_param) {
+        throw new Error(errorDescription || error_param || 'Authentication error');
       }
       
-      if (!tokenHash || !type) {
-        // Check if we have a session from OAuth callback
-        const { data: { session }, error } = await supabase.auth.getSession();
+      // Handle OAuth code exchange (Google, etc.)
+      if (code) {
+        console.log('Exchanging OAuth code for session...');
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Code exchange error:', error);
+          throw error;
+        }
         
+        if (data.session) {
+          console.log('Session established successfully');
+          setStatus('success');
+          setMessage('Signed in successfully!');
+          setTimeout(() => router.push(redirectTo), 1500);
+          return;
+        }
+      }
+      
+      // Check URL hash for implicit OAuth flow (older Supabase versions)
+      if (typeof window !== 'undefined' && window.location.hash) {
+        console.log('Checking URL hash for auth tokens...');
+        // Supabase client will automatically handle hash-based tokens
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setStatus('success');
           setMessage('Signed in successfully!');
-          setTimeout(() => router.push('/'), 1500);
+          setTimeout(() => router.push(redirectTo), 1500);
           return;
         }
+      }
+      
+      // Handle email verification / magic link (token_hash)
+      if (tokenHash && type) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as 'signup' | 'recovery' | 'email_change' | 'email',
+        });
         
-        throw new Error('Invalid callback parameters');
+        if (error) throw error;
+        
+        // Success messages based on type
+        switch (type) {
+          case 'signup':
+            setMessage('Email verified! Welcome to Selestial.');
+            break;
+          case 'recovery':
+            setMessage('Verified! You can now reset your password.');
+            break;
+          case 'email_change':
+            setMessage('Email updated successfully!');
+            break;
+          default:
+            setMessage('Verification successful!');
+        }
+        
+        setStatus('success');
+        setTimeout(() => router.push(redirectTo), 2000);
+        return;
       }
       
-      // Verify the token
-      const { error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: type as 'signup' | 'recovery' | 'email_change' | 'email',
-      });
+      // No code or token - check if we already have a session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (error) throw error;
+      if (sessionError) throw sessionError;
       
-      // Success messages based on type
-      switch (type) {
-        case 'signup':
-          setMessage('Email verified! Welcome to Selestial.');
-          break;
-        case 'recovery':
-          setMessage('Verified! You can now reset your password.');
-          break;
-        case 'email_change':
-          setMessage('Email updated successfully!');
-          break;
-        default:
-          setMessage('Verification successful!');
+      if (session) {
+        setStatus('success');
+        setMessage('Signed in successfully!');
+        setTimeout(() => router.push(redirectTo), 1500);
+        return;
       }
       
-      setStatus('success');
-      
-      // Redirect after delay
-      setTimeout(() => {
-        router.push(redirectTo);
-      }, 2000);
+      // No valid auth parameters found
+      throw new Error('Invalid callback parameters. Please try signing in again.');
       
     } catch (error) {
       console.error('Auth callback error:', error);
