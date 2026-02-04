@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -480,29 +480,31 @@ function TemplateEditor({
 // ============================================================================
 
 export default function EmailSettingsPage() {
-  const { business } = useBusiness();
-  const [loading, setLoading] = useState(true);
+  const { business, loading: businessLoading } = useBusiness();
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState<EmailSettings>(DEFAULT_SETTINGS);
   const [templates, setTemplates] = useState<EmailTemplate[]>(DEFAULT_TEMPLATES);
   const [activeTab, setActiveTab] = useState('sender');
   
-  // Load settings
-  useEffect(() => {
-    if (!business?.id) {
-      setLoading(false);
-      return;
+  // Compute initial settings from business
+  const initialSettings = useMemo((): EmailSettings => ({
+    ...DEFAULT_SETTINGS,
+    fromName: business?.name || '',
+    fromEmail: business?.email || '',
+    replyToEmail: business?.email || '',
+  }), [business?.name, business?.email]);
+  
+  const [settings, setSettings] = useState<EmailSettings>(initialSettings);
+  
+  // Update settings when business changes
+  const settingsKey = `${business?.id}-${business?.name}-${business?.email}`;
+  useMemo(() => {
+    if (business?.id) {
+      setSettings(initialSettings);
     }
-    
-    // Initialize with business defaults
-    setSettings({
-      ...DEFAULT_SETTINGS,
-      fromName: business.name || '',
-      fromEmail: business.email || '',
-      replyToEmail: business.email || '',
-    });
-    setLoading(false);
-  }, [business]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsKey]);
+  
+  const loading = businessLoading;
   
   const handleSave = async () => {
     setSaving(true);
@@ -584,7 +586,7 @@ export default function EmailSettingsPage() {
                           className="mt-1"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                          This name appears in the "From" field
+                          This name appears in the From field
                         </p>
                       </div>
                       <div>

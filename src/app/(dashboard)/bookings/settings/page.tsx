@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+// Textarea available if needed
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -271,7 +271,7 @@ export default function BookingSettingsPage() {
             business_hours: data.business_hours || DEFAULT_BUSINESS_HOURS,
           });
         }
-      } catch (err) {
+      } catch {
         // Table might not exist yet
         console.log('Settings not found, using defaults');
       } finally {
@@ -699,7 +699,7 @@ export default function BookingSettingsPage() {
                   <div>
                     <p className="font-medium">Daily Summary</p>
                     <p className="text-sm text-muted-foreground">
-                      Morning digest of the day's schedule
+                      Morning digest of the daily schedule
                     </p>
                   </div>
                   <Switch defaultChecked />
