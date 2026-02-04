@@ -610,7 +610,7 @@ function BookingWidgetDemo() {
             >
               <Icon name="mapPin" size="xl" className="mx-auto text-gray-400 mb-3" />
               <h4 className="font-semibold text-gray-900 mb-2">Enter Your ZIP Code</h4>
-              <p className="text-sm text-gray-500 mb-4">We'll check if we service your area</p>
+              <p className="text-sm text-gray-500 mb-4">We will check if we service your area</p>
               <Input placeholder="Enter ZIP code" className="max-w-[200px] mx-auto text-center" />
             </motion.div>
           )}

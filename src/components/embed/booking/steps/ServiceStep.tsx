@@ -210,7 +210,7 @@ export function ServiceStep({ onSelect, showScheduleAfterSelect = false }: Servi
                           showServiceDetails(service.id);
                         }}
                       >
-                        What's Included?
+                        What is Included?
                       </Button>
                     </div>
                   </CardContent>

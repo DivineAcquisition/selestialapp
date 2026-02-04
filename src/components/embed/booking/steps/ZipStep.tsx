@@ -108,7 +108,7 @@ export function ZipStep({ onContinue }: ZipStepProps) {
           <div className="space-y-4">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900">
               {formMode === 'waitlist-success'
-                ? "You're On The List! 🎉"
+                ? {`You're On The List! 🎉`}
                 : config.promo.enabled
                   ? config.promo.headline
                   : `Book Your ${branding.businessName} Today`}
@@ -117,7 +117,7 @@ export function ZipStep({ onContinue }: ZipStepProps) {
             {formMode !== 'waitlist-success' && (
               <p className="text-gray-600 text-sm md:text-base">
                 {formMode === 'waitlist'
-                  ? "We're not in your area yet, but we're expanding soon!"
+                  ? {`We're not in your area yet, but we're expanding soon!`}
                   : "Premium service at transparent prices. Enter your ZIP code to get started."}
               </p>
             )}
@@ -146,7 +146,7 @@ export function ZipStep({ onContinue }: ZipStepProps) {
                       autoFocus
                     />
                     <p className="text-xs text-gray-500">
-                      We'll check if we service your area
+                      We will check if we service your area
                     </p>
                   </div>
 
@@ -266,10 +266,10 @@ export function ZipStep({ onContinue }: ZipStepProps) {
                     <Icon name="mapPin" size="lg" className="text-amber-600 mt-0.5" />
                     <div className="text-left">
                       <p className="font-semibold text-amber-800">
-                        We're not in {bookingData.zipCode} yet
+                        We are not in {bookingData.zipCode} yet
                       </p>
                       <p className="text-sm text-amber-700">
-                        But we're expanding to your area soon! Join our waitlist.
+                        But we are expanding to your area soon! Join our waitlist.
                       </p>
                     </div>
                   </div>
@@ -358,14 +358,14 @@ export function ZipStep({ onContinue }: ZipStepProps) {
                       Thanks for joining, {bookingData.firstName}!
                     </h2>
                     <p className="text-gray-500">
-                      We've added you to our waitlist for ZIP code {bookingData.zipCode}.
-                      You'll be the first to know when we start servicing your area.
+                      We have added you to our waitlist for ZIP code {bookingData.zipCode}.
+                      You will be the first to know when we start servicing your area.
                     </p>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-500">
                     <p>📧 Check your email for a confirmation</p>
-                    <p className="mt-1">We'll reach out soon!</p>
+                    <p className="mt-1">We will reach out soon!</p>
                   </div>
 
                   <Button
