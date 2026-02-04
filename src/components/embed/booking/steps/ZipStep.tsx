@@ -108,7 +108,7 @@ export function ZipStep({ onContinue }: ZipStepProps) {
           <div className="space-y-4">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900">
               {formMode === 'waitlist-success'
-                ? {`You're On The List! 🎉`}
+                ? `You're On The List! 🎉`
                 : config.promo.enabled
                   ? config.promo.headline
                   : `Book Your ${branding.businessName} Today`}
@@ -117,7 +117,7 @@ export function ZipStep({ onContinue }: ZipStepProps) {
             {formMode !== 'waitlist-success' && (
               <p className="text-gray-600 text-sm md:text-base">
                 {formMode === 'waitlist'
-                  ? {`We're not in your area yet, but we're expanding soon!`}
+                  ? `We're not in your area yet, but we're expanding soon!`
                   : "Premium service at transparent prices. Enter your ZIP code to get started."}
               </p>
             )}
