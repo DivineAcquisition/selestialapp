@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import {
   BookingStatusDonut,
   WeeklyHeatmap 
 } from '@/components/charts';
-import { AnimatedCounter } from '@/components/ui/text-effects';
+// AnimatedCounter available for future use
 import { Icon } from '@/components/ui/icon';
 import { useAnalytics, useMetricsSummary } from '@/hooks/useAnalytics';
 
@@ -121,11 +121,7 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('monthly');
   const [activeTab, setActiveTab] = useState("overview");
   const { 
-    currentMetrics, 
-    metricsHistory, 
-    alerts, 
     isLoading, 
-    dismissAlert 
   } = useAnalytics(period);
   const { data: summary } = useMetricsSummary();
 
@@ -282,7 +278,7 @@ export default function AnalyticsPage() {
                       <div>
                         <p className="font-medium text-violet-900">Customer retention opportunity</p>
                         <p className="text-sm text-violet-700 mt-1">
-                          15 customers haven't booked in 30+ days. Consider sending a win-back campaign.
+                          15 customers have not booked in 30+ days. Consider sending a win-back campaign.
                         </p>
                       </div>
                     </div>

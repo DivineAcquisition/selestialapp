@@ -103,7 +103,7 @@ export default function StepPhoneSetup() {
             <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
               <Icon name="alertCircle" size="lg" className="text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-medium text-amber-800 dark:text-amber-200">You'll need a Twilio account</h4>
+                <h4 className="font-medium text-amber-800 dark:text-amber-200">You will need a Twilio account</h4>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                   Twilio charges about $0.01 per SMS. Most users spend $5-20/month.{' '}
                   <a
@@ -163,7 +163,7 @@ export default function StepPhoneSetup() {
             </div>
             
             <p className="text-sm text-muted-foreground">
-              After setup, we'll help you get a phone number for sending messages.
+              After setup, we will help you get a phone number for sending messages.
             </p>
           </div>
         )}
@@ -173,7 +173,7 @@ export default function StepPhoneSetup() {
             <p className="text-sm text-muted-foreground">
               No problem! You can connect Twilio anytime in Settings → Phone Setup.
               <br /><br />
-              You'll still be able to add quotes and track your pipeline.
+              You will still be able to add quotes and track your pipeline.
             </p>
           </div>
         )}

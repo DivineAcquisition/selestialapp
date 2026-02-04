@@ -202,8 +202,8 @@ export default function PaymentSettings() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Disconnect Stripe?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        You won't be able to accept payments until you reconnect. Existing payments
-                        and payouts won't be affected.
+                        You will not be able to accept payments until you reconnect. Existing payments
+                        and payouts will not be affected.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

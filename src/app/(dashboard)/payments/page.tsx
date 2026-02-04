@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+// Switch available for future use
 import {
   Select,
   SelectContent,
@@ -608,8 +609,8 @@ function LinkDetailsModal({
 // ============================================================================
 
 export default function PaymentLinksPage() {
-  const { toast } = useToast();
-  const { links, loading, stripeConfigured, createLink, sendLink, cancelLink, refetch } = usePaymentLinks();
+  useToast(); // Available for notifications
+  const { links, loading, stripeConfigured, createLink, sendLink, cancelLink } = usePaymentLinks();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

@@ -7,51 +7,29 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placehol
 
 // Validate that we're not using the service role key in the browser
 function validateAnonKey(key: string): boolean {
-  if (!key || key === 'placeholder-key') return true; // Skip validation for placeholder
-  
+  if (!key || key === 'placeholder-key') return true;
   try {
-    // JWT tokens have 3 parts separated by dots
     const parts = key.split('.');
-    if (parts.length !== 3) return true; // Not a valid JWT, let Supabase handle it
-    
-    // Decode the payload (second part)
+    if (parts.length !== 3) return true;
     const payload = JSON.parse(atob(parts[1]));
-    
-    // Service role keys have role: 'service_role'
-    // Anon keys have role: 'anon'
     if (payload.role === 'service_role') {
-      console.error(
-        '⚠️ SECURITY ERROR: You are using the service_role key in the browser!\n' +
-        'This key should NEVER be exposed to the client.\n' +
-        'Please use the "anon" key instead.\n\n' +
-        'To fix this:\n' +
-        '1. Go to your Supabase dashboard > Settings > API\n' +
-        '2. Copy the "anon public" key (NOT service_role)\n' +
-        '3. Update NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel environment variables'
-      );
+      console.error('⚠️ SECURITY ERROR: Using service_role key in browser!');
       return false;
     }
-    
     return true;
   } catch {
-    // If we can't decode the token, let Supabase handle validation
     return true;
   }
 }
 
-// Check key validity on initialization
 const isKeyValid = validateAnonKey(SUPABASE_ANON_KEY);
 
-// Create the client - will fail gracefully if key is invalid
+// Create the Supabase browser client
+// Using createBrowserClient from @supabase/ssr which handles cookies automatically
+// This is critical for PKCE OAuth flow where code_verifier must persist across redirects
 export const supabase = createBrowserClient<Database>(
-  SUPABASE_URL, 
-  isKeyValid ? SUPABASE_ANON_KEY : 'invalid-key-detected',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    }
-  }
+  SUPABASE_URL,
+  isKeyValid ? SUPABASE_ANON_KEY : 'invalid-key'
 );
 
 // Helper to check if Supabase is properly configured

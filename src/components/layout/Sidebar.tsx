@@ -4,13 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useBusiness, useFeatureAwareness } from '@/providers';
+import { useBusiness } from '@/providers';
 import { useAuth } from '@/providers';
 import { useConversations } from '@/hooks/useConversations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Icon } from '@/components/ui/icon';
-import type { FeatureKey } from '@/lib/features/feature-registry';
 import type { IconName } from '@/components/ui/icon';
 
 interface NavItem {
@@ -19,36 +18,38 @@ interface NavItem {
   icon: IconName;
   showBadge?: boolean;
   badge?: string;
-  feature?: FeatureKey;
 }
 
 const mainNavigation: NavItem[] = [
-  { name: 'Dashboard', href: '/', icon: 'home' },
+  { name: 'Dashboard', href: '/analytics', icon: 'chart' },
   { name: 'Inbox', href: '/inbox', icon: 'inbox', showBadge: true },
 ];
 
 const manageNavigation: NavItem[] = [
-  { name: 'Bookings', href: '/bookings', icon: 'calendar', feature: 'calendar' },
+  { name: 'Calendar', href: '/bookings/calendar', icon: 'calendar' },
+  { name: 'Bookings', href: '/bookings', icon: 'briefcase' },
+  { name: 'Team', href: '/bookings/staff', icon: 'userGroup' },
   { name: 'Quotes', href: '/quotes', icon: 'quote' },
-  { name: 'Payment Links', href: '/payments', icon: 'link', feature: 'payment_links' },
+  { name: 'Payments', href: '/payments', icon: 'creditCard' },
   { name: 'Customers', href: '/customers', icon: 'users' },
 ];
 
 const engageNavigation: NavItem[] = [
-  { name: 'Sequences', href: '/sequences', icon: 'sequence', feature: 'sequences' },
+  { name: 'Sequences', href: '/sequences', icon: 'sequence' },
   { name: 'Campaigns', href: '/campaigns', icon: 'megaphone' },
+  { name: 'Retention', href: '/retention', icon: 'heart' },
 ];
 
 const analyzeNavigation: NavItem[] = [
-  { name: 'Analytics', href: '/analytics', icon: 'chart', feature: 'reports' },
-  { name: 'Pricing Wizard', href: '/pricing', icon: 'sparkles', feature: 'pricing_engine' },
+  { name: 'Reports', href: '/analytics', icon: 'chartBar' },
+  { name: 'Pricing Wizard', href: '/pricing', icon: 'sparkles' },
 ];
 
 const settingsNavigation: NavItem[] = [
+  { name: 'Email', href: '/settings/email', icon: 'email' },
   { name: 'Connections', href: '/connections', icon: 'plug' },
-  { name: 'Billing', href: '/billing', icon: 'creditCard' },
+  { name: 'Billing', href: '/billing', icon: 'wallet' },
   { name: 'Settings', href: '/settings', icon: 'settings' },
-  { name: 'Support', href: '/settings/support', icon: 'help' },
 ];
 
 // Routes that should only match exactly (have sub-routes in nav)
@@ -58,14 +59,13 @@ interface NavLinkProps {
   item: NavItem;
   pathname: string;
   totalUnread: number;
-  hasWarning: boolean;
 }
 
-function NavLink({ item, pathname, totalUnread, hasWarning }: NavLinkProps) {
+function NavLink({ item, pathname, totalUnread }: NavLinkProps) {
   const isExactMatchOnly = exactMatchRoutes.includes(item.href);
   const isActive = isExactMatchOnly 
     ? pathname === item.href
-    : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
+    : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/')) || (item.href === '/analytics' && pathname === '/');
   
   return (
     <Link
@@ -77,7 +77,7 @@ function NavLink({ item, pathname, totalUnread, hasWarning }: NavLinkProps) {
           : 'text-muted-foreground hover:bg-accent hover:text-foreground'
       )}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <Icon 
           name={item.icon} 
           size="md"
@@ -91,9 +91,6 @@ function NavLink({ item, pathname, totalUnread, hasWarning }: NavLinkProps) {
           <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-primary/10 text-primary">
             {item.badge}
           </span>
-        )}
-        {hasWarning && (
-          <span className="w-2 h-2 rounded-full bg-amber-500" title="Setup required" />
         )}
       </div>
       
@@ -111,24 +108,18 @@ interface NavSectionProps {
   items: NavItem[];
   pathname: string;
   totalUnread: number;
-  shouldShowNavItem: (item: NavItem) => boolean;
-  hasNavItemWarning: (item: NavItem) => boolean;
 }
 
-function NavSection({ label, items, pathname, totalUnread, shouldShowNavItem, hasNavItemWarning }: NavSectionProps) {
-  const visibleItems = items.filter(shouldShowNavItem);
-  if (visibleItems.length === 0) return null;
-  
+function NavSection({ label, items, pathname, totalUnread }: NavSectionProps) {
   return (
-    <div className="space-y-1">
-      <p className="px-3 mb-2 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">{label}</p>
-      {visibleItems.map((item) => (
+    <div className="space-y-0.5">
+      <p className="px-3 mb-1.5 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{label}</p>
+      {items.map((item) => (
         <NavLink 
           key={item.name} 
           item={item} 
           pathname={pathname}
           totalUnread={totalUnread}
-          hasWarning={hasNavItemWarning(item)}
         />
       ))}
     </div>
@@ -141,7 +132,6 @@ export default function Sidebar() {
   const { business } = useBusiness();
   const { user, signOut } = useAuth();
   const { totalUnread } = useConversations();
-  const { isFeatureAvailable, isFeatureEnabled, canUseFeature } = useFeatureAwareness();
   
   const initials = business?.owner_name
     ? business.owner_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -151,24 +141,12 @@ export default function Sidebar() {
     await signOut();
     router.push('/login');
   };
-  
-  // Check if a nav item should be shown based on feature availability
-  const shouldShowNavItem = (item: NavItem): boolean => {
-    if (!item.feature) return true;
-    return isFeatureAvailable(item.feature);
-  };
-  
-  // Check if a nav item has issues (enabled but missing dependencies)
-  const hasNavItemWarning = (item: NavItem): boolean => {
-    if (!item.feature) return false;
-    return isFeatureEnabled(item.feature) && !canUseFeature(item.feature);
-  };
 
   return (
-    <div className="flex h-screen w-60 flex-col bg-card border-r border-border">
+    <div className="flex h-screen w-60 flex-col bg-card border-r border-border fixed left-0 top-0 z-40">
       {/* Header with Logo */}
       <div className="flex items-center h-14 px-4 border-b border-border">
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/analytics" className="flex items-center gap-2.5 group">
           <div className="relative">
             <Image 
               src="/logo-icon-new.png" 
@@ -200,7 +178,7 @@ export default function Sidebar() {
       </div>
       
       {/* Main Navigation */}
-      <nav className="flex-1 px-3 py-2 space-y-6 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 px-3 py-2 space-y-5 overflow-y-auto scrollbar-thin">
         <div className="space-y-1">
           {mainNavigation.map((item) => (
             <NavLink 
@@ -208,7 +186,6 @@ export default function Sidebar() {
               item={item} 
               pathname={pathname}
               totalUnread={totalUnread}
-              hasWarning={hasNavItemWarning(item)}
             />
           ))}
         </div>
@@ -218,24 +195,18 @@ export default function Sidebar() {
           items={manageNavigation}
           pathname={pathname}
           totalUnread={totalUnread}
-          shouldShowNavItem={shouldShowNavItem}
-          hasNavItemWarning={hasNavItemWarning}
         />
         <NavSection 
           label="Engage" 
           items={engageNavigation}
           pathname={pathname}
           totalUnread={totalUnread}
-          shouldShowNavItem={shouldShowNavItem}
-          hasNavItemWarning={hasNavItemWarning}
         />
         <NavSection 
           label="Analyze" 
           items={analyzeNavigation}
           pathname={pathname}
           totalUnread={totalUnread}
-          shouldShowNavItem={shouldShowNavItem}
-          hasNavItemWarning={hasNavItemWarning}
         />
         
         {/* Divider */}
@@ -246,20 +217,18 @@ export default function Sidebar() {
           items={settingsNavigation}
           pathname={pathname}
           totalUnread={totalUnread}
-          shouldShowNavItem={shouldShowNavItem}
-          hasNavItemWarning={hasNavItemWarning}
         />
       </nav>
       
       {/* Upgrade Banner */}
       <div className="px-3 py-2">
         <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-purple-500/10 border border-primary/20">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <Icon name="sparkles" size="sm" className="text-primary" />
             <span className="text-xs font-semibold text-primary">Pro Features</span>
           </div>
           <p className="text-xs text-muted-foreground mb-2">
-            Unlock AI insights, advanced analytics & more
+            Unlock AI insights & advanced analytics
           </p>
           <Button size="sm" variant="default" className="w-full h-7 text-xs rounded-lg">
             Upgrade Now

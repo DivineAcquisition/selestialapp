@@ -66,10 +66,14 @@ function LoginForm() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true)
     
+    // Use client-side callback page - PKCE verifier stays in browser storage
+    const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback?redirect=${redirect}`,
+        redirectTo: callbackUrl,
+        skipBrowserRedirect: false,
       },
     })
     

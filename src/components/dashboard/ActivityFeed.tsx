@@ -67,7 +67,7 @@ export function ActivityFeed() {
     <div className="bg-card rounded-xl border border-border shadow-sm animate-slide-up" style={{ animationDelay: '300ms' }}>
       <div className="px-6 py-4 border-b border-border">
         <h2 className="text-lg font-semibold text-card-foreground">Recent Activity</h2>
-        <p className="text-sm text-muted-foreground">What's happening with your quotes</p>
+        <p className="text-sm text-muted-foreground">What is happening with your quotes</p>
       </div>
       
       <div className="p-4 space-y-1">

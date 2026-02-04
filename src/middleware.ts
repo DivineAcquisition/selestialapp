@@ -124,8 +124,8 @@ export async function middleware(request: NextRequest) {
   // Refresh session if exists
   const { data: { session } } = await supabase.auth.getSession()
 
-  // Auth callback route - always allow
-  if (pathname.startsWith('/auth/callback')) {
+  // Auth callback routes - always allow
+  if (pathname.startsWith('/auth/callback') || pathname.startsWith('/api/auth/callback')) {
     return response
   }
 

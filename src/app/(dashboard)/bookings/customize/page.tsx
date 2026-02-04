@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'framer-motion';
-import { useRouter, useSearchParams } from 'next/navigation';
+// motion available for animations
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+// ScrollArea available if needed
+// Select components available if needed
 import {
   Tabs,
   TabsContent,
@@ -48,8 +42,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { 
   PricingConfigurator, 
-  AddOnsConfigurator, 
-  PriceCalculatorPreview,
+  AddOnsConfigurator,
   DEFAULT_PRICING_CONFIG,
   type PricingConfig,
 } from '@/components/booking/pricing-configurator';
@@ -199,7 +192,7 @@ function StripeConnectionBanner({ businessId }: { businessId: string }) {
       <Icon name="checkCircle" size="lg" className="text-green-600" />
       <AlertTitle className="text-green-800">Stripe Connected</AlertTitle>
       <AlertDescription className="text-green-700">
-        You're ready to accept payments through your booking widget.
+        You are ready to accept payments through your booking widget.
       </AlertDescription>
     </Alert>
   );
@@ -302,6 +295,7 @@ function WidgetPreviewPanel({ config }: { config: BookingWidgetConfig }) {
           <div className="p-3 text-white text-sm" style={{ backgroundColor: config.primaryColor }}>
             <div className="flex items-center gap-2">
               {config.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={config.logoUrl} alt="" className="h-8 w-8 rounded object-cover" />
               ) : (
                 <div className="h-8 w-8 rounded bg-white/20 flex items-center justify-center font-bold text-xs">
@@ -366,7 +360,6 @@ function WidgetPreviewPanel({ config }: { config: BookingWidgetConfig }) {
 
 export default function BookingCustomizePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { business } = useBusiness();
   const businessId = business?.id || '';
   const businessName = business?.name || 'My Business';
@@ -440,9 +433,9 @@ export default function BookingCustomizePage() {
 
       toast.success('Widget configuration saved!');
       setHasUnsavedChanges(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error saving config:', err);
-      toast.error(err.message || 'Failed to save configuration. Please try again.');
+      toast.error(err instanceof Error ? err.message : 'Failed to save configuration. Please try again.');
     }
     setSaving(false);
   };
@@ -540,8 +533,8 @@ export default function BookingCustomizePage() {
         <StripeConnectionBanner businessId={businessId} />
 
         {/* Status & Links */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card>
+          <div className="grid md:grid-cols-3 gap-4">
+          <Card className="ring-1 ring-white/50 rounded-2xl">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

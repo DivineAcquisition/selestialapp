@@ -252,8 +252,39 @@ function SettingsContent() {
           </TabsContent>
         </Tabs>
 
+        {/* Settings Navigation */}
+        <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl ring-1 ring-white/50">
+          <h3 className="font-semibold text-gray-900 mb-4">Settings Navigation</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <NavigationCard 
+              icon={<Icon name="user" size="lg" />}
+              title="Profile"
+              description="Business information"
+              onClick={() => router.push('/settings/profile')}
+            />
+            <NavigationCard 
+              icon={<Icon name="users" size="lg" />}
+              title="Team"
+              description="Manage members"
+              onClick={() => router.push('/settings/team')}
+            />
+            <NavigationCard 
+              icon={<Icon name="plug" size="lg" />}
+              title="Integrations"
+              description="Connect your tools"
+              onClick={() => router.push('/settings/integrations')}
+            />
+            <NavigationCard 
+              icon={<Icon name="shield" size="lg" />}
+              title="Security"
+              description="Password & 2FA"
+              onClick={() => router.push('/settings/security')}
+            />
+          </div>
+        </Card>
+
         {/* Quick Links */}
-        <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl">
+        <Card className="card-elevated p-6 bg-gradient-to-br from-gray-50/80 to-white rounded-2xl ring-1 ring-white/50">
           <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <NavigationCard 
@@ -263,11 +294,10 @@ function SettingsContent() {
               onClick={() => router.push('/billing')}
             />
             <NavigationCard 
-              icon={<Icon name="globe" size="lg" />}
-              title="Integrations"
-              description="Connect your tools"
-              badge="3 connected"
-              onClick={() => router.push('/connections')}
+              icon={<Icon name="calendar" size="lg" />}
+              title="Bookings"
+              description="Widget settings"
+              onClick={() => router.push('/bookings/customize')}
             />
             <NavigationCard 
               icon={<Icon name="bolt" size="lg" />}

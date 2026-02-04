@@ -63,7 +63,7 @@ export default function StepBusinessInfo() {
           </Label>
           <Input
             id="businessName"
-            placeholder="Johnson Plumbing"
+            placeholder="Sparkle Clean Co."
             value={data.businessName}
             onChange={(e) => updateData({ businessName: e.target.value })}
             autoFocus
@@ -80,7 +80,7 @@ export default function StepBusinessInfo() {
           </Label>
           <Input
             id="ownerName"
-            placeholder="Mike Johnson"
+            placeholder="Sarah Smith"
             value={data.ownerName}
             onChange={(e) => updateData({ ownerName: e.target.value })}
           />
@@ -99,7 +99,7 @@ export default function StepBusinessInfo() {
             <Input
               id="email"
               type="email"
-              placeholder="mike@johnsonplumbing.com"
+              placeholder="info@sparkleclean.com"
               value={data.email}
               onChange={(e) => updateData({ email: e.target.value })}
             />
@@ -123,14 +123,14 @@ export default function StepBusinessInfo() {
         {/* Industry */}
         <div className="space-y-2">
           <Label htmlFor="industry" className="text-foreground">
-            Industry *
+            Cleaning Type *
           </Label>
           <Select
             value={data.industry}
             onValueChange={(value) => updateData({ industry: value as typeof data.industry })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select your industry" />
+              <SelectValue placeholder="Select your cleaning specialty" />
             </SelectTrigger>
             <SelectContent>
               {INDUSTRIES.map((industry) => (
@@ -141,7 +141,7 @@ export default function StepBusinessInfo() {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            This determines the service types available when adding quotes
+            This customizes your booking widget and pricing options
           </p>
         </div>
       </div>

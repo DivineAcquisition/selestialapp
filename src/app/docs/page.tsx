@@ -249,7 +249,7 @@ export default function DocsIndexPage() {
       {/* Help Section */}
       <section className="px-6 py-16">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">Can't find what you're looking for?</h2>
+          <h2 className="text-2xl font-bold mb-4">Cannot find what you are looking for?</h2>
           <p className="text-muted-foreground mb-6">
             Our support team is here to help you get the most out of Selestial
           </p>

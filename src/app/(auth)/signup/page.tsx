@@ -53,7 +53,7 @@ export default function SignupPage() {
             full_name: name,
             name: name,
           },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=/onboarding`,
         },
       })
 
@@ -98,10 +98,14 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setGoogleLoading(true)
     
+    // Use client-side callback page - PKCE verifier stays in browser storage
+    const callbackUrl = `${window.location.origin}/auth/callback?redirect=/onboarding`
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
+        skipBrowserRedirect: false,
       },
     })
     

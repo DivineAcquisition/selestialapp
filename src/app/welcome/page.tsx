@@ -610,7 +610,7 @@ function BookingWidgetDemo() {
             >
               <Icon name="mapPin" size="xl" className="mx-auto text-gray-400 mb-3" />
               <h4 className="font-semibold text-gray-900 mb-2">Enter Your ZIP Code</h4>
-              <p className="text-sm text-gray-500 mb-4">We'll check if we service your area</p>
+              <p className="text-sm text-gray-500 mb-4">We will check if we service your area</p>
               <Input placeholder="Enter ZIP code" className="max-w-[200px] mx-auto text-center" />
             </motion.div>
           )}
@@ -864,14 +864,14 @@ const sequenceCategories = [
     name: 'Seasonal Campaigns',
     icon: 'sun' as IconName,
     color: 'orange',
-    description: 'Industry-specific campaigns',
+    description: 'Cleaning-specific campaigns',
     sequences: [
-      { name: 'HVAC Seasonal', metric: 'Spring/Fall', description: 'AC tune-up & furnace prep' },
-      { name: 'Pest Quarterly', metric: 'Q1-Q4', description: 'Seasonal pest prevention' },
+      { name: 'Spring Cleaning', metric: 'Mar-Apr', description: 'Annual deep cleaning promotion' },
       { name: 'Holiday Prep', metric: 'Nov-Dec', description: 'Deep cleaning before holidays' },
-      { name: 'Pool Opening', metric: 'Spring', description: 'Seasonal pool service' },
-      { name: 'Storm Damage', metric: 'Weather events', description: 'Proactive outreach after storms' },
-      { name: 'Annual Maintenance', metric: 'Yearly service', description: 'Preventive maintenance reminders' },
+      { name: 'Back to School', metric: 'Aug-Sep', description: 'Post-summer home refresh' },
+      { name: 'Move Season', metric: 'May-Sep', description: 'Move in/out cleaning surge' },
+      { name: 'New Year Fresh Start', metric: 'Jan', description: 'Start the year clean promo' },
+      { name: 'Seasonal Turnover', metric: 'Quarterly', description: 'Airbnb/vacation rental seasonality' },
     ],
   },
 ];
@@ -1037,81 +1037,70 @@ function SequencesSection() {
 // INTERACTIVE PRICING WIZARD
 // ============================================================================
 
-const industries = [
-  { id: 'hvac', name: 'HVAC', icon: 'snowflake' as IconName },
-  { id: 'plumbing', name: 'Plumbing', icon: 'droplet' as IconName },
-  { id: 'electrical', name: 'Electrical', icon: 'bolt' as IconName },
-  { id: 'cleaning', name: 'Cleaning', icon: 'sparkles' as IconName },
-  { id: 'roofing', name: 'Roofing', icon: 'home' as IconName },
-  { id: 'landscaping', name: 'Landscaping', icon: 'tree' as IconName },
+const cleaningTypes = [
+  { id: 'residential', name: 'Residential', icon: 'home' as IconName },
+  { id: 'deep', name: 'Deep Clean', icon: 'sparkles' as IconName },
+  { id: 'moveinout', name: 'Move In/Out', icon: 'package' as IconName },
+  { id: 'airbnb', name: 'Airbnb', icon: 'star' as IconName },
+  { id: 'commercial', name: 'Commercial', icon: 'building' as IconName },
 ];
 
 const pricingData: Record<string, { services: { name: string; price: number }[] }> = {
-  hvac: {
+  residential: {
     services: [
-      { name: 'Diagnostic Call', price: 89 },
-      { name: 'AC Tune-Up', price: 129 },
-      { name: 'Furnace Tune-Up', price: 129 },
-      { name: 'Thermostat Install', price: 175 },
-      { name: 'Duct Cleaning', price: 399 },
-      { name: 'System Install', price: 7500 },
+      { name: '1-2 Bedrooms', price: 120 },
+      { name: '3-4 Bedrooms', price: 180 },
+      { name: '5+ Bedrooms', price: 250 },
+      { name: 'Inside Fridge', price: 35 },
+      { name: 'Inside Oven', price: 35 },
+      { name: 'Laundry', price: 25 },
     ],
   },
-  plumbing: {
+  deep: {
     services: [
-      { name: 'Service Call', price: 99 },
-      { name: 'Drain Cleaning', price: 175 },
-      { name: 'Toilet Repair', price: 150 },
-      { name: 'Faucet Replace', price: 225 },
-      { name: 'Water Heater Install', price: 1200 },
-      { name: 'Leak Repair', price: 250 },
+      { name: 'Deep (1-2 BR)', price: 220 },
+      { name: 'Deep (3-4 BR)', price: 320 },
+      { name: 'Deep (5+ BR)', price: 450 },
+      { name: 'Inside Cabinets', price: 50 },
+      { name: 'Baseboards Detail', price: 45 },
+      { name: 'Wall Washing', price: 60 },
     ],
   },
-  electrical: {
+  moveinout: {
     services: [
-      { name: 'Service Call', price: 99 },
-      { name: 'Outlet Install', price: 150 },
-      { name: 'Switch Replace', price: 125 },
-      { name: 'Ceiling Fan', price: 225 },
-      { name: 'Panel Upgrade', price: 2500 },
-      { name: 'EV Charger Install', price: 800 },
+      { name: 'Move-Out (1-2 BR)', price: 280 },
+      { name: 'Move-Out (3-4 BR)', price: 380 },
+      { name: 'Move-Out (5+ BR)', price: 500 },
+      { name: 'Interior Windows', price: 40 },
+      { name: 'Garage Sweep', price: 50 },
+      { name: 'Carpet Spot Clean', price: 75 },
     ],
   },
-  cleaning: {
+  airbnb: {
     services: [
-      { name: 'Standard (1500sf)', price: 150 },
-      { name: 'Deep Clean (1500sf)', price: 275 },
-      { name: 'Move-Out (1500sf)', price: 350 },
-      { name: 'Post-Construction', price: 500 },
+      { name: 'Turnover (Studio)', price: 85 },
+      { name: 'Turnover (1 BR)', price: 110 },
+      { name: 'Turnover (2 BR)', price: 145 },
+      { name: 'Turnover (3+ BR)', price: 200 },
+      { name: 'Linen Change', price: 25 },
+      { name: 'Restocking', price: 30 },
+    ],
+  },
+  commercial: {
+    services: [
       { name: 'Office (1000sf)', price: 125 },
-      { name: 'Carpet (per room)', price: 50 },
-    ],
-  },
-  roofing: {
-    services: [
-      { name: 'Inspection', price: 150 },
-      { name: 'Emergency Tarp', price: 350 },
-      { name: 'Leak Repair', price: 450 },
-      { name: 'Shingle Repair', price: 275 },
-      { name: 'Gutter Clean', price: 175 },
-      { name: 'Partial Reroof', price: 2500 },
-    ],
-  },
-  landscaping: {
-    services: [
-      { name: 'Mow (Medium)', price: 55 },
-      { name: 'Leaf Cleanup', price: 150 },
-      { name: 'Mulch (per yard)', price: 85 },
-      { name: 'Hedge Trim', price: 150 },
-      { name: 'Spring Cleanup', price: 275 },
-      { name: 'Tree Trim', price: 200 },
+      { name: 'Office (2500sf)', price: 275 },
+      { name: 'Office (5000sf)', price: 500 },
+      { name: 'Retail Space', price: 200 },
+      { name: 'Post-Construction', price: 750 },
+      { name: 'Floor Waxing', price: 300 },
     ],
   },
 };
 
 function PricingWizardDemo() {
-  const [selectedIndustry, setSelectedIndustry] = useState('hvac');
-  const [selectedServices, setSelectedServices] = useState<string[]>(['AC Tune-Up']);
+  const [selectedIndustry, setSelectedIndustry] = useState('residential');
+  const [selectedServices, setSelectedServices] = useState<string[]>(['3-4 Bedrooms']);
   
   const currentPricing = pricingData[selectedIndustry];
   
@@ -1173,8 +1162,8 @@ function PricingWizardDemo() {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Select your industry
                   </label>
-                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                    {industries.map((industry) => (
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                    {cleaningTypes.map((industry) => (
                       <button
                         key={industry.id}
                         onClick={() => {
@@ -1259,21 +1248,21 @@ function PricingWizardDemo() {
 
 const testimonials = [
   {
-    quote: "Selestial helped us close 40% more quotes in our first month. The AI responses are so good, customers think they're talking to me!",
-    author: 'Mike Johnson',
-    role: 'Owner, Johnson Plumbing Co.',
-    avatar: 'MJ',
+    quote: "Selestial helped us close 40% more cleaning quotes in our first month. The AI responses are so good, customers think they're talking to me!",
+    author: 'Sarah Williams',
+    role: 'Owner, Sparkle Clean Co.',
+    avatar: 'SW',
   },
   {
-    quote: "We went from a 2-day response time to under 5 minutes. Our conversion rate doubled and we're booking jobs we would have lost.",
-    author: 'Sarah Chen',
-    role: 'Operations Manager, CoolAir HVAC',
-    avatar: 'SC',
+    quote: "We went from a 2-day response time to under 5 minutes. Our booking conversion rate doubled and we're taking on more recurring clients.",
+    author: 'Maria Santos',
+    role: 'Operations Manager, Fresh Start Maids',
+    avatar: 'MS',
   },
   {
-    quote: "The automated follow-ups alone are worth it. I used to lose track of quotes. Now every lead gets the attention they deserve.",
+    quote: "The automated follow-ups alone are worth it. I used to lose track of cleaning quotes. Now every lead gets the attention they deserve.",
     author: 'David Rodriguez',
-    role: 'Owner, Sparkling Clean Services',
+    role: 'Owner, Crystal Clear Cleaning',
     avatar: 'DR',
   },
 ];
@@ -1292,10 +1281,10 @@ function TestimonialsSection() {
             Testimonials
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Loved by home service pros
+            Loved by cleaning businesses
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Join hundreds of contractors who are winning more jobs with Selestial.
+            Join hundreds of cleaning companies who are booking more jobs with Selestial.
           </p>
         </motion.div>
         

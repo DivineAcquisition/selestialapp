@@ -38,14 +38,14 @@ export default function Layout({
   showPattern = true,
 }: LayoutProps) {
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar - hidden on mobile */}
-      <div className="hidden md:block flex-shrink-0">
+    <div className="min-h-screen bg-background">
+      {/* Fixed Sidebar - hidden on mobile */}
+      <div className="hidden md:block">
         <Sidebar />
       </div>
       
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      {/* Main content area - offset by sidebar width on desktop */}
+      <div className="flex flex-col min-h-screen md:ml-60 relative">
         {/* Background pattern */}
         {showPattern && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">

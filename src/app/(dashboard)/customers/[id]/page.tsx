@@ -220,7 +220,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           {/* Customer Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Card */}
-            <Card className="card-elevated p-6 rounded-2xl">
+            <Card className="card-elevated p-6 rounded-2xl ring-1 ring-white/50">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-[#9D96FF] flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-primary/20">
