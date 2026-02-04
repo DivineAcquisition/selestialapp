@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { BookingWidget } from "@/components/embed/booking";
-import { BookingWidgetConfig, DEFAULT_SERVICES, DEFAULT_HOME_SIZES, DEFAULT_TRUST_BADGES } from "@/components/embed/booking/types";
+import { BookingWidgetConfig } from "@/components/embed/booking/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Icon } from "@/components/ui/icon";
