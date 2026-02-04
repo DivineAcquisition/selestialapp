@@ -37,9 +37,9 @@ export default function StepWelcome() {
   return (
     <OnboardingLayout
       title="Welcome to Selestial"
-      subtitle="Let's set up your automated follow-up system"
+      subtitle="Set up your automated follow-up system"
       showBack={false}
-      nextLabel="Let's Get Started"
+      nextLabel="Get Started"
       hideProgress
     >
       <div className="space-y-8">
@@ -63,7 +63,7 @@ export default function StepWelcome() {
         
         {/* What we'll do */}
         <div className="bg-muted/50 rounded-lg p-6">
-          <h3 className="font-semibold text-foreground mb-4">Here's what we'll set up:</h3>
+          <h3 className="font-semibold text-foreground mb-4">What we will set up:</h3>
           <div className="space-y-3">
             {[
               'Your business profile',

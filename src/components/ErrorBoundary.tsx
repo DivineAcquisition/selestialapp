@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               Something went wrong
             </h1>
             <p className="text-muted-foreground mb-6">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
+              We are sorry, but something unexpected happened. Please try refreshing the page.
             </p>
             <Button onClick={() => window.location.reload()} className="gap-2">
               <Icon name="refresh" size="sm" />

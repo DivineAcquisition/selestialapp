@@ -148,7 +148,7 @@ export default function StepSequenceSetup() {
         {!data.useDefaultSequence && (
           <div className="bg-muted/50 rounded-lg p-6">
             <p className="text-sm text-muted-foreground">
-              You'll be able to create your custom sequence after completing setup.
+              You will be able to create your custom sequence after completing setup.
             </p>
           </div>
         )}
