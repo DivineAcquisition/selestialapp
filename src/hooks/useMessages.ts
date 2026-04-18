@@ -22,10 +22,10 @@ export function useMessages(quoteId: string | null) {
 
     setLoading(true);
     try {
-      // Fetch outbound messages
+      // Fetch outbound messages (live schema: `body`, channel, status nullable)
       const { data: outbound } = await supabase
         .from('messages')
-        .select('id, created_at, content, status, channel')
+        .select('id, created_at, body, status, channel')
         .eq('quote_id', quoteId)
         .order('created_at', { ascending: true });
 
@@ -36,20 +36,26 @@ export function useMessages(quoteId: string | null) {
         .eq('quote_id', quoteId)
         .order('created_at', { ascending: true });
 
-      // Combine and sort
+      const nowIso = new Date().toISOString();
       const combined: ConversationMessage[] = [
-        ...(outbound || []).map(m => ({
-          ...m,
+        ...(outbound || []).map((m) => ({
+          id: m.id,
+          created_at: m.created_at ?? nowIso,
+          content: m.body ?? '',
           direction: 'outbound' as const,
+          status: m.status ?? 'sent',
+          channel: m.channel ?? 'sms',
         })),
-        ...(inbound || []).map(m => ({
-          ...m,
+        ...(inbound || []).map((m) => ({
+          id: m.id,
+          created_at: m.created_at ?? nowIso,
+          content: m.content,
           direction: 'inbound' as const,
           status: 'received',
           channel: 'sms',
         })),
-      ].sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      ].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
 
       setMessages(combined);

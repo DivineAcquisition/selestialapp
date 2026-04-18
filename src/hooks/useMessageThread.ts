@@ -24,48 +24,49 @@ export function useMessageThread(quoteId: string | null) {
 
     setLoading(true);
     try {
-      // Fetch outbound messages
+      // Fetch outbound messages (live schema uses `body`, not `content`)
       const { data: outbound, error: outError } = await supabase
         .from('messages')
-        .select('id, created_at, content, status')
+        .select('id, created_at, body, status')
         .eq('quote_id', quoteId)
         .order('created_at', { ascending: true });
 
       if (outError) throw outError;
 
-      // Fetch inbound messages
+      // Fetch inbound messages (live schema uses `is_processed`, not `is_read`)
       const { data: inbound, error: inError } = await supabase
         .from('inbound_messages')
-        .select('id, created_at, content, is_read')
+        .select('id, created_at, content, is_processed')
         .eq('quote_id', quoteId)
         .order('created_at', { ascending: true });
 
       if (inError) throw inError;
 
       // Combine and sort
+      const nowIso = new Date().toISOString();
       const combined: ThreadMessage[] = [
         ...(outbound || []).map((m) => ({
           id: m.id,
-          createdAt: m.created_at,
-          content: m.content,
+          createdAt: m.created_at ?? nowIso,
+          content: m.body ?? '',
           direction: 'outbound' as const,
-          status: m.status,
+          status: m.status ?? 'sent',
         })),
         ...(inbound || []).map((m) => ({
           id: m.id,
-          createdAt: m.created_at,
+          createdAt: m.created_at ?? nowIso,
           content: m.content,
           direction: 'inbound' as const,
-          status: m.is_read ? 'read' : 'unread',
+          status: m.is_processed ? 'read' : 'unread',
         })),
-      ].sort((a, b) => 
+      ].sort((a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
 
       setMessages(combined);
 
-      // Mark as read
-      if (inbound && inbound.some(m => !m.is_read)) {
+      // Mark all unread inbound as processed
+      if (inbound && inbound.some((m) => !m.is_processed)) {
         await supabase.rpc('mark_conversation_read', { p_quote_id: quoteId });
       }
     } catch (err) {
@@ -128,12 +129,14 @@ export function useMessageThread(quoteId: string | null) {
 
       if (quoteError || !quote) throw new Error('Quote not found');
 
-      // Get business phone
+      // Get business phone (live schema uses `is_active boolean`, not `status`)
       const { data: phone, error: phoneError } = await supabase
         .from('phone_numbers')
         .select('phone_number')
         .eq('business_id', business.id)
-        .eq('status', 'active')
+        .eq('is_active', true)
+        .order('is_primary', { ascending: false })
+        .limit(1)
         .single();
 
       if (phoneError || !phone) throw new Error('No active phone number');

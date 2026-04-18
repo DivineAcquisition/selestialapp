@@ -18,29 +18,41 @@ export type Database = {
         Row: {
           action: string
           business_id: string
-          created_at: string
-          description: string
+          created_at: string | null
+          description: string | null
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
           id: string
-          metadata: Json | null
-          quote_id: string | null
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
         }
         Insert: {
           action: string
           business_id: string
-          created_at?: string
-          description: string
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
-          metadata?: Json | null
-          quote_id?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Update: {
           action?: string
           business_id?: string
-          created_at?: string
-          description?: string
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
-          metadata?: Json | null
-          quote_id?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -48,13 +60,6 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_logs_quote_id_fkey"
-            columns: ["quote_id"]
-            isOneToOne: false
-            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -2500,55 +2505,46 @@ export type Database = {
         Row: {
           business_id: string
           content: string
-          created_at: string
-          external_id: string | null
-          from_phone: string
+          created_at: string | null
+          customer_id: string | null
+          from_number: string | null
           id: string
-          is_read: boolean
+          is_processed: boolean | null
+          matched_at: string | null
           quote_id: string | null
-          read_at: string | null
-          to_phone: string
+          to_number: string | null
+          twilio_sid: string | null
+          twilio_status: string | null
         }
         Insert: {
           business_id: string
           content: string
-          created_at?: string
-          external_id?: string | null
-          from_phone: string
+          created_at?: string | null
+          customer_id?: string | null
+          from_number?: string | null
           id?: string
-          is_read?: boolean
+          is_processed?: boolean | null
+          matched_at?: string | null
           quote_id?: string | null
-          read_at?: string | null
-          to_phone: string
+          to_number?: string | null
+          twilio_sid?: string | null
+          twilio_status?: string | null
         }
         Update: {
           business_id?: string
           content?: string
-          created_at?: string
-          external_id?: string | null
-          from_phone?: string
+          created_at?: string | null
+          customer_id?: string | null
+          from_number?: string | null
           id?: string
-          is_read?: boolean
+          is_processed?: boolean | null
+          matched_at?: string | null
           quote_id?: string | null
-          read_at?: string | null
-          to_phone?: string
+          to_number?: string | null
+          twilio_sid?: string | null
+          twilio_status?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "inbound_messages_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inbound_messages_quote_id_fkey"
-            columns: ["quote_id"]
-            isOneToOne: false
-            referencedRelation: "quotes"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       industries: {
         Row: {
@@ -3684,64 +3680,73 @@ export type Database = {
       }
       messages: {
         Row: {
+          ai_suggested: boolean | null
+          ai_suggestion_id: string | null
+          body: string
           business_id: string
-          channel: string
-          content: string
-          created_at: string
+          channel: string | null
+          created_at: string | null
+          customer_id: string | null
           delivered_at: string | null
+          direction: string
+          error_code: string | null
           error_message: string | null
           external_id: string | null
-          failed_at: string | null
-          from_address: string
+          from_number: string | null
           id: string
-          quote_id: string
-          scheduled_for: string | null
+          is_automated: boolean | null
+          quote_id: string | null
+          read_at: string | null
           sent_at: string | null
-          sequence_id: string | null
-          status: string
-          step_id: string | null
-          subject: string | null
-          to_address: string
+          sequence_step_id: string | null
+          status: string | null
+          to_number: string | null
         }
         Insert: {
+          ai_suggested?: boolean | null
+          ai_suggestion_id?: string | null
+          body: string
           business_id: string
-          channel: string
-          content: string
-          created_at?: string
+          channel?: string | null
+          created_at?: string | null
+          customer_id?: string | null
           delivered_at?: string | null
+          direction: string
+          error_code?: string | null
           error_message?: string | null
           external_id?: string | null
-          failed_at?: string | null
-          from_address: string
+          from_number?: string | null
           id?: string
-          quote_id: string
-          scheduled_for?: string | null
+          is_automated?: boolean | null
+          quote_id?: string | null
+          read_at?: string | null
           sent_at?: string | null
-          sequence_id?: string | null
-          status?: string
-          step_id?: string | null
-          subject?: string | null
-          to_address: string
+          sequence_step_id?: string | null
+          status?: string | null
+          to_number?: string | null
         }
         Update: {
+          ai_suggested?: boolean | null
+          ai_suggestion_id?: string | null
+          body?: string
           business_id?: string
-          channel?: string
-          content?: string
-          created_at?: string
+          channel?: string | null
+          created_at?: string | null
+          customer_id?: string | null
           delivered_at?: string | null
+          direction?: string
+          error_code?: string | null
           error_message?: string | null
           external_id?: string | null
-          failed_at?: string | null
-          from_address?: string
+          from_number?: string | null
           id?: string
-          quote_id?: string
-          scheduled_for?: string | null
+          is_automated?: boolean | null
+          quote_id?: string | null
+          read_at?: string | null
           sent_at?: string | null
-          sequence_id?: string | null
-          status?: string
-          step_id?: string | null
-          subject?: string | null
-          to_address?: string
+          sequence_step_id?: string | null
+          status?: string | null
+          to_number?: string | null
         }
         Relationships: [
           {
@@ -3752,17 +3757,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_quote_id_fkey"
             columns: ["quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sequence_id_fkey"
-            columns: ["sequence_id"]
-            isOneToOne: false
-            referencedRelation: "sequences"
             referencedColumns: ["id"]
           },
         ]
@@ -4451,49 +4456,41 @@ export type Database = {
       phone_numbers: {
         Row: {
           business_id: string
-          created_at: string
+          capabilities: Json | null
+          created_at: string | null
           friendly_name: string | null
           id: string
-          mms_enabled: boolean
+          is_active: boolean | null
+          is_primary: boolean | null
           phone_number: string
-          phone_sid: string
-          sms_enabled: boolean
-          status: string
-          voice_enabled: boolean
+          twilio_sid: string | null
+          updated_at: string | null
         }
         Insert: {
           business_id: string
-          created_at?: string
+          capabilities?: Json | null
+          created_at?: string | null
           friendly_name?: string | null
           id?: string
-          mms_enabled?: boolean
+          is_active?: boolean | null
+          is_primary?: boolean | null
           phone_number: string
-          phone_sid: string
-          sms_enabled?: boolean
-          status?: string
-          voice_enabled?: boolean
+          twilio_sid?: string | null
+          updated_at?: string | null
         }
         Update: {
           business_id?: string
-          created_at?: string
+          capabilities?: Json | null
+          created_at?: string | null
           friendly_name?: string | null
           id?: string
-          mms_enabled?: boolean
+          is_active?: boolean | null
+          is_primary?: boolean | null
           phone_number?: string
-          phone_sid?: string
-          sms_enabled?: boolean
-          status?: string
-          voice_enabled?: boolean
+          twilio_sid?: string | null
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "phone_numbers_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: true
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       pricing_catalog_items: {
         Row: {

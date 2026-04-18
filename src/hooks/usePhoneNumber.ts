@@ -6,8 +6,8 @@ interface PhoneNumber {
   id: string;
   phone_number: string;
   friendly_name: string | null;
-  status: string;
-  sms_enabled: boolean;
+  is_active: boolean | null;
+  is_primary: boolean | null;
 }
 
 interface AvailableNumber {
@@ -38,10 +38,12 @@ export function usePhoneNumber() {
     try {
       const { data, error } = await supabase
         .from('phone_numbers')
-        .select('*')
+        .select('id, phone_number, friendly_name, is_active, is_primary')
         .eq('business_id', business.id)
-        .eq('status', 'active')
-        .single();
+        .eq('is_active', true)
+        .order('is_primary', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Failed to fetch phone number:', error);

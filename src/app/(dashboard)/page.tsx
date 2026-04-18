@@ -62,13 +62,15 @@ export default function DashboardPage() {
     final_job_amount: q.final_job_amount ?? undefined,
   }));
 
-  // Transform DB activities to the expected ActivityLog type format
+  // Transform DB activities to the expected ActivityLog type format.
+  // The DB stores the row's related entity in entity_id (with entity_type='quote'
+  // for quote-related actions). We expose it as quote_id to consumers.
   const transformedActivities: ActivityLog[] = activities.map(a => ({
     id: a.id,
-    created_at: a.created_at,
+    created_at: a.created_at ?? new Date().toISOString(),
     action: a.action,
-    description: a.description,
-    quote_id: a.quote_id ?? undefined,
+    description: a.description ?? a.action,
+    quote_id: a.entity_type === 'quote' && a.entity_id ? a.entity_id : undefined,
   }));
 
   // Get current time greeting

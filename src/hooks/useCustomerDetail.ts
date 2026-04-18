@@ -95,16 +95,29 @@ export function useCustomerDetail(customerId: string | null) {
 
       setQuotes(quotesData || []);
 
-      // Fetch activity logs
-      const { data: activityData } = await supabase
-        .from('activity_logs')
-        .select('id, created_at, action, description')
-        .eq('business_id', business.id)
-        .in('quote_id', (quotesData || []).map(q => q.id))
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // Fetch activity logs related to this customer's quotes.
+      // Live schema stores related ids in entity_id (with entity_type='quote').
+      const quoteIds = (quotesData || []).map((q) => q.id);
+      let activityData: CustomerActivity[] = [];
+      if (quoteIds.length > 0) {
+        const { data } = await supabase
+          .from('activity_logs')
+          .select('id, created_at, action, description')
+          .eq('business_id', business.id)
+          .eq('entity_type', 'quote')
+          .in('entity_id', quoteIds)
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-      setActivities(activityData || []);
+        activityData = (data || []).map((a) => ({
+          id: a.id,
+          created_at: a.created_at ?? new Date().toISOString(),
+          action: a.action,
+          description: a.description ?? a.action,
+        }));
+      }
+
+      setActivities(activityData);
     } catch (err) {
       console.error('Failed to fetch customer:', err);
     } finally {
