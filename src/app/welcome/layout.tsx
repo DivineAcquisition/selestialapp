@@ -46,7 +46,15 @@ export default function MarketingLayout({
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
+              className={
+                "relative inline-flex items-center justify-center px-5 py-2 text-sm font-semibold text-white rounded-lg " +
+                "bg-gradient-to-b from-primary to-[#6d28d9] border border-[#5b21b6]/60 " +
+                "shadow-[0_4px_0_0_#4c1d95,0_6px_16px_-4px_rgba(124,58,237,0.5),inset_0_1px_0_0_rgba(255,255,255,0.25)] " +
+                "hover:shadow-[0_5px_0_0_#4c1d95,0_8px_22px_-4px_rgba(124,58,237,0.6),inset_0_1px_0_0_rgba(255,255,255,0.3)] " +
+                "hover:-translate-y-[1px] " +
+                "active:translate-y-[3px] active:shadow-[0_1px_0_0_#4c1d95,inset_0_1px_0_0_rgba(255,255,255,0.15)] " +
+                "transition-[transform,box-shadow] duration-150 ease-out"
+              }
             >
               Get Started
             </Link>
@@ -73,7 +81,7 @@ export default function MarketingLayout({
                 <span className="text-lg font-semibold text-gray-900">Selestial</span>
               </Link>
               <p className="text-sm text-gray-500 leading-relaxed">
-                AI-powered quote follow-up for home service businesses. Win more jobs, automatically.
+                Speed-to-lead SMS, email follow-up, and re-engagement sequences for home service companies.
               </p>
             </div>
             

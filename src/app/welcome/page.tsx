@@ -68,28 +68,28 @@ function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              <span className="text-sm font-medium text-primary">AI-powered automation</span>
+              <span className="text-sm font-medium text-primary">Speed-to-Lead SMS &amp; Email Automation</span>
             </motion.div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mb-6">
-              Win more jobs.
+              Reply in seconds.
               <br />
               <span className="bg-gradient-to-r from-primary via-violet-500 to-primary bg-clip-text text-transparent">
-                Automatically.
+                Book more jobs.
               </span>
             </h1>
             
             <p className="text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-              Stop losing leads to slow follow-ups. Selestial uses AI to send perfect quote responses, 
-              book more appointments, and close more deals—all on autopilot.
+              Selestial is the speed-to-lead SMS &amp; email platform built for home service companies.
+              Instantly respond to new leads, follow up on quotes, and re-engage past customers — all on autopilot.
             </p>
             
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mb-8">
               {[
+                { value: '<60s', label: 'SMS reply to new leads' },
                 { value: '35%', label: 'Higher close rate' },
-                { value: '10h+', label: 'Saved weekly' },
-                { value: '5min', label: 'Avg response time' },
+                { value: '24/7', label: 'Re-engagement on autopilot' },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -168,8 +168,10 @@ function HeroSection() {
                         
                         <Button
                           type="submit"
+                          variant="lovable"
+                          size="lg"
                           disabled={isSubmitting}
-                          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/25"
+                          className="w-full h-12"
                         >
                           {isSubmitting ? (
                             <span className="flex items-center gap-2">
@@ -204,7 +206,7 @@ function HeroSection() {
                       <h3 className="text-xl font-bold text-gray-900 mb-2">You&apos;re in!</h3>
                       <p className="text-gray-500 mb-6">Check your email to complete setup.</p>
                       <Link href="/signup">
-                        <Button className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
+                        <Button variant="lovable" size="lg">
                           Continue to Dashboard
                         </Button>
                       </Link>
@@ -477,7 +479,7 @@ function RetentionDemo() {
               <p className="font-medium text-red-900">1 customer needs attention</p>
               <p className="text-sm text-red-700">Win-back sequence ready to deploy</p>
             </div>
-            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+            <Button variant="lovable" size="sm" className="from-red-500 to-red-700 border-red-700/60 shadow-[0_3px_0_0_#7f1d1d,0_5px_12px_-2px_rgba(239,68,68,0.5),inset_0_1px_0_0_rgba(255,255,255,0.2)] hover:shadow-[0_4px_0_0_#7f1d1d,0_7px_16px_-2px_rgba(239,68,68,0.6),inset_0_1px_0_0_rgba(255,255,255,0.25)] active:shadow-[0_1px_0_0_#7f1d1d,inset_0_1px_0_0_rgba(255,255,255,0.15)]">
               Take Action
             </Button>
           </div>
@@ -610,7 +612,7 @@ function BookingWidgetDemo() {
             >
               <Icon name="mapPin" size="xl" className="mx-auto text-gray-400 mb-3" />
               <h4 className="font-semibold text-gray-900 mb-2">Enter Your ZIP Code</h4>
-              <p className="text-sm text-gray-500 mb-4">We'll check if we service your area</p>
+              <p className="text-sm text-gray-500 mb-4">We&apos;ll check if we service your area</p>
               <Input placeholder="Enter ZIP code" className="max-w-[200px] mx-auto text-center" />
             </motion.div>
           )}
@@ -720,28 +722,28 @@ function BookingWidgetDemo() {
 function FeaturesSection() {
   const features = [
     {
-      title: 'Online Booking Widget',
-      description: 'Let customers book appointments 24/7 from your website with real-time pricing and secure Stripe payments.',
-      demo: <BookingWidgetDemo />,
-    },
-    {
-      title: 'Speed-to-Lead Automation',
-      description: 'Respond to new leads in under 60 seconds. First to respond wins 78% of jobs.',
+      title: 'Speed-to-Lead SMS & Email',
+      description: 'Instantly text and email new leads from your website, Google ads, or call tracking — in under 60 seconds. First to respond wins 78% of home service jobs.',
       demo: <SpeedToLeadDemo />,
     },
     {
-      title: 'Smart Quote Follow-Up',
-      description: 'Automated 21-day nurture sequences that convert estimates to booked jobs.',
+      title: 'Quote Follow-Up Sequences',
+      description: 'Multi-touch SMS & email drips that nurture estimates into booked jobs over 21 days — without a single manual follow-up.',
       demo: <QuoteFollowUpDemo />,
     },
     {
-      title: 'Customer Retention AI',
-      description: 'Detect at-risk customers before they churn. Save relationships proactively.',
+      title: 'Re-Engagement & Win-Back Flows',
+      description: 'Automatically re-engage past customers and dormant leads with seasonal campaigns, win-back offers, and rebooking reminders.',
       demo: <RetentionDemo />,
     },
     {
-      title: 'Revenue Analytics',
-      description: 'Track pipeline velocity, conversion rates, and revenue in real-time.',
+      title: 'Online Booking Widget',
+      description: 'Let homeowners self-book service 24/7 from your website with live pricing, Stripe deposits, and instant SMS confirmations.',
+      demo: <BookingWidgetDemo />,
+    },
+    {
+      title: 'Pipeline & Revenue Analytics',
+      description: 'See response time, sequence performance, and revenue recovered from re-engagement — in one home services dashboard.',
       demo: <AnalyticsDemo />,
     },
   ];
@@ -756,14 +758,14 @@ function FeaturesSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
-            Features
+            Built for Home Service Companies
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Everything you need to win more jobs
+            The fastest way to follow up with every lead
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Powerful automation tools designed specifically for home service businesses. 
-            Set it up once, then watch your close rate soar.
+            Speed-to-lead SMS, quote follow-up, and re-engagement sequences — purpose-built for HVAC,
+            plumbing, electrical, cleaning, roofing, and landscaping businesses.
           </p>
         </motion.div>
         
@@ -782,7 +784,7 @@ function FeaturesSection() {
               <div className={cn(i % 2 === 1 && "lg:order-2")}>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
                 <p className="text-gray-600 mb-6">{feature.description}</p>
-                <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+                <Button variant="lovable" size="lg">
                   Learn More
                   <Icon name="arrowRight" size="sm" className="ml-2" />
                 </Button>
@@ -899,14 +901,15 @@ function SequencesSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
-            Built-in Automation Library
+            Pre-Built SMS &amp; Email Sequences
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            34+ ready-to-deploy workflows
+            34+ speed-to-lead &amp; re-engagement flows
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Every Selestial account includes our complete library of automation sequences. 
-            Install with one click from the <span className="font-medium text-gray-900">Sequences → Templates</span> page in your dashboard.
+            Every Selestial account includes a full library of SMS &amp; email automations for home services —
+            speed-to-lead, quote follow-up, booking reminders, and win-back. Install in one click from
+            <span className="font-medium text-gray-900"> Sequences → Templates</span> in your dashboard.
           </p>
         </motion.div>
         
@@ -983,10 +986,10 @@ function SequencesSection() {
                         </div>
                         <p className="text-sm text-gray-500 mb-3">{sequence.description}</p>
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="sm" variant="outline" className="text-xs h-7">
+                          <Button size="sm" variant="lovable-light" className="text-xs h-7">
                             Preview
                           </Button>
-                          <Button size="sm" className="text-xs h-7 bg-primary hover:bg-primary/90">
+                          <Button size="sm" variant="lovable" className="text-xs h-7">
                             <Icon name="download" size="xs" className="mr-1" />
                             Install
                           </Button>
@@ -1022,7 +1025,7 @@ function SequencesSection() {
             </div>
           </div>
           <Link href="/signup">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25">
+            <Button size="xl" variant="lovable">
               <Icon name="sparkles" size="sm" className="mr-2" />
               Get Access to All Workflows
             </Button>
@@ -1239,7 +1242,7 @@ function PricingWizardDemo() {
                       ${totalPrice.toLocaleString()}
                     </p>
                   </div>
-                  <Button className="bg-white text-primary hover:bg-gray-100 shadow-lg">
+                  <Button variant="lovable-light" size="lg">
                     <Icon name="send" size="sm" className="mr-2" />
                     Send Quote
                   </Button>
@@ -1295,7 +1298,8 @@ function TestimonialsSection() {
             Loved by home service pros
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Join hundreds of contractors who are winning more jobs with Selestial.
+            Join hundreds of HVAC, plumbing, electrical, cleaning, and roofing companies winning more
+            jobs with Selestial speed-to-lead and re-engagement automations.
           </p>
         </motion.div>
         
@@ -1362,22 +1366,22 @@ function CTASection() {
             
             <div className="relative z-10">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Ready to win more jobs?
+                Stop losing leads to slow follow-ups.
               </h2>
               <p className="text-white/80 max-w-xl mx-auto mb-8">
-                Join 500+ home service businesses already using Selestial to close more deals 
-                and grow their revenue.
+                Join 500+ home service companies using Selestial speed-to-lead SMS, email follow-ups,
+                and re-engagement sequences to book more jobs — automatically.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/signup">
-                  <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 shadow-lg">
+                  <Button size="xl" variant="lovable-light">
                     Start Free Trial
                     <Icon name="arrowRight" size="sm" className="ml-2" />
                   </Button>
                 </Link>
                 <Link href="#demo">
-                  <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                  <Button size="xl" variant="lovable-dark" className="from-white/15 to-white/5 border-white/25 text-white shadow-[0_4px_0_0_rgba(0,0,0,0.25),0_6px_16px_-4px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.2)] hover:shadow-[0_5px_0_0_rgba(0,0,0,0.3),0_8px_22px_-4px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.25)] active:shadow-[0_1px_0_0_rgba(0,0,0,0.25),inset_0_1px_0_0_rgba(255,255,255,0.15)]">
                     <Icon name="play" size="sm" className="mr-2" />
                     Watch Demo
                   </Button>
