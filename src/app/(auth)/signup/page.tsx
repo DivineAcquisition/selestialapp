@@ -131,7 +131,7 @@ export default function SignupPage() {
         </Badge>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create your account</h1>
         <p className="text-gray-500">
-          Join 500+ home service businesses winning more jobs
+          Join the cleaning operations using Selestial to book more jobs
         </p>
       </div>
 

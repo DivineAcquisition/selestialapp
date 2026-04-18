@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Icon, IconName } from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
@@ -68,28 +67,28 @@ function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              <span className="text-sm font-medium text-primary">Speed-to-Lead SMS &amp; Email Automation</span>
+              <span className="text-sm font-medium text-primary">Online Booking for Residential Cleaning Companies</span>
             </motion.div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mb-6">
-              Reply in seconds.
-              <br />
+              Stop losing bookings to{' '}
               <span className="bg-gradient-to-r from-primary via-violet-500 to-primary bg-clip-text text-transparent">
-                Book more jobs.
+                quote forms no one wants to fill out.
               </span>
             </h1>
             
             <p className="text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-              Selestial is the speed-to-lead SMS &amp; email platform built for home service companies.
-              Instantly respond to new leads, follow up on quotes, and re-engage past customers — all on autopilot.
+              Selestial is the online booking platform built for residential cleaning companies.
+              Show your pricing upfront, collect deposits, and book jobs in under 60 seconds — plus
+              automated follow-up that turns every quote into a booked customer.
             </p>
             
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mb-8">
               {[
                 { value: '<60s', label: 'SMS reply to new leads' },
-                { value: '35%', label: 'Higher close rate' },
-                { value: '24/7', label: 'Re-engagement on autopilot' },
+                { value: '32%', label: 'Recurring conversion' },
+                { value: '48hr', label: 'Go-live for new accounts' },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -722,28 +721,28 @@ function BookingWidgetDemo() {
 function FeaturesSection() {
   const features = [
     {
+      title: 'Online Booking Widget',
+      description: 'Let homeowners book cleaning service 24/7 with live pricing based on home size, Stripe deposit collection, and instant SMS confirmations. No quote forms, no callbacks, no friction.',
+      demo: <BookingWidgetDemo />,
+    },
+    {
       title: 'Speed-to-Lead SMS & Email',
-      description: 'Instantly text and email new leads from your website, Google ads, or call tracking — in under 60 seconds. First to respond wins 78% of home service jobs.',
+      description: 'Instantly text and email every new lead from your website, Google ads, or call tracking — in under 60 seconds. For the customers who need to talk before they book, you\u2019re first in their inbox.',
       demo: <SpeedToLeadDemo />,
     },
     {
       title: 'Quote Follow-Up Sequences',
-      description: 'Multi-touch SMS & email drips that nurture estimates into booked jobs over 21 days — without a single manual follow-up.',
+      description: 'Multi-touch SMS & email sequences that turn cleaning quotes into booked jobs over 21 days — without a single manual follow-up. Recurring customers get their own nurture flow.',
       demo: <QuoteFollowUpDemo />,
     },
     {
       title: 'Re-Engagement & Win-Back Flows',
-      description: 'Automatically re-engage past customers and dormant leads with seasonal campaigns, win-back offers, and rebooking reminders.',
+      description: 'Automatically win back past cleaning customers, re-engage dormant leads, and run seasonal campaigns — move-out season, spring deep cleans, holiday prep — without lifting a finger.',
       demo: <RetentionDemo />,
     },
     {
-      title: 'Online Booking Widget',
-      description: 'Let homeowners self-book service 24/7 from your website with live pricing, Stripe deposits, and instant SMS confirmations.',
-      demo: <BookingWidgetDemo />,
-    },
-    {
       title: 'Pipeline & Revenue Analytics',
-      description: 'See response time, sequence performance, and revenue recovered from re-engagement — in one home services dashboard.',
+      description: 'See bookings, recurring conversion rate, revenue by service type, and customer lifetime value — in one cleaning-business dashboard.',
       demo: <AnalyticsDemo />,
     },
   ];
@@ -758,14 +757,14 @@ function FeaturesSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
-            Built for Home Service Companies
+            Built for Residential Cleaning Companies
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            The fastest way to follow up with every lead
+            Everything your cleaning business needs to book more jobs
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Speed-to-lead SMS, quote follow-up, and re-engagement sequences — purpose-built for HVAC,
-            plumbing, electrical, cleaning, roofing, and landscaping businesses.
+            Online booking, instant pricing, speed-to-lead SMS, and recurring customer flows —
+            built specifically for residential cleaning operations.
           </p>
         </motion.div>
         
@@ -848,7 +847,7 @@ const sequenceCategories = [
   },
   {
     id: 'retention',
-    name: 'Customer Retention',
+    name: 'Recurring Customers',
     icon: 'heart' as IconName,
     color: 'purple',
     description: 'Keep customers coming back',
@@ -863,17 +862,17 @@ const sequenceCategories = [
   },
   {
     id: 'seasonal',
-    name: 'Seasonal Campaigns',
+    name: 'Seasonal Cleaning Campaigns',
     icon: 'sun' as IconName,
     color: 'orange',
-    description: 'Industry-specific campaigns',
+    description: 'Cleaning-specific seasonal campaigns',
     sequences: [
-      { name: 'HVAC Seasonal', metric: 'Spring/Fall', description: 'AC tune-up & furnace prep' },
-      { name: 'Pest Quarterly', metric: 'Q1-Q4', description: 'Seasonal pest prevention' },
-      { name: 'Holiday Prep', metric: 'Nov-Dec', description: 'Deep cleaning before holidays' },
-      { name: 'Pool Opening', metric: 'Spring', description: 'Seasonal pool service' },
-      { name: 'Storm Damage', metric: 'Weather events', description: 'Proactive outreach after storms' },
-      { name: 'Annual Maintenance', metric: 'Yearly service', description: 'Preventive maintenance reminders' },
+      { name: 'Spring Deep Clean', metric: 'Mar–Apr', description: 'Annual top-to-bottom refresh promo' },
+      { name: 'Move-Out Season', metric: 'May–Aug', description: 'Lease-turnover deep cleans' },
+      { name: 'Back-to-School Reset', metric: 'Aug–Sep', description: 'Reset routine after summer' },
+      { name: 'Holiday Prep', metric: 'Nov–Dec', description: 'Pre-guest deep clean push' },
+      { name: 'New Year Refresh', metric: 'Jan', description: 'Recurring sign-ups for the year' },
+      { name: 'Allergy Season Push', metric: 'Apr–Jun', description: 'Dust + air-quality focused cleans' },
     ],
   },
 ];
@@ -904,11 +903,12 @@ function SequencesSection() {
             Pre-Built SMS &amp; Email Sequences
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            34+ speed-to-lead &amp; re-engagement flows
+            34+ pre-built cleaning business sequences
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Every Selestial account includes a full library of SMS &amp; email automations for home services —
-            speed-to-lead, quote follow-up, booking reminders, and win-back. Install in one click from
+            Every Selestial account includes a full library of SMS &amp; email automations built for
+            cleaning companies — booking confirmations, recurring service reminders, win-back flows,
+            and deep clean promotions. Install in one click from
             <span className="font-medium text-gray-900"> Sequences → Templates</span> in your dashboard.
           </p>
         </motion.div>
@@ -1037,98 +1037,74 @@ function SequencesSection() {
 }
 
 // ============================================================================
-// INTERACTIVE PRICING WIZARD
+// INTERACTIVE PRICING WIZARD (Cleaning home-size selector)
 // ============================================================================
 
-const industries = [
-  { id: 'hvac', name: 'HVAC', icon: 'snowflake' as IconName },
-  { id: 'plumbing', name: 'Plumbing', icon: 'droplet' as IconName },
-  { id: 'electrical', name: 'Electrical', icon: 'bolt' as IconName },
-  { id: 'cleaning', name: 'Cleaning', icon: 'sparkles' as IconName },
-  { id: 'roofing', name: 'Roofing', icon: 'home' as IconName },
-  { id: 'landscaping', name: 'Landscaping', icon: 'tree' as IconName },
-];
-
-const pricingData: Record<string, { services: { name: string; price: number }[] }> = {
-  hvac: {
-    services: [
-      { name: 'Diagnostic Call', price: 89 },
-      { name: 'AC Tune-Up', price: 129 },
-      { name: 'Furnace Tune-Up', price: 129 },
-      { name: 'Thermostat Install', price: 175 },
-      { name: 'Duct Cleaning', price: 399 },
-      { name: 'System Install', price: 7500 },
-    ],
-  },
-  plumbing: {
-    services: [
-      { name: 'Service Call', price: 99 },
-      { name: 'Drain Cleaning', price: 175 },
-      { name: 'Toilet Repair', price: 150 },
-      { name: 'Faucet Replace', price: 225 },
-      { name: 'Water Heater Install', price: 1200 },
-      { name: 'Leak Repair', price: 250 },
-    ],
-  },
-  electrical: {
-    services: [
-      { name: 'Service Call', price: 99 },
-      { name: 'Outlet Install', price: 150 },
-      { name: 'Switch Replace', price: 125 },
-      { name: 'Ceiling Fan', price: 225 },
-      { name: 'Panel Upgrade', price: 2500 },
-      { name: 'EV Charger Install', price: 800 },
-    ],
-  },
-  cleaning: {
-    services: [
-      { name: 'Standard (1500sf)', price: 150 },
-      { name: 'Deep Clean (1500sf)', price: 275 },
-      { name: 'Move-Out (1500sf)', price: 350 },
-      { name: 'Post-Construction', price: 500 },
-      { name: 'Office (1000sf)', price: 125 },
-      { name: 'Carpet (per room)', price: 50 },
-    ],
-  },
-  roofing: {
-    services: [
-      { name: 'Inspection', price: 150 },
-      { name: 'Emergency Tarp', price: 350 },
-      { name: 'Leak Repair', price: 450 },
-      { name: 'Shingle Repair', price: 275 },
-      { name: 'Gutter Clean', price: 175 },
-      { name: 'Partial Reroof', price: 2500 },
-    ],
-  },
-  landscaping: {
-    services: [
-      { name: 'Mow (Medium)', price: 55 },
-      { name: 'Leaf Cleanup', price: 150 },
-      { name: 'Mulch (per yard)', price: 85 },
-      { name: 'Hedge Trim', price: 150 },
-      { name: 'Spring Cleanup', price: 275 },
-      { name: 'Tree Trim', price: 200 },
-    ],
-  },
+// Home-size multiplier scales the base service prices for each home size.
+// Multipliers + base prices below are placeholders informed by typical
+// residential cleaning rates from BadgerLuxClean / Bay Area Cleaning Pros —
+// adjust as Malik finalizes per-account pricing.
+type HomeSize = {
+  id: string;
+  name: string;
+  icon: IconName;
+  multiplier: number;
 };
 
+const homeSizes: HomeSize[] = [
+  { id: 'studio', name: 'Studio / 1BR', icon: 'home', multiplier: 0.8 },
+  { id: '2br', name: '2 Bedroom', icon: 'home', multiplier: 1.0 },
+  { id: '3br', name: '3 Bedroom', icon: 'home', multiplier: 1.25 },
+  { id: '4br', name: '4 Bedroom', icon: 'home', multiplier: 1.5 },
+  { id: '5br', name: '5+ Bedroom', icon: 'home', multiplier: 1.85 },
+];
+
+// Cleaning service catalog. `kind: 'service'` items scale with home size.
+// `kind: 'addon'` items are flat fees. `kind: 'discount'` items apply a
+// percentage off the running subtotal of services.
+type CleaningItem = {
+  id: string;
+  name: string;
+  price: number;
+  kind: 'service' | 'addon' | 'discount';
+};
+
+const cleaningServices: CleaningItem[] = [
+  { id: 'standard',     name: 'Standard Cleaning',           price: 145, kind: 'service' },
+  { id: 'deep',         name: 'Deep Clean',                  price: 245, kind: 'service' },
+  { id: 'move',         name: 'Move-In / Move-Out',          price: 295, kind: 'service' },
+  { id: 'construction', name: 'Post-Construction',           price: 395, kind: 'service' },
+  { id: 'windows',      name: 'Window Add-On',               price: 45,  kind: 'addon' },
+  { id: 'oven',         name: 'Inside Oven Add-On',          price: 35,  kind: 'addon' },
+  { id: 'fridge',       name: 'Inside Fridge Add-On',        price: 35,  kind: 'addon' },
+  { id: 'recurring',    name: 'Recurring Discount (Biweekly)', price: -15, kind: 'discount' },
+];
+
 function PricingWizardDemo() {
-  const [selectedIndustry, setSelectedIndustry] = useState('hvac');
-  const [selectedServices, setSelectedServices] = useState<string[]>(['AC Tune-Up']);
-  
-  const currentPricing = pricingData[selectedIndustry];
-  
-  const toggleService = (serviceName: string) => {
-    setSelectedServices(prev => 
-      prev.includes(serviceName) 
-        ? prev.filter(s => s !== serviceName)
-        : [...prev, serviceName]
+  const [selectedHomeSize, setSelectedHomeSize] = useState<string>('2br');
+  const [selectedServices, setSelectedServices] = useState<string[]>(['standard']);
+
+  const currentSize = homeSizes.find((s) => s.id === selectedHomeSize) ?? homeSizes[1];
+
+  const toggleService = (id: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
   };
-  
-  const totalPrice = currentPricing.services
-    .filter(s => selectedServices.includes(s.name))
+
+  const selectedItems = cleaningServices.filter((s) => selectedServices.includes(s.id));
+
+  const serviceSubtotal = selectedItems
+    .filter((s) => s.kind === 'service')
+    .reduce((sum, s) => sum + s.price * currentSize.multiplier, 0);
+  const addonSubtotal = selectedItems
+    .filter((s) => s.kind === 'addon')
     .reduce((sum, s) => sum + s.price, 0);
+  const discountPct = selectedItems
+    .filter((s) => s.kind === 'discount')
+    .reduce((sum, s) => sum + s.price, 0); // negative number, e.g. -15
+  const discountAmount = (serviceSubtotal + addonSubtotal) * (discountPct / 100);
+  const totalPrice = Math.max(0, serviceSubtotal + addonSubtotal + discountAmount);
 
   return (
     <section id="demo" className="py-24">
@@ -1146,7 +1122,8 @@ function PricingWizardDemo() {
             Try our Pricing Wizard
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            See how Selestial helps you build quotes instantly. Select your industry and services below.
+            See how Selestial shows instant pricing to your customers. Pick the home size and
+            services — get the price in seconds.
           </p>
         </motion.div>
         
@@ -1171,80 +1148,96 @@ function PricingWizardDemo() {
               </div>
               
               <div className="p-6 md:p-8">
-                {/* Industry Selection */}
+                {/* Home Size Selection */}
                 <div className="mb-8">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Select your industry
+                    Select home size
                   </label>
-                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                    {industries.map((industry) => (
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                    {homeSizes.map((size) => (
                       <button
-                        key={industry.id}
-                        onClick={() => {
-                          setSelectedIndustry(industry.id);
-                          setSelectedServices([]);
-                        }}
+                        key={size.id}
+                        onClick={() => setSelectedHomeSize(size.id)}
                         className={cn(
                           "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                          selectedIndustry === industry.id
+                          selectedHomeSize === size.id
                             ? "bg-primary/10 border-primary text-primary"
                             : "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-100"
                         )}
                       >
-                        <Icon name={industry.icon} size="lg" />
-                        <span className="text-xs font-medium">{industry.name}</span>
+                        <Icon name={size.icon} size="lg" />
+                        <span className="text-xs font-medium">{size.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Services */}
                 <div className="mb-8">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Select services for your quote
+                    Select services and add-ons
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {currentPricing.services.map((service) => (
-                      <button
-                        key={service.name}
-                        onClick={() => toggleService(service.name)}
-                        className={cn(
-                          "flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left",
-                          selectedServices.includes(service.name)
-                            ? "bg-primary/10 border-primary"
-                            : "bg-gray-50 border-gray-200 hover:border-gray-300"
-                        )}
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{service.name}</p>
-                          <p className="text-xs text-gray-500">${service.price}</p>
-                        </div>
-                        <div className={cn(
-                          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                          selectedServices.includes(service.name)
-                            ? "bg-primary border-primary"
-                            : "border-gray-300"
-                        )}>
-                          {selectedServices.includes(service.name) && (
-                            <Icon name="check" size="xs" className="text-white" />
+                    {cleaningServices.map((service) => {
+                      const isSelected = selectedServices.includes(service.id);
+                      const displayPrice =
+                        service.kind === 'discount'
+                          ? `${service.price}%`
+                          : service.kind === 'service'
+                          ? `$${Math.round(service.price * currentSize.multiplier)}`
+                          : `+$${service.price}`;
+                      return (
+                        <button
+                          key={service.id}
+                          onClick={() => toggleService(service.id)}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left",
+                            isSelected
+                              ? "bg-primary/10 border-primary"
+                              : "bg-gray-50 border-gray-200 hover:border-gray-300"
                           )}
-                        </div>
-                      </button>
-                    ))}
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{service.name}</p>
+                            <p className={cn(
+                              "text-xs",
+                              service.kind === 'discount' ? "text-emerald-600 font-medium" : "text-gray-500"
+                            )}>
+                              {displayPrice}
+                            </p>
+                          </div>
+                          <div className={cn(
+                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                            isSelected
+                              ? "bg-primary border-primary"
+                              : "border-gray-300"
+                          )}>
+                            {isSelected && (
+                              <Icon name="check" size="xs" className="text-white" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-                
+
                 {/* Total */}
                 <div className="flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-primary to-violet-500 text-white">
                   <div>
-                    <p className="text-sm text-white/80">Quote Total</p>
+                    <p className="text-sm text-white/80">Booking Total</p>
                     <p className="text-3xl font-bold">
-                      ${totalPrice.toLocaleString()}
+                      ${Math.round(totalPrice).toLocaleString()}
                     </p>
+                    {discountPct < 0 && totalPrice > 0 && (
+                      <p className="text-xs text-white/70 mt-1">
+                        Includes {Math.abs(discountPct)}% recurring discount
+                      </p>
+                    )}
                   </div>
                   <Button variant="lovable-light" size="lg">
                     <Icon name="send" size="sm" className="mr-2" />
-                    Send Quote
+                    Book Now
                   </Button>
                 </div>
               </div>
@@ -1262,22 +1255,25 @@ function PricingWizardDemo() {
 
 const testimonials = [
   {
-    quote: "Selestial helped us close 40% more quotes in our first month. The AI responses are so good, customers think they're talking to me!",
-    author: 'Mike Johnson',
-    role: 'Owner, Johnson Plumbing Co.',
-    avatar: 'MJ',
+    quote:
+      "We processed 1,740 bookings through Selestial and tracked $510K in revenue. 32% of our one-time customers converted to recurring service at the booking page — not after weeks of follow-up. That's the number that matters.",
+    author: 'BadgerLuxClean',
+    role: 'Premium Residential Cleaning',
+    avatar: 'BL',
   },
   {
-    quote: "We went from a 2-day response time to under 5 minutes. Our conversion rate doubled and we're booking jobs we would have lost.",
-    author: 'Sarah Chen',
-    role: 'Operations Manager, CoolAir HVAC',
-    avatar: 'SC',
+    quote:
+      "We added $50K in new annual revenue from bookings that would've been phone tag before Selestial. Customers see the price, pick their time, and the job's on the calendar before I'd even have called them back.",
+    author: 'Bay Area Cleaning Pros',
+    role: 'Residential Cleaning, Bay Area CA',
+    avatar: 'BA',
   },
   {
-    quote: "The automated follow-ups alone are worth it. I used to lose track of quotes. Now every lead gets the attention they deserve.",
-    author: 'David Rodriguez',
-    role: 'Owner, Sparkling Clean Services',
-    avatar: 'DR',
+    quote:
+      "Your testimonial here — we're onboarding new cleaning companies every week.",
+    author: 'Your Cleaning Business',
+    role: 'Become a founding partner',
+    avatar: '★',
   },
 ];
 
@@ -1295,11 +1291,11 @@ function TestimonialsSection() {
             Testimonials
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Loved by home service pros
+            Loved by cleaning company owners
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Join hundreds of HVAC, plumbing, electrical, cleaning, and roofing companies winning more
-            jobs with Selestial speed-to-lead and re-engagement automations.
+            Join the residential cleaning operations using Selestial to book more jobs, convert
+            one-time customers to recurring, and grow without adding admin time.
           </p>
         </motion.div>
         
@@ -1339,6 +1335,428 @@ function TestimonialsSection() {
 }
 
 // ============================================================================
+// BOOK A CALL SECTION (GHL booking widget embed)
+// ============================================================================
+
+const GHL_BOOKING_WIDGET_SRC =
+  'https://api.divineacquisition.io/widget/booking/bdGyTVXFRxIW5RI49fGp';
+const GHL_BOOKING_WIDGET_ID = '09O94JadkIsrarld4LMd_1776541575407';
+const GHL_FORM_EMBED_SCRIPT_SRC =
+  'https://api.divineacquisition.io/js/form_embed.js';
+
+function BookACallSection() {
+  // Load the GHL form_embed.js helper once. It's responsible for posting
+  // resize messages so the iframe can grow to its content height.
+  useEffect(() => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${GHL_FORM_EMBED_SCRIPT_SRC}"]`
+    );
+    if (existing) return;
+
+    const script = document.createElement('script');
+    script.src = GHL_FORM_EMBED_SCRIPT_SRC;
+    script.type = 'text/javascript';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  return (
+    <section id="book-a-call" className="py-24 bg-gray-50">
+      <div className="max-w-5xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
+            Talk to a real human
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Book a 20-minute Selestial walkthrough
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Want to see Selestial running on a cleaning company&apos;s real schedule, pricing, and
+            recurring flow before you sign up? Pick a time and we&apos;ll show you live.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative"
+        >
+          {/* Glow */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-violet-500/10 to-primary/10 rounded-3xl blur-2xl" />
+
+          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-2xl shadow-gray-200/50 overflow-hidden">
+            <iframe
+              src={GHL_BOOKING_WIDGET_SRC}
+              id={GHL_BOOKING_WIDGET_ID}
+              title="Book a Selestial walkthrough"
+              loading="lazy"
+              scrolling="no"
+              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: 720 }}
+            />
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// CUSTOM BOOKING PAGE REQUEST SECTION
+// ============================================================================
+
+type CustomizationRequest = {
+  businessName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  website: string;
+  serviceArea: string;
+  homeSizeFocus: string;
+  servicesOffered: string;
+  brandColor: string;
+  notes: string;
+};
+
+const EMPTY_REQUEST: CustomizationRequest = {
+  businessName: '',
+  contactName: '',
+  email: '',
+  phone: '',
+  website: '',
+  serviceArea: '',
+  homeSizeFocus: '',
+  servicesOffered: '',
+  brandColor: '#7c3aed',
+  notes: '',
+};
+
+function CustomBookingPageSection() {
+  const [form, setForm] = useState<CustomizationRequest>(EMPTY_REQUEST);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const update = <K extends keyof CustomizationRequest>(key: K, value: CustomizationRequest[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!form.businessName || !form.contactName || !form.email) {
+      setError('Business name, contact name, and email are required.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/booking-page-customization', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Request failed (${res.status})`);
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section id="custom-booking-page" className="py-24">
+      <div className="max-w-6xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4">
+            Done-for-You Setup
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Want your own branded booking page?
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Tell us about your cleaning business and we&apos;ll build your branded booking page —
+            home-size pricing, services, deposits, brand colors — and have it live in 48 hours.
+          </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-5 gap-8 items-start">
+          {/* Left: value prop / what's included */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-2 space-y-4"
+          >
+            {[
+              {
+                title: 'Live in 48 hours',
+                desc: 'We build your booking page, plug in your services and pricing, and ship it on a clean access.selestial.io subdomain (or yours).',
+                icon: 'bolt' as IconName,
+              },
+              {
+                title: 'Your pricing, your services',
+                desc: 'Home-size based pricing, add-ons, recurring discounts, deposits — we mirror exactly how you charge today.',
+                icon: 'dollar' as IconName,
+              },
+              {
+                title: 'Branded end-to-end',
+                desc: 'Your logo, colors, photography, and copy. Customers never see Selestial branding unless you want them to.',
+                icon: 'sparkles' as IconName,
+              },
+              {
+                title: 'Connected to everything',
+                desc: 'Stripe deposits, Twilio SMS confirmations, recurring sequences, and your existing CRM (GHL, HubSpot, etc.).',
+                icon: 'check' as IconName,
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-200"
+              >
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Icon name={item.icon} size="lg" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">{item.title}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Right: form */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-3"
+          >
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-violet-500/10 to-primary/10 rounded-3xl blur-2xl" />
+              <div className="relative bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-2xl shadow-gray-200/50">
+                <AnimatePresence mode="wait">
+                  {!submitted ? (
+                    <motion.form
+                      key="form"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onSubmit={handleSubmit}
+                      className="space-y-5"
+                    >
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Business name *
+                          </label>
+                          <Input
+                            value={form.businessName}
+                            onChange={(e) => update('businessName', e.target.value)}
+                            placeholder="BadgerLuxClean"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Your name *
+                          </label>
+                          <Input
+                            value={form.contactName}
+                            onChange={(e) => update('contactName', e.target.value)}
+                            placeholder="Jane Smith"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Email *
+                          </label>
+                          <Input
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => update('email', e.target.value)}
+                            placeholder="jane@badgerluxclean.com"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone
+                          </label>
+                          <Input
+                            type="tel"
+                            value={form.phone}
+                            onChange={(e) => update('phone', e.target.value)}
+                            placeholder="(555) 123-4567"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Website
+                          </label>
+                          <Input
+                            type="url"
+                            value={form.website}
+                            onChange={(e) => update('website', e.target.value)}
+                            placeholder="https://badgerluxclean.com"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Service area
+                          </label>
+                          <Input
+                            value={form.serviceArea}
+                            onChange={(e) => update('serviceArea', e.target.value)}
+                            placeholder="Madison, WI metro"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Home sizes you serve
+                        </label>
+                        <Input
+                          value={form.homeSizeFocus}
+                          onChange={(e) => update('homeSizeFocus', e.target.value)}
+                          placeholder="2BR–5BR residential, occasional studios"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Services and add-ons offered
+                        </label>
+                        <textarea
+                          value={form.servicesOffered}
+                          onChange={(e) => update('servicesOffered', e.target.value)}
+                          placeholder="Standard, Deep Clean, Move-Out, Post-Construction. Add-ons: inside oven, fridge, windows. Biweekly recurring discount."
+                          rows={3}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm text-gray-900 placeholder:text-gray-400 resize-none"
+                        />
+                      </div>
+
+                      <div className="grid sm:grid-cols-[auto_1fr] gap-4 items-end">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Brand color
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={form.brandColor}
+                              onChange={(e) => update('brandColor', e.target.value)}
+                              className="h-10 w-12 rounded-lg border border-gray-200 bg-white cursor-pointer"
+                              aria-label="Brand color"
+                            />
+                            <Input
+                              value={form.brandColor}
+                              onChange={(e) => update('brandColor', e.target.value)}
+                              className="w-28"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Anything else we should know?
+                          </label>
+                          <Input
+                            value={form.notes}
+                            onChange={(e) => update('notes', e.target.value)}
+                            placeholder="Existing CRM, Stripe account, peak season, etc."
+                          />
+                        </div>
+                      </div>
+
+                      {error && (
+                        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                          {error}
+                        </p>
+                      )}
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        variant="lovable"
+                        disabled={submitting}
+                        className="w-full"
+                      >
+                        {submitting ? (
+                          <span className="flex items-center gap-2">
+                            <Icon name="spinner" size="sm" className="animate-spin" />
+                            Sending request...
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            Request my branded booking page
+                            <Icon name="arrowRight" size="sm" />
+                          </span>
+                        )}
+                      </Button>
+                      <p className="text-xs text-center text-gray-500">
+                        We&apos;ll reply within 1 business day with a setup link and timeline.
+                      </p>
+                    </motion.form>
+                  ) : (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center py-8"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <Icon name="check" size="xl" className="text-emerald-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Request received.</h3>
+                      <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                        We&apos;ll email you within 1 business day with a setup link and a 48-hour
+                        go-live timeline for your branded booking page.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="lovable-light"
+                        onClick={() => {
+                          setForm(EMPTY_REQUEST);
+                          setSubmitted(false);
+                        }}
+                      >
+                        Submit another business
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
 // CTA SECTION
 // ============================================================================
 
@@ -1366,11 +1784,14 @@ function CTASection() {
             
             <div className="relative z-10">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Stop losing leads to slow follow-ups.
+                Stop losing cleaning bookings to quote forms.
               </h2>
               <p className="text-white/80 max-w-xl mx-auto mb-8">
-                Join 500+ home service companies using Selestial speed-to-lead SMS, email follow-ups,
-                and re-engagement sequences to book more jobs — automatically.
+                Join the cleaning operations using Selestial to show pricing upfront, book more jobs,
+                and convert one-time customers into recurring revenue — automatically.
+              </p>
+              <p className="text-white/60 text-sm mb-8">
+                Built on the engine processing $510K+ in tracked cleaning revenue.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1411,6 +1832,8 @@ export default function LandingPage() {
       <SequencesSection />
       <PricingWizardDemo />
       <TestimonialsSection />
+      <CustomBookingPageSection />
+      <BookACallSection />
       <CTASection />
     </>
   );

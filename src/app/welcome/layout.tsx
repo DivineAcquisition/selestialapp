@@ -81,7 +81,7 @@ export default function MarketingLayout({
                 <span className="text-lg font-semibold text-gray-900">Selestial</span>
               </Link>
               <p className="text-sm text-gray-500 leading-relaxed">
-                Speed-to-lead SMS, email follow-up, and re-engagement sequences for home service companies.
+                Online booking, instant pricing, and customer automation for residential cleaning companies.
               </p>
             </div>
             
