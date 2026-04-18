@@ -1,0 +1,50 @@
+%% Selestial booking flow — based on the AlphaLuxClean reference funnel.
+%% See docs/SELESTIAL_BOOKING_HUB.md for the full spec.
+flowchart TD
+  A([Visitor lands on /book])
+
+  subgraph Funnel
+    Z["/book/zip<br/>ZIP + name + email + phone<br/><i>validate-zip</i>, <i>emit-lead-webhook</i>"]
+    S["/book/sqft<br/>Bedrooms / sqft bucket<br/><i>HOME_SIZE_RANGES + state multiplier</i>"]
+    O["/book/offer<br/>Deep | Deep+Recurring | Tester<br/><i>recurring tier 15/10/5%</i>"]
+    C["/book/checkout<br/>Stripe Payment Element<br/>25% deposit<br/><i>create-payment-intent</i>"]
+    D["/book/details<br/>Address + Date + Time + Notes<br/><i>save-booking-details</i>"]
+    F["/book/confirmation<br/>Receipt + reward + .ics"]
+  end
+
+  subgraph Backend
+    SW["stripe-webhook<br/>payment_intent.succeeded"]
+    AS["availability_schedule<br/>booked_slots += 1"]
+    WB["enhanced-booking-webhook-v2<br/>GHL + Zapier"]
+    BI["send-balance-invoice<br/>(later, on completion)"]
+  end
+
+  subgraph Legacy
+    L["/book/schedule<br/>(redirect)"]
+  end
+
+  subgraph Guard
+    G{"address &amp; serviceDate &amp; timeSlot present?"}
+  end
+
+  A --> Z
+  Z -.->|out of area| OOA[Out-of-area capture]
+  Z -->|in service area| S
+  S --> O
+  O --> C
+  C -->|deposit charged| SW
+  SW --> AS
+  SW --> WB
+  SW --> D
+  D --> F
+  L --> D
+  F -.->|missing data| G
+  G -- no --> D
+  F -.->|on job completion| BI
+
+  classDef route fill:#ede9fe,stroke:#7c3aed,color:#4c1d95;
+  classDef backend fill:#f3f4f6,stroke:#6b7280,color:#111827;
+  classDef warn fill:#fef3c7,stroke:#d97706,color:#92400e;
+  class Z,S,O,C,D,F route
+  class SW,AS,WB,BI backend
+  class OOA,G,L warn
