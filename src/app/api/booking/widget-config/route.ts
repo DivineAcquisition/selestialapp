@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service role for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 // ============================================================================
 // GET - Fetch booking widget config for a business
@@ -23,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Try to fetch existing config
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('booking_widget_configs')
       .select('*')
       .eq('business_id', businessId)
@@ -67,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // First check if a config exists for this business
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabaseAdmin()
       .from('booking_widget_configs')
       .select('id')
       .eq('business_id', businessId)
@@ -77,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (existing?.id) {
       // Update existing config
-      result = await supabaseAdmin
+      result = await getSupabaseAdmin()
         .from('booking_widget_configs')
         .update({
           config: config,
@@ -88,7 +82,7 @@ export async function POST(request: NextRequest) {
         .single();
     } else {
       // Insert new config
-      result = await supabaseAdmin
+      result = await getSupabaseAdmin()
         .from('booking_widget_configs')
         .insert({
           id: config.id || crypto.randomUUID(),
@@ -107,7 +101,7 @@ export async function POST(request: NextRequest) {
       // If table doesn't exist, try to store in businesses table as fallback
       if (result.error.message.includes('does not exist') || result.error.code === '42P01') {
         // Fallback: Store in businesses table metadata
-        const { error: fallbackError } = await supabaseAdmin
+        const { error: fallbackError } = await getSupabaseAdmin()
           .from('businesses')
           .update({
             booking_widget_config: config,
@@ -165,7 +159,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('booking_widget_configs')
       .delete()
       .eq('id', configId)

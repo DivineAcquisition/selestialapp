@@ -1,36 +1,37 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Use any type for the database schema to allow all table names
-// This is needed because the types file may not include all tables
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyDatabase = any
+/**
+ * Lazily-initialized Supabase admin client (service-role).
+ *
+ * Why lazy?
+ * Next.js build's "Collecting page data" step evaluates route module bodies.
+ * If we instantiate a Supabase client at the top level with `process.env.X!`,
+ * a missing env var will throw `supabaseUrl is required` and break the build.
+ * By deferring instantiation until the first request, the build can succeed
+ * even when env vars are absent at build time (they're injected at runtime).
+ *
+ * Server-side only — never import from a client component.
+ */
 
-// Lazy-load admin client to prevent build-time errors
-let _supabaseAdmin: SupabaseClient<AnyDatabase> | null = null
+let _client: SupabaseClient | null = null;
 
-export function getSupabaseAdmin(): SupabaseClient<AnyDatabase> {
-  if (!_supabaseAdmin) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+export function getSupabaseAdmin(): SupabaseClient {
+  if (_client) return _client;
 
-    if (!url || !serviceKey) {
-      throw new Error('Missing Supabase admin configuration')
-    }
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    _supabaseAdmin = createClient(url, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+  if (!url || !key) {
+    throw new Error(
+      'Supabase admin client is not configured. Set NEXT_PUBLIC_SUPABASE_URL and ' +
+        'SUPABASE_SERVICE_ROLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) in your environment.'
+    );
   }
-  return _supabaseAdmin
+
+  _client = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return _client;
 }
-
-// For backwards compatibility - will throw at runtime if config is missing
-export const supabaseAdmin = new Proxy({} as SupabaseClient<AnyDatabase>, {
-  get(_target, prop) {
-    const admin = getSupabaseAdmin()
-    return (admin as unknown as Record<string | symbol, unknown>)[prop]
-  }
-})
