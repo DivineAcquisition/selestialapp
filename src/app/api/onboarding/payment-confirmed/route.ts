@@ -70,5 +70,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Fire-and-forget GHL sub-account provisioning. We deliberately do NOT
+  // await this — provisioning takes 5-15s and we want the success screen
+  // to render immediately so the customer can book their onboarding call.
+  // The provisioning route is idempotent and writes its own status to the
+  // signup row on completion (or stamps ghl_provision_error on failure).
+  const origin =
+    request.headers.get('x-forwarded-proto') && request.headers.get('host')
+      ? `${request.headers.get('x-forwarded-proto')}://${request.headers.get('host')}`
+      : new URL(request.url).origin;
+
+  void fetch(`${origin}/api/onboarding/provision-subaccount`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ signupId }),
+  }).catch((err) => {
+    console.error('[payment-confirmed] provision-subaccount kickoff failed:', err);
+  });
+
   return NextResponse.json({ ok: true });
 }

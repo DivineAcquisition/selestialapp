@@ -11,27 +11,28 @@ import {
   Calendar,
   Check,
   ChevronDown,
+  FileText,
+  Home,
   Loader2,
   Lock,
-  Plus,
   ShieldCheck,
   Trash2,
+  Upload,
+  Building2,
+  HousePlus,
 } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
 import { SubscriptionPaymentForm } from '@/components/marketing/SubscriptionPaymentForm';
 import { SelestialOnboardingCallCalendar } from '@/components/marketing/GhlCalendarEmbed';
+import { BrandButton } from '@/components/marketing/BrandButton';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
 // State
 // ============================================================================
-interface ServiceLine {
-  id: string;
-  name: string;
-  price: number;
-}
+type BusinessType = 'residential' | 'commercial' | 'both';
 
 interface OnboardingState {
   // Step 1 — business
@@ -41,22 +42,19 @@ interface OnboardingState {
   phone: string;
   website: string;
   serviceArea: string;
+  businessType: BusinessType | null;
 
   // Step 2 — branding
   brandColor: string;
   logoUrl: string;
   tagline: string;
 
-  // Step 3 — services + pricing
-  services: ServiceLine[];
-  recurringDiscountPct: number;
-  depositPercent: number;
-
-  // Step 4 — notes only (single plan, no tier choice)
+  // Step 3 — optional pricing doc + notes
+  pricingDocUrl: string;
+  pricingDocFilename: string;
   notes: string;
 }
 
-// One plan only — $297/mo. Snapshotted in the API too. Keep both in sync.
 const PLAN = {
   name: 'Selestial',
   price: 297,
@@ -71,19 +69,19 @@ const DEFAULT_STATE: OnboardingState = {
   phone: '',
   website: '',
   serviceArea: '',
-  brandColor: '#7c3aed',
+  businessType: null,
+  brandColor: '#5500FF',
   logoUrl: '',
   tagline: '',
-  services: [],
-  recurringDiscountPct: 10,
-  depositPercent: 25,
+  pricingDocUrl: '',
+  pricingDocFilename: '',
   notes: '',
 };
 
 const STEPS = [
   { id: 1, name: 'Business' },
   { id: 2, name: 'Branding' },
-  { id: 3, name: 'Services' },
+  { id: 3, name: 'Pricing' },
   { id: 4, name: 'Payment' },
 ] as const;
 
@@ -102,11 +100,9 @@ function GetStartedInner() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<OnboardingState>(DEFAULT_STATE);
 
-  // Submission lifecycle
   const [signupId, setSignupId] = useState<string | null>(null);
   const [signupSubmitting, setSignupSubmitting] = useState(false);
 
-  // Payment lifecycle
   const [paymentInit, setPaymentInit] = useState<{
     clientSecret: string;
     amount: number;
@@ -119,50 +115,37 @@ function GetStartedInner() {
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
 
-  // ---- step validation ----
   const stepValid = useMemo(() => {
     if (step === 1) {
       return Boolean(
         state.businessName.trim() &&
           state.contactName.trim() &&
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email.trim())
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email.trim()) &&
+          state.businessType !== null
       );
     }
     if (step === 2) {
       return /^#[0-9a-f]{6}$/i.test(state.brandColor.trim());
     }
-    if (step === 3) {
-      return (
-        state.services.length > 0 &&
-        state.services.every((s) => s.name.trim().length > 0 && s.price > 0)
-      );
-    }
+    // Step 3 (pricing doc) is entirely optional.
     return true;
   }, [step, state]);
 
-  // ---- step 1-3 navigation ----
   const back = () => setStep((s) => Math.max(1, s - 1));
   const next = async () => {
     if (!stepValid) {
       toast.error('Please complete the highlighted fields.');
       return;
     }
-
-    // When advancing FROM step 3 -> step 4, we (a) persist the signup row
-    // if we haven't yet, (b) ask the API to create the Stripe Subscription
-    // and return a PaymentIntent client_secret. This batches network work
-    // so step 4 mounts with the Payment Element already ready.
     if (step === 3) {
       await initializePayment();
       return;
     }
-
     if (step < STEPS.length) setStep((s) => s + 1);
   };
 
   const initializePayment = async () => {
     if (paymentInit) {
-      // Already initialized — just advance.
       setStep(4);
       return;
     }
@@ -170,8 +153,6 @@ function GetStartedInner() {
     setPaymentInitError(null);
 
     try {
-      // 1. Persist the onboarding signup. The API writes the row and gives
-      //    us back the id we'll use to create the subscription.
       let id = signupId;
       if (!id) {
         const res = await fetch('/api/onboarding/start', {
@@ -185,7 +166,6 @@ function GetStartedInner() {
         setSignupId(id);
       }
 
-      // 2. Create the Stripe Subscription + PaymentIntent.
       setPaymentInitializing(true);
       const subRes = await fetch('/api/onboarding/create-subscription', {
         method: 'POST',
@@ -220,13 +200,11 @@ function GetStartedInner() {
         body: JSON.stringify({ signupId, paymentIntentId }),
       });
     } catch (err) {
-      // Non-fatal. Webhook is the source of truth.
       console.error('[payment-confirmed] flip failed:', err);
     }
     setPaid(true);
   };
 
-  // ---- success view ----
   if (paid) {
     return <SuccessScreen contactName={state.contactName} />;
   }
@@ -236,7 +214,6 @@ function GetStartedInner() {
       <CheckoutNav />
 
       <div className="mx-auto max-w-7xl px-5 py-8 md:py-12">
-        {/* Header */}
         <div className="mb-8 md:mb-10">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Selestial onboarding · Step {step} of {STEPS.length}
@@ -250,7 +227,6 @@ function GetStartedInner() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_440px]">
-          {/* Form column */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
             <AnimatePresence mode="wait">
               {step === 1 && (
@@ -306,6 +282,61 @@ function GetStartedInner() {
                       />
                     </Field>
                   </div>
+
+                  <Field label="What do you clean? *">
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {(
+                        [
+                          { id: 'residential', label: 'Residential', icon: Home },
+                          { id: 'commercial', label: 'Commercial', icon: Building2 },
+                          { id: 'both', label: 'Both', icon: HousePlus },
+                        ] as const
+                      ).map((opt) => {
+                        const selected = state.businessType === opt.id;
+                        const Icon = opt.icon;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => update('businessType', opt.id)}
+                            className={cn(
+                              'flex items-center gap-3 rounded-md border p-3 text-left transition-all',
+                              selected
+                                ? 'border-2 border-primary bg-primary/5'
+                                : 'border-zinc-200 bg-white hover:border-zinc-300'
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                'flex h-9 w-9 items-center justify-center rounded-md border',
+                                selected
+                                  ? 'border-primary/30 bg-primary/10 text-primary'
+                                  : 'border-zinc-200 bg-zinc-50 text-zinc-600'
+                              )}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-zinc-900">{opt.label}</p>
+                            </div>
+                            <div
+                              className={cn(
+                                'flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors',
+                                selected
+                                  ? 'border-primary bg-primary'
+                                  : 'border-zinc-300 bg-white'
+                              )}
+                            >
+                              {selected && <Check className="h-3 w-3 text-white" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-1.5 text-xs text-zinc-500">
+                      We tune the booking flow + sequences to your customer mix.
+                    </p>
+                  </Field>
                 </Step>
               )}
 
@@ -325,7 +356,7 @@ function GetStartedInner() {
                         className="w-32 font-mono"
                       />
                       <div className="flex gap-1.5">
-                        {['#7c3aed', '#0f766e', '#1d4ed8', '#dc2626', '#ea580c', '#0a0a0a'].map(
+                        {['#5500FF', '#9D96FF', '#0F766E', '#1D4ED8', '#DC2626', '#0A0A0A'].map(
                           (c) => (
                             <button
                               key={c}
@@ -334,7 +365,7 @@ function GetStartedInner() {
                               aria-label={`Use ${c}`}
                               className={cn(
                                 'h-7 w-7 rounded-md border-2 transition-transform hover:scale-110',
-                                state.brandColor.toLowerCase() === c
+                                state.brandColor.toUpperCase() === c.toUpperCase()
                                   ? 'border-zinc-900'
                                   : 'border-zinc-200'
                               )}
@@ -345,17 +376,19 @@ function GetStartedInner() {
                       </div>
                     </div>
                   </Field>
+
                   <Field label="Logo URL">
                     <Input
                       value={state.logoUrl}
                       onChange={(e) => update('logoUrl', e.target.value)}
-                      placeholder="https://… (or upload during the onboarding call)"
+                      placeholder="https://… (or send during the onboarding call)"
                     />
                     <p className="mt-1.5 text-xs text-zinc-500">
-                      Paste a public URL now or send us your logo on the onboarding call.
-                      PNG/SVG, square preferred.
+                      Paste a public URL now or send your logo on the onboarding call. PNG/SVG,
+                      square preferred.
                     </p>
                   </Field>
+
                   <Field label="Tagline (shown under business name)">
                     <Input
                       value={state.tagline}
@@ -367,125 +400,28 @@ function GetStartedInner() {
               )}
 
               {step === 3 && (
-                <Step key="3" title="Set your services + pricing">
+                <Step
+                  key="3"
+                  title="Send us your pricing (optional)"
+                >
                   <p className="text-sm text-zinc-600">
-                    Add the cleaning services you actually offer with your real prices.
-                    What you enter here becomes the price grid on your live booking page.
+                    Drop a PDF, image, or spreadsheet of your current pricing and we&apos;ll
+                    plug it into your booking page during the onboarding call. Skip this if
+                    you&apos;d rather walk us through it on the call.
                   </p>
 
-                  {state.services.length === 0 && (
-                    <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center">
-                      <p className="text-sm font-medium text-zinc-900">No services added yet</p>
-                      <p className="mt-1 text-xs text-zinc-500">
-                        Add at least one service to continue. Most operators start with
-                        Standard, Deep Clean, and Recurring Maintenance — but enter what you
-                        charge today.
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    {state.services.map((svc, idx) => (
-                      <div
-                        key={svc.id}
-                        className="grid grid-cols-[1fr_120px_auto] items-center gap-2"
-                      >
-                        <Input
-                          value={svc.name}
-                          onChange={(e) => {
-                            const nextList = [...state.services];
-                            nextList[idx] = { ...svc, name: e.target.value };
-                            update('services', nextList);
-                          }}
-                          placeholder="Service name"
-                        />
-                        <div className="relative">
-                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">
-                            $
-                          </span>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={svc.price || ''}
-                            onChange={(e) => {
-                              const nextList = [...state.services];
-                              nextList[idx] = {
-                                ...svc,
-                                price: parseInt(e.target.value, 10) || 0,
-                              };
-                              update('services', nextList);
-                            }}
-                            className="pl-6"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            update(
-                              'services',
-                              state.services.filter((_, i) => i !== idx)
-                            );
-                          }}
-                          className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900"
-                          aria-label="Remove service"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        update('services', [
-                          ...state.services,
-                          { id: crypto.randomUUID(), name: '', price: 0 },
-                        ])
-                      }
-                      className={cn(
-                        'inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors',
-                        state.services.length === 0
-                          ? 'border-primary/40 text-primary hover:bg-primary/5'
-                          : 'border-zinc-300 text-zinc-600 hover:border-primary/40 hover:text-primary'
-                      )}
-                    >
-                      <Plus className="h-4 w-4" />
-                      {state.services.length === 0 ? 'Add your first service' : 'Add service'}
-                    </button>
-                  </div>
-
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <Field label={`Recurring discount: ${state.recurringDiscountPct}%`}>
-                      <input
-                        type="range"
-                        min={0}
-                        max={30}
-                        value={state.recurringDiscountPct}
-                        onChange={(e) =>
-                          update('recurringDiscountPct', parseInt(e.target.value, 10))
-                        }
-                        className="w-full accent-[var(--primary)]"
-                      />
-                      <p className="mt-1.5 text-xs text-zinc-500">
-                        Applied to your &ldquo;Recurring&rdquo; service automatically.
-                      </p>
-                    </Field>
-                    <Field label={`Deposit at booking: ${state.depositPercent}%`}>
-                      <input
-                        type="range"
-                        min={10}
-                        max={100}
-                        step={5}
-                        value={state.depositPercent}
-                        onChange={(e) =>
-                          update('depositPercent', parseInt(e.target.value, 10))
-                        }
-                        className="w-full accent-[var(--primary)]"
-                      />
-                      <p className="mt-1.5 text-xs text-zinc-500">
-                        25% is the cleaning-industry default. Higher reduces no-shows further.
-                      </p>
-                    </Field>
-                  </div>
+                  <PricingDocUploader
+                    currentUrl={state.pricingDocUrl}
+                    currentName={state.pricingDocFilename}
+                    onUploaded={(url, filename) => {
+                      update('pricingDocUrl', url);
+                      update('pricingDocFilename', filename);
+                    }}
+                    onClear={() => {
+                      update('pricingDocUrl', '');
+                      update('pricingDocFilename', '');
+                    }}
+                  />
 
                   <Field label="Anything else we should know?">
                     <textarea
@@ -515,13 +451,15 @@ function GetStartedInner() {
                       {paymentInitError ? (
                         <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                           {paymentInitError}
-                          <button
+                          <BrandButton
                             type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={initializePayment}
-                            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                            className="mt-3"
                           >
                             Retry
-                          </button>
+                          </BrandButton>
                         </div>
                       ) : (
                         <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
@@ -540,22 +478,23 @@ function GetStartedInner() {
               )}
             </AnimatePresence>
 
-            {/* Step nav (Steps 1-3 only — Step 4 is driven by the Payment Element) */}
             {step < 4 && (
               <div className="mt-8 flex items-center justify-between gap-3">
-                <button
+                <BrandButton
                   type="button"
+                  variant="outline"
+                  size="md"
                   onClick={back}
                   disabled={step === 1}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft className="h-4 w-4" /> Back
-                </button>
-                <button
+                </BrandButton>
+                <BrandButton
                   type="button"
+                  variant="primary"
+                  size="lg"
                   onClick={next}
                   disabled={!stepValid || signupSubmitting || paymentInitializing}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {step === 3 ? (
                     signupSubmitting || paymentInitializing ? (
@@ -575,7 +514,7 @@ function GetStartedInner() {
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
-                </button>
+                </BrandButton>
               </div>
             )}
             {step === 4 && (
@@ -585,7 +524,7 @@ function GetStartedInner() {
                   onClick={back}
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Back to services
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back
                 </button>
               </div>
             )}
@@ -601,9 +540,9 @@ function GetStartedInner() {
               brandColor={state.brandColor}
               tagline={state.tagline || 'Powered by Selestial'}
               logoUrl={state.logoUrl || undefined}
-              services={state.services}
-              recurringDiscountPct={state.recurringDiscountPct}
-              depositPercent={state.depositPercent}
+              services={[]}
+              recurringDiscountPct={10}
+              depositPercent={25}
             />
             <details className="mt-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-xs text-zinc-600">
               <summary className="flex cursor-pointer items-center justify-between font-medium text-zinc-900">
@@ -612,9 +551,9 @@ function GetStartedInner() {
               </summary>
               <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-[12px] leading-relaxed">
                 <li>You pick a 30-minute onboarding call slot on the next screen.</li>
-                <li>We provision your GHL sub-account and configure your branding + pricing.</li>
+                <li>We provision your GHL sub-account and configure your branding.</li>
+                <li>On the call we set up your pricing tiers, services, and add-ons.</li>
                 <li>Your booking page goes live within 48 hours of the call.</li>
-                <li>Your subscription auto-renews monthly. Cancel anytime in one click.</li>
               </ol>
             </details>
           </div>
@@ -625,7 +564,110 @@ function GetStartedInner() {
 }
 
 // ============================================================================
-// Success — calendar embed for the post-payment onboarding call
+// Pricing-doc uploader
+// ============================================================================
+function PricingDocUploader({
+  currentUrl,
+  currentName,
+  onUploaded,
+  onClear,
+}: {
+  currentUrl: string;
+  currentName: string;
+  onUploaded: (url: string, filename: string) => void;
+  onClear: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/onboarding/upload-pricing', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Upload failed.');
+      onUploaded(data.url, data.filename);
+      toast.success('Pricing doc uploaded.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (currentUrl) {
+    return (
+      <div className="flex items-center justify-between rounded-md border border-emerald-200 bg-emerald-50 p-4">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-emerald-700">
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="overflow-hidden">
+            <p className="truncate text-sm font-semibold text-zinc-900">{currentName}</p>
+            <a
+              href={currentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-emerald-700 hover:underline"
+            >
+              View uploaded file
+            </a>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClear}
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-100"
+          aria-label="Remove file"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <label
+      className={cn(
+        'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-zinc-50 p-6 text-center transition-colors',
+        uploading
+          ? 'border-primary/40 bg-primary/5'
+          : 'border-zinc-300 hover:border-primary/40 hover:bg-primary/5'
+      )}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600">
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Upload className="h-4 w-4" />
+        )}
+      </div>
+      <p className="text-sm font-semibold text-zinc-900">
+        {uploading ? 'Uploading…' : 'Click to upload pricing doc'}
+      </p>
+      <p className="text-xs text-zinc-500">
+        PDF, PNG/JPG, CSV, or Excel · up to 10 MB · Optional
+      </p>
+      <input
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xls,.xlsx,application/pdf,image/*,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        className="hidden"
+        disabled={uploading}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleFile(f);
+        }}
+      />
+    </label>
+  );
+}
+
+// ============================================================================
+// Success
 // ============================================================================
 function SuccessScreen({ contactName }: { contactName: string }) {
   const firstName = contactName.split(' ')[0] || 'there';
@@ -656,7 +698,7 @@ function SuccessScreen({ contactName }: { contactName: string }) {
 
         <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-zinc-500">
           <Calendar className="h-3.5 w-3.5" />
-          A confirmation email with your call details is on its way to your inbox.
+          A confirmation email is on its way to your inbox.
         </div>
 
         <div className="mt-10 text-center">

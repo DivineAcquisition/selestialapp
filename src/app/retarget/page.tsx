@@ -6,10 +6,13 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Star, Video } from 'lucide-react';
 
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
-import { SelestialBookingCalendar } from '@/components/marketing/GhlCalendarEmbed';
+import { BrandButton } from '@/components/marketing/BrandButton';
 import { cn } from '@/lib/utils';
 
-const CALENDAR_ANCHOR = '#book-a-call';
+// Hero / mid-page CTAs deep-link to the dedicated /book-demo page so users
+// hit the calendar in one click. The on-page #book-a-call section anchor
+// stays for users who scrolled past and want a second nudge.
+const CALENDAR_ANCHOR = '/book-demo';
 
 // ============================================================================
 // CTAs (kept consistent with /demo)
@@ -253,16 +256,16 @@ function Testimonials() {
 function BookACall() {
   return (
     <section id="book-a-call" className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto max-w-4xl px-5 py-16 md:py-20">
-        <div className="mb-8 text-center">
-          <SectionLabel>Book a demo</SectionLabel>
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            Pick a 15-minute slot.
-          </h2>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <SelestialBookingCalendar fallbackHeight={900} />
+      <div className="mx-auto max-w-3xl px-5 py-16 text-center md:py-20">
+        <SectionLabel>Book a demo</SectionLabel>
+        <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+          Pick a 15-minute slot.
+        </h2>
+        <div className="mt-7 flex justify-center">
+          <BrandButton href="/book-demo" variant="primary" size="xl">
+            Open the calendar
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </BrandButton>
         </div>
       </div>
     </section>

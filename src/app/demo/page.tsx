@@ -25,11 +25,11 @@ import { NumberTicker } from '@/components/ui/number-ticker';
 import { Marquee } from '@/components/ui/marquee';
 import { CleanBookingDemo } from '@/components/marketing/CleanBookingDemo';
 import { HeroDashboardPreview } from '@/components/marketing/HeroDashboardPreview';
-import { SelestialBookingCalendar } from '@/components/marketing/GhlCalendarEmbed';
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
+import { BrandButton } from '@/components/marketing/BrandButton';
 import { cn } from '@/lib/utils';
 
-const CALENDAR_ANCHOR = '#book-a-call';
+const CALENDAR_ANCHOR = '/book-demo';
 
 // ============================================================================
 // CTAs (violet primary, white secondary, monochrome typography)
@@ -1119,20 +1119,20 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function BookACall() {
   return (
     <section id="book-a-call" className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto max-w-4xl px-5 py-20 md:py-28">
-        <div className="mb-10 text-center">
-          <SectionLabel>Book a demo</SectionLabel>
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            Pick a 15-minute slot that works for you.
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-zinc-600 md:text-base">
-            We&apos;ll show you Selestial running on a real cleaning company&apos;s pricing,
-            schedule, and recurring flow.
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <SelestialBookingCalendar fallbackHeight={900} />
+      <div className="mx-auto max-w-3xl px-5 py-20 text-center md:py-28">
+        <SectionLabel>Book a demo</SectionLabel>
+        <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+          Pick a 15-minute slot that works for you.
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-zinc-600 md:text-base">
+          We&apos;ll show you Selestial running on a real cleaning company&apos;s pricing,
+          schedule, and recurring flow.
+        </p>
+        <div className="mt-7 flex justify-center">
+          <BrandButton href="/book-demo" variant="primary" size="xl">
+            Open the calendar
+            <ArrowRight className="h-4 w-4" />
+          </BrandButton>
         </div>
       </div>
     </section>

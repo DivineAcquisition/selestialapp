@@ -41,16 +41,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'signupId is required' }, { status: 400 });
   }
 
-  const priceId = process.env.STRIPE_PRICE_ID;
-  if (!priceId) {
-    return NextResponse.json(
-      {
-        error:
-          'Stripe Price is not configured. Set STRIPE_PRICE_ID in env to a recurring price id.',
-      },
-      { status: 409 }
-    );
-  }
+  // Live recurring price for the Selestial Standard $297/mo plan, created
+  // 2026-04-19 against the Selestial Stripe account. Override via
+  // STRIPE_PRICE_ID env if you ever rotate it (e.g. for a discounted SKU
+  // or a test-mode key). See supabase/migrations/20260418_*.sql for the
+  // matching monthly_price_cents stamp.
+  const priceId =
+    process.env.STRIPE_PRICE_ID || 'price_1TO0eEFf3bMythdksBEemOKP';
 
   const supabase = getSupabaseAdmin();
 

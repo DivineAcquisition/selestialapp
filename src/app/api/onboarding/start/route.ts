@@ -49,9 +49,21 @@ export async function POST(request: NextRequest) {
   const safePlan = STANDARD_PLAN.id;
   const offerCode = String(body.offerCode ?? '').slice(0, 32) || null;
 
-  // Filter to only real services the user actually entered: name AND price > 0.
-  // Services with missing data are silently dropped so we never persist
-  // half-empty rows that would render as broken tiles on the live booking page.
+  // Business type — residential / commercial / both (required at signup).
+  const businessTypeRaw = String(body.businessType ?? '').trim().toLowerCase();
+  const businessType = ['residential', 'commercial', 'both'].includes(businessTypeRaw)
+    ? businessTypeRaw
+    : null;
+  if (!businessType) {
+    return NextResponse.json(
+      { error: 'Tell us whether you\u2019re residential, commercial, or both.' },
+      { status: 400 }
+    );
+  }
+
+  // Services no longer come from the wizard — pricing is set on the
+  // post-payment onboarding call. We still accept an array if a future
+  // surface (e.g. an admin importer) sends one, but it's optional now.
   const services = Array.isArray(body.services)
     ? (body.services as ServiceLine[])
         .filter((s) => s && typeof s === 'object')
@@ -65,13 +77,6 @@ export async function POST(request: NextRequest) {
         .slice(0, 25)
     : [];
 
-  if (services.length === 0) {
-    return NextResponse.json(
-      { error: 'Add at least one service with a price before submitting.' },
-      { status: 400 }
-    );
-  }
-
   const record = {
     business_name: businessName.slice(0, 200),
     contact_name: contactName.slice(0, 200),
@@ -79,13 +84,13 @@ export async function POST(request: NextRequest) {
     phone: clean(body.phone, 64),
     website: clean(body.website, 500),
     service_area: clean(body.serviceArea, 200),
+    business_type: businessType,
     logo_url: clean(body.logoUrl, 1000),
-    brand_color: clean(body.brandColor, 32) ?? '#7c3aed',
+    brand_color: clean(body.brandColor, 32) ?? '#5500FF',
     tagline: clean(body.tagline, 200),
     services,
-    base_pricing: (body.basePricing as Record<string, unknown>) ?? {},
-    recurring_discount_pct: clampInt(body.recurringDiscountPct, 0, 50, 10),
-    deposit_percent: clampInt(body.depositPercent, 5, 100, 25),
+    pricing_doc_url: clean(body.pricingDocUrl, 2000),
+    pricing_doc_filename: clean(body.pricingDocFilename, 240),
     plan: safePlan,
     offer_code: offerCode,
     monthly_price_cents: STANDARD_PLAN.price_cents,
@@ -136,10 +141,4 @@ function clean(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim().slice(0, max);
   return trimmed.length > 0 ? trimmed : null;
-}
-
-function clampInt(value: unknown, min: number, max: number, fallback: number): number {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.round(n)));
 }
