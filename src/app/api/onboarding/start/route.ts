@@ -46,21 +46,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email looks invalid.' }, { status: 400 });
   }
 
-  const plan = String(body.plan ?? 'starter');
-  const safePlan = ALLOWED_PLANS.has(plan) ? plan : 'starter';
+  const planRaw = body.plan;
+  if (typeof planRaw !== 'string' || !ALLOWED_PLANS.has(planRaw)) {
+    return NextResponse.json(
+      { error: 'A plan must be selected before submitting.' },
+      { status: 400 }
+    );
+  }
+  const safePlan = planRaw;
   const offerCode = String(body.offerCode ?? 'OFFER50').slice(0, 32);
 
+  // Filter to only real services the user actually entered: name AND price > 0.
+  // Services with missing data are silently dropped so we never persist
+  // half-empty rows that would render as broken tiles on the live booking page.
   const services = Array.isArray(body.services)
     ? (body.services as ServiceLine[])
         .filter((s) => s && typeof s === 'object')
         .map((s) => ({
           id: typeof s.id === 'string' ? s.id : undefined,
-          name: typeof s.name === 'string' ? s.name.slice(0, 80) : '',
-          price: typeof s.price === 'number' ? Math.max(0, Math.round(s.price)) : 0,
+          name: typeof s.name === 'string' ? s.name.trim().slice(0, 80) : '',
+          price:
+            typeof s.price === 'number' ? Math.max(0, Math.round(s.price)) : 0,
         }))
-        .filter((s) => s.name)
+        .filter((s) => s.name.length > 0 && s.price > 0)
         .slice(0, 25)
     : [];
+
+  if (services.length === 0) {
+    return NextResponse.json(
+      { error: 'Add at least one service with a price before submitting.' },
+      { status: 400 }
+    );
+  }
 
   const record = {
     business_name: businessName.slice(0, 200),

@@ -48,7 +48,9 @@ interface OnboardingState {
   depositPercent: number;
 
   // Step 4
-  plan: 'starter' | 'growth' | 'scale';
+  // `null` until the user explicitly picks a plan — prevents accidentally
+  // submitting a default they never selected.
+  plan: 'starter' | 'growth' | 'scale' | null;
   notes: string;
 }
 
@@ -58,6 +60,10 @@ const PLANS = {
   scale: { name: 'Scale', price: 997, discounted: 498.5 },
 } as const;
 
+// Initial form state. Customer-data fields (businessName, services, prices,
+// plan) are intentionally empty/unset so we never submit values the user
+// didn't actually enter. Operational defaults (brand color, recurring %,
+// deposit %) start at industry-standard baselines that the user can adjust.
 const DEFAULT_STATE: OnboardingState = {
   businessName: '',
   contactName: '',
@@ -65,17 +71,13 @@ const DEFAULT_STATE: OnboardingState = {
   phone: '',
   website: '',
   serviceArea: '',
-  brandColor: '#7c3aed',
+  brandColor: '#7c3aed', // Selestial brand violet — overridden by user
   logoUrl: '',
   tagline: '',
-  services: [
-    { id: crypto.randomUUID(), name: 'Standard Clean', price: 175 },
-    { id: crypto.randomUUID(), name: 'Recurring Maintenance', price: 220 },
-    { id: crypto.randomUUID(), name: 'Move-In / Move-Out', price: 350 },
-  ],
-  recurringDiscountPct: 10,
-  depositPercent: 25,
-  plan: 'growth',
+  services: [],
+  recurringDiscountPct: 10, // standard cleaning-industry recurring discount
+  depositPercent: 25, // standard at-booking deposit
+  plan: null,
   notes: '',
 };
 
@@ -99,14 +101,18 @@ export default function GetStartedPage() {
 
 function GetStartedInner() {
   const searchParams = useSearchParams();
-  const initialPlan = (searchParams.get('plan') as OnboardingState['plan']) || 'growth';
+  // Honor ?plan=... only when it points at a real plan id. Otherwise leave
+  // the plan unselected so the user has to make an explicit choice on Step 4.
+  const planParam = searchParams.get('plan');
+  const initialPlan: OnboardingState['plan'] =
+    planParam && planParam in PLANS ? (planParam as OnboardingState['plan']) : null;
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ id: string; plan: string } | null>(null);
   const [state, setState] = useState<OnboardingState>(() => ({
     ...DEFAULT_STATE,
-    plan: initialPlan in PLANS ? initialPlan : 'growth',
+    plan: initialPlan,
   }));
 
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) =>
@@ -125,7 +131,15 @@ function GetStartedInner() {
       return /^#[0-9a-f]{6}$/i.test(state.brandColor.trim());
     }
     if (step === 3) {
-      return state.services.length > 0 && state.services.every((s) => s.name && s.price > 0);
+      // At least one service the user actually entered: name AND price > 0.
+      return (
+        state.services.length > 0 &&
+        state.services.every((s) => s.name.trim().length > 0 && s.price > 0)
+      );
+    }
+    if (step === 4) {
+      // Must have explicitly chosen a plan — no implicit default.
+      return state.plan !== null;
     }
     return true;
   }, [step, state]);
@@ -200,7 +214,7 @@ function GetStartedInner() {
   }
 
   // ---- wizard ----
-  const currentPlan = PLANS[state.plan];
+  const currentPlan = state.plan ? PLANS[state.plan] : null;
 
   return (
     <main className="bg-white text-zinc-900 antialiased">
@@ -373,6 +387,23 @@ function GetStartedInner() {
 
               {step === 3 && (
                 <Step key="3" title="Set your services + pricing">
+                  <p className="text-sm text-zinc-600">
+                    Add the cleaning services you actually offer with your real prices.
+                    What you enter here becomes the price grid on your live booking page.
+                  </p>
+
+                  {state.services.length === 0 && (
+                    <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center">
+                      <p className="text-sm font-medium text-zinc-900">
+                        No services added yet
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Add at least one service to continue. Most cleaning operators start with{' '}
+                        Standard, Deep Clean, and Recurring Maintenance — but enter what you charge today.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     {state.services.map((svc, idx) => (
                       <div
@@ -428,10 +459,15 @@ function GetStartedInner() {
                           { id: crypto.randomUUID(), name: '', price: 0 },
                         ])
                       }
-                      className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-600 hover:border-primary/40 hover:text-primary"
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-2 text-sm font-medium transition-colors',
+                        state.services.length === 0
+                          ? 'border-primary/40 text-primary hover:bg-primary/5'
+                          : 'border-zinc-300 text-zinc-600 hover:border-primary/40 hover:text-primary'
+                      )}
                     >
                       <Plus className="h-4 w-4" />
-                      Add service
+                      {state.services.length === 0 ? 'Add your first service' : 'Add service'}
                     </button>
                   </div>
 
@@ -559,8 +595,12 @@ function GetStartedInner() {
                   disabled={submitting || !stepValid}
                   className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {submitting ? 'Submitting…' : `Claim ${currentPlan.name} — 50% off`}
-                  {!submitting && <ArrowRight className="h-4 w-4" />}
+                  {submitting
+                    ? 'Submitting…'
+                    : currentPlan
+                    ? `Claim ${currentPlan.name} — 50% off`
+                    : 'Choose a plan to continue'}
+                  {!submitting && currentPlan && <ArrowRight className="h-4 w-4" />}
                 </button>
               )}
             </div>
