@@ -1103,7 +1103,7 @@ function BookACall() {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <SelestialBookingCalendar minHeight={840} maxHeight={1500} />
+          <SelestialBookingCalendar fallbackHeight={900} />
         </div>
       </div>
     </section>
