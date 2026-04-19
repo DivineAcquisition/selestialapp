@@ -64,6 +64,8 @@ export async function middleware(request: NextRequest) {
       '/demo',
       '/retarget',
       '/offer',
+      '/book-demo',
+      '/demo-booked',
       '/welcome', // redirects to /demo via the page component
       '/api/booking-page-customization',
       '/api/onboarding',

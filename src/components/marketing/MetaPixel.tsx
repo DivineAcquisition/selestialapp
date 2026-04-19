@@ -34,6 +34,69 @@ declare global {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Public helpers — type-safe wrappers around `window.fbq('track', ...)` so
+// individual page components can fire conversion events without reaching for
+// the global directly. All helpers no-op cleanly if the pixel isn't loaded
+// (SSR, ad blockers, etc.).
+// ---------------------------------------------------------------------------
+
+type FbqEventParams = Record<string, string | number | boolean | undefined>;
+
+/** Fire any standard or custom Meta Pixel event. */
+export function trackPixelEvent(eventName: string, params?: FbqEventParams) {
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
+  if (params) {
+    window.fbq('track', eventName, params);
+  } else {
+    window.fbq('track', eventName);
+  }
+}
+
+/** Standard `ViewContent` event. */
+export function trackViewContent(params?: {
+  content_name?: string;
+  content_category?: string;
+  content_ids?: string[];
+  value?: number;
+  currency?: string;
+}) {
+  trackPixelEvent('ViewContent', params as FbqEventParams);
+}
+
+/** Standard `Schedule` event — used when a calendar booking is confirmed. */
+export function trackSchedule(params?: { value?: number; currency?: string }) {
+  trackPixelEvent('Schedule', params as FbqEventParams);
+}
+
+/** Standard `Lead` event — when a form is submitted but not yet purchased. */
+export function trackLead(params?: { value?: number; currency?: string; content_name?: string }) {
+  trackPixelEvent('Lead', params as FbqEventParams);
+}
+
+/**
+ * Fire-on-mount helper component. Drop into any page that should record a
+ * specific event on first render. Usage:
+ *
+ *   <PixelEventOnMount event="ViewContent" params={{ content_name: 'Demo Calendar' }} />
+ *
+ * Idempotent within a single mount; remounts will re-fire (intentional —
+ * each route visit counts).
+ */
+export function PixelEventOnMount({
+  event,
+  params,
+}: {
+  event: string;
+  params?: FbqEventParams;
+}) {
+  useEffect(() => {
+    trackPixelEvent(event, params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 /** Fires `PageView` whenever pathname or query string changes. */
 function MetaPixelPageView() {
   const pathname = usePathname();
