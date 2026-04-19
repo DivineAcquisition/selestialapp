@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MetaPixel } from '@/components/marketing/MetaPixel';
 
 export const metadata: Metadata = {
   title:
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function OfferLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-white">{children}</div>;
+  return (
+    <div className="min-h-screen bg-white">
+      <MetaPixel />
+      {children}
+    </div>
+  );
 }

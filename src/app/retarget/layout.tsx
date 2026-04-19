@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MetaPixel } from '@/components/marketing/MetaPixel';
 
 /**
  * Standalone layout for the /retarget page. Tight single-purpose surface for
@@ -14,5 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function RetargetLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-white">{children}</div>;
+  return (
+    <div className="min-h-screen bg-white">
+      <MetaPixel />
+      {children}
+    </div>
+  );
 }
