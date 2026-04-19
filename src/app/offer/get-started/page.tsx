@@ -3,20 +3,25 @@
 import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   ArrowLeft,
   ArrowRight,
+  Calendar,
   Check,
   ChevronDown,
+  Loader2,
+  Lock,
   Plus,
+  ShieldCheck,
   Trash2,
 } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
+import { SubscriptionPaymentForm } from '@/components/marketing/SubscriptionPaymentForm';
+import { SelestialOnboardingCallCalendar } from '@/components/marketing/GhlCalendarEmbed';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -29,7 +34,7 @@ interface ServiceLine {
 }
 
 interface OnboardingState {
-  // Step 1
+  // Step 1 — business
   businessName: string;
   contactName: string;
   email: string;
@@ -37,33 +42,28 @@ interface OnboardingState {
   website: string;
   serviceArea: string;
 
-  // Step 2
+  // Step 2 — branding
   brandColor: string;
   logoUrl: string;
   tagline: string;
 
-  // Step 3
+  // Step 3 — services + pricing
   services: ServiceLine[];
   recurringDiscountPct: number;
   depositPercent: number;
 
-  // Step 4
-  // `null` until the user explicitly picks a plan — prevents accidentally
-  // submitting a default they never selected.
-  plan: 'starter' | 'growth' | 'scale' | null;
+  // Step 4 — notes only (single plan, no tier choice)
   notes: string;
 }
 
-const PLANS = {
-  starter: { name: 'Starter', price: 297, discounted: 148.5 },
-  growth: { name: 'Growth', price: 497, discounted: 248.5 },
-  scale: { name: 'Scale', price: 997, discounted: 498.5 },
+// One plan only — $297/mo. Snapshotted in the API too. Keep both in sync.
+const PLAN = {
+  name: 'Selestial',
+  price: 297,
+  cents: 29_700,
+  interval: 'month',
 } as const;
 
-// Initial form state. Customer-data fields (businessName, services, prices,
-// plan) are intentionally empty/unset so we never submit values the user
-// didn't actually enter. Operational defaults (brand color, recurring %,
-// deposit %) start at industry-standard baselines that the user can adjust.
 const DEFAULT_STATE: OnboardingState = {
   businessName: '',
   contactName: '',
@@ -71,13 +71,12 @@ const DEFAULT_STATE: OnboardingState = {
   phone: '',
   website: '',
   serviceArea: '',
-  brandColor: '#7c3aed', // Selestial brand violet — overridden by user
+  brandColor: '#7c3aed',
   logoUrl: '',
   tagline: '',
   services: [],
-  recurringDiscountPct: 10, // standard cleaning-industry recurring discount
-  depositPercent: 25, // standard at-booking deposit
-  plan: null,
+  recurringDiscountPct: 10,
+  depositPercent: 25,
   notes: '',
 };
 
@@ -85,11 +84,11 @@ const STEPS = [
   { id: 1, name: 'Business' },
   { id: 2, name: 'Branding' },
   { id: 3, name: 'Services' },
-  { id: 4, name: 'Plan' },
+  { id: 4, name: 'Payment' },
 ] as const;
 
 // ============================================================================
-// MAIN PAGE — Suspense wrapper required because useSearchParams forces CSR.
+// MAIN
 // ============================================================================
 export default function GetStartedPage() {
   return (
@@ -100,20 +99,22 @@ export default function GetStartedPage() {
 }
 
 function GetStartedInner() {
-  const searchParams = useSearchParams();
-  // Honor ?plan=... only when it points at a real plan id. Otherwise leave
-  // the plan unselected so the user has to make an explicit choice on Step 4.
-  const planParam = searchParams.get('plan');
-  const initialPlan: OnboardingState['plan'] =
-    planParam && planParam in PLANS ? (planParam as OnboardingState['plan']) : null;
-
   const [step, setStep] = useState(1);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<{ id: string; plan: string } | null>(null);
-  const [state, setState] = useState<OnboardingState>(() => ({
-    ...DEFAULT_STATE,
-    plan: initialPlan,
-  }));
+  const [state, setState] = useState<OnboardingState>(DEFAULT_STATE);
+
+  // Submission lifecycle
+  const [signupId, setSignupId] = useState<string | null>(null);
+  const [signupSubmitting, setSignupSubmitting] = useState(false);
+
+  // Payment lifecycle
+  const [paymentInit, setPaymentInit] = useState<{
+    clientSecret: string;
+    amount: number;
+    currency: string;
+  } | null>(null);
+  const [paymentInitializing, setPaymentInitializing] = useState(false);
+  const [paymentInitError, setPaymentInitError] = useState<string | null>(null);
+  const [paid, setPaid] = useState(false);
 
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
@@ -131,145 +132,124 @@ function GetStartedInner() {
       return /^#[0-9a-f]{6}$/i.test(state.brandColor.trim());
     }
     if (step === 3) {
-      // At least one service the user actually entered: name AND price > 0.
       return (
         state.services.length > 0 &&
         state.services.every((s) => s.name.trim().length > 0 && s.price > 0)
       );
     }
-    if (step === 4) {
-      // Must have explicitly chosen a plan — no implicit default.
-      return state.plan !== null;
-    }
     return true;
   }, [step, state]);
 
-  const next = () => {
-    if (!stepValid) {
-      toast.error('Please complete the highlighted fields.');
-      return;
-    }
-    if (step < 4) setStep((s) => s + 1);
-  };
+  // ---- step 1-3 navigation ----
   const back = () => setStep((s) => Math.max(1, s - 1));
-
-  const handleSubmit = async () => {
+  const next = async () => {
     if (!stepValid) {
       toast.error('Please complete the highlighted fields.');
       return;
     }
-    setSubmitting(true);
+
+    // When advancing FROM step 3 -> step 4, we (a) persist the signup row
+    // if we haven't yet, (b) ask the API to create the Stripe Subscription
+    // and return a PaymentIntent client_secret. This batches network work
+    // so step 4 mounts with the Payment Element already ready.
+    if (step === 3) {
+      await initializePayment();
+      return;
+    }
+
+    if (step < STEPS.length) setStep((s) => s + 1);
+  };
+
+  const initializePayment = async () => {
+    if (paymentInit) {
+      // Already initialized — just advance.
+      setStep(4);
+      return;
+    }
+    setSignupSubmitting(true);
+    setPaymentInitError(null);
+
     try {
-      const res = await fetch('/api/onboarding/start', {
+      // 1. Persist the onboarding signup. The API writes the row and gives
+      //    us back the id we'll use to create the subscription.
+      let id = signupId;
+      if (!id) {
+        const res = await fetch('/api/onboarding/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Failed to save your details.');
+        id = data.signup.id as string;
+        setSignupId(id);
+      }
+
+      // 2. Create the Stripe Subscription + PaymentIntent.
+      setPaymentInitializing(true);
+      const subRes = await fetch('/api/onboarding/create-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...state,
-          offerCode: 'OFFER50',
-        }),
+        body: JSON.stringify({ signupId: id }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || 'Submission failed');
-      }
-      setSubmitted({ id: data.signup.id, plan: data.signup.plan });
+      const subData = await subRes.json();
+      if (!subRes.ok) throw new Error(subData?.error || 'Could not initialize payment.');
+
+      setPaymentInit({
+        clientSecret: subData.clientSecret,
+        amount: subData.amount,
+        currency: subData.currency,
+      });
+      setStep(4);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong.');
+      const msg = err instanceof Error ? err.message : 'Something went wrong.';
+      setPaymentInitError(msg);
+      toast.error(msg);
     } finally {
-      setSubmitting(false);
+      setSignupSubmitting(false);
+      setPaymentInitializing(false);
     }
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId: string) => {
+    if (!signupId) return;
+    try {
+      await fetch('/api/onboarding/payment-confirmed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signupId, paymentIntentId }),
+      });
+    } catch (err) {
+      // Non-fatal. Webhook is the source of truth.
+      console.error('[payment-confirmed] flip failed:', err);
+    }
+    setPaid(true);
   };
 
   // ---- success view ----
-  if (submitted) {
-    const planMeta = PLANS[submitted.plan as keyof typeof PLANS];
-    return (
-      <main className="bg-white text-zinc-900 antialiased">
-        <TopBar />
-        <section className="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-5 py-20 text-center">
-          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <Check className="h-7 w-7" />
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            You&apos;re in. We&apos;ll have you live in 48 hours.
-          </h1>
-          <p className="mt-4 max-w-xl text-base text-zinc-600">
-            We&apos;ve queued up your <strong>{planMeta?.name ?? 'Selestial'}</strong>{' '}
-            booking page with the <span className="font-mono">OFFER50</span> discount applied.
-            Check your inbox in the next 5 minutes for setup access — and a calendar link to
-            confirm your services and brand assets with our setup team.
-          </p>
-          <p className="mt-6 text-xs text-zinc-500">
-            Reference id <span className="font-mono">{submitted.id.slice(0, 8)}</span>
-          </p>
-          <Link
-            href="/offer"
-            className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to offer
-          </Link>
-        </section>
-      </main>
-    );
+  if (paid) {
+    return <SuccessScreen contactName={state.contactName} />;
   }
 
-  // ---- wizard ----
-  const currentPlan = state.plan ? PLANS[state.plan] : null;
-
   return (
-    <main className="bg-white text-zinc-900 antialiased">
-      <TopBar />
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
+      <CheckoutNav />
 
-      <div className="mx-auto max-w-7xl px-5 py-10 md:py-14">
-        {/* Progress */}
-        <div className="mb-10">
+      <div className="mx-auto max-w-7xl px-5 py-8 md:py-12">
+        {/* Header */}
+        <div className="mb-8 md:mb-10">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Get started · Step {step} of {STEPS.length}
+            Selestial onboarding · Step {step} of {STEPS.length}
           </p>
           <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            Set up your <span className="text-primary">branded booking page.</span>
+            {step === 4
+              ? 'One last step — secure your spot.'
+              : 'Set up your branded booking page.'}
           </h1>
-          <div className="mt-6 flex items-center gap-2">
-            {STEPS.map((s, i) => {
-              const isDone = step > s.id;
-              const isCurrent = step === s.id;
-              return (
-                <div key={s.id} className="flex flex-1 items-center gap-2">
-                  <div
-                    className={cn(
-                      'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors',
-                      isDone
-                        ? 'bg-primary text-white'
-                        : isCurrent
-                        ? 'border-2 border-primary bg-primary/5 text-primary'
-                        : 'border border-zinc-200 bg-white text-zinc-400'
-                    )}
-                  >
-                    {isDone ? <Check className="h-4 w-4" /> : s.id}
-                  </div>
-                  <span
-                    className={cn(
-                      'hidden text-sm font-medium sm:inline',
-                      isDone || isCurrent ? 'text-zinc-900' : 'text-zinc-400'
-                    )}
-                  >
-                    {s.name}
-                  </span>
-                  {i < STEPS.length - 1 && (
-                    <div
-                      className={cn(
-                        'mx-1 h-px flex-1',
-                        isDone ? 'bg-primary' : 'bg-zinc-200'
-                      )}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <ProgressBar step={step} />
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_440px]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_440px]">
           {/* Form column */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
             <AnimatePresence mode="wait">
@@ -280,14 +260,14 @@ function GetStartedInner() {
                       <Input
                         value={state.businessName}
                         onChange={(e) => update('businessName', e.target.value)}
-                        placeholder="Sparkle Clean Co."
+                        placeholder="e.g. Sparkle Clean Co."
                       />
                     </Field>
                     <Field label="Your name *">
                       <Input
                         value={state.contactName}
                         onChange={(e) => update('contactName', e.target.value)}
-                        placeholder="Jane Smith"
+                        placeholder="e.g. Jane Smith"
                       />
                     </Field>
                   </div>
@@ -297,7 +277,7 @@ function GetStartedInner() {
                         type="email"
                         value={state.email}
                         onChange={(e) => update('email', e.target.value)}
-                        placeholder="jane@sparkleclean.co"
+                        placeholder="you@yourcompany.com"
                       />
                     </Field>
                     <Field label="Phone">
@@ -315,14 +295,14 @@ function GetStartedInner() {
                         type="url"
                         value={state.website}
                         onChange={(e) => update('website', e.target.value)}
-                        placeholder="https://sparkleclean.co"
+                        placeholder="https://yourcompany.com"
                       />
                     </Field>
                     <Field label="Service area">
                       <Input
                         value={state.serviceArea}
                         onChange={(e) => update('serviceArea', e.target.value)}
-                        placeholder="Dallas, TX metro"
+                        placeholder="City + metro you serve"
                       />
                     </Field>
                   </div>
@@ -332,7 +312,7 @@ function GetStartedInner() {
               {step === 2 && (
                 <Step key="2" title="Brand your booking page">
                   <Field label="Brand color *">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <input
                         type="color"
                         value={state.brandColor}
@@ -369,10 +349,11 @@ function GetStartedInner() {
                     <Input
                       value={state.logoUrl}
                       onChange={(e) => update('logoUrl', e.target.value)}
-                      placeholder="https://… (or upload after signup)"
+                      placeholder="https://… (or upload during the onboarding call)"
                     />
                     <p className="mt-1.5 text-xs text-zinc-500">
-                      Paste a public URL now or upload during setup. PNG/SVG, square preferred.
+                      Paste a public URL now or send us your logo on the onboarding call.
+                      PNG/SVG, square preferred.
                     </p>
                   </Field>
                   <Field label="Tagline (shown under business name)">
@@ -394,12 +375,11 @@ function GetStartedInner() {
 
                   {state.services.length === 0 && (
                     <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center">
-                      <p className="text-sm font-medium text-zinc-900">
-                        No services added yet
-                      </p>
+                      <p className="text-sm font-medium text-zinc-900">No services added yet</p>
                       <p className="mt-1 text-xs text-zinc-500">
-                        Add at least one service to continue. Most cleaning operators start with{' '}
-                        Standard, Deep Clean, and Recurring Maintenance — but enter what you charge today.
+                        Add at least one service to continue. Most operators start with
+                        Standard, Deep Clean, and Recurring Maintenance — but enter what you
+                        charge today.
                       </p>
                     </div>
                   )}
@@ -413,9 +393,9 @@ function GetStartedInner() {
                         <Input
                           value={svc.name}
                           onChange={(e) => {
-                            const next = [...state.services];
-                            next[idx] = { ...svc, name: e.target.value };
-                            update('services', next);
+                            const nextList = [...state.services];
+                            nextList[idx] = { ...svc, name: e.target.value };
+                            update('services', nextList);
                           }}
                           placeholder="Service name"
                         />
@@ -428,12 +408,12 @@ function GetStartedInner() {
                             min={0}
                             value={svc.price || ''}
                             onChange={(e) => {
-                              const next = [...state.services];
-                              next[idx] = {
+                              const nextList = [...state.services];
+                              nextList[idx] = {
                                 ...svc,
                                 price: parseInt(e.target.value, 10) || 0,
                               };
-                              update('services', next);
+                              update('services', nextList);
                             }}
                             className="pl-6"
                           />
@@ -441,8 +421,10 @@ function GetStartedInner() {
                         <button
                           type="button"
                           onClick={() => {
-                            const next = state.services.filter((_, i) => i !== idx);
-                            update('services', next);
+                            update(
+                              'services',
+                              state.services.filter((_, i) => i !== idx)
+                            );
                           }}
                           className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900"
                           aria-label="Remove service"
@@ -500,110 +482,113 @@ function GetStartedInner() {
                         className="w-full accent-[var(--primary)]"
                       />
                       <p className="mt-1.5 text-xs text-zinc-500">
-                        25% is standard. Higher reduces no-shows further.
+                        25% is the cleaning-industry default. Higher reduces no-shows further.
                       </p>
                     </Field>
-                  </div>
-                </Step>
-              )}
-
-              {step === 4 && (
-                <Step key="4" title="Choose your plan">
-                  <div className="space-y-3">
-                    {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((id) => {
-                      const p = PLANS[id];
-                      const selected = state.plan === id;
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => update('plan', id)}
-                          className={cn(
-                            'flex w-full items-center justify-between gap-3 rounded-md border p-4 text-left transition-all',
-                            selected
-                              ? 'border-2 border-primary bg-primary/5'
-                              : 'border-zinc-200 bg-white hover:border-zinc-300'
-                          )}
-                        >
-                          <div>
-                            <p className="text-sm font-semibold text-zinc-900">{p.name}</p>
-                            <p className="mt-0.5 text-xs text-zinc-500">
-                              <span className="text-zinc-400 line-through">${p.price}/mo</span>{' '}
-                              <span className="font-semibold text-emerald-700">
-                                ${p.discounted}/mo
-                              </span>{' '}
-                              first 3 months with OFFER50
-                            </p>
-                          </div>
-                          <div
-                            className={cn(
-                              'flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors',
-                              selected
-                                ? 'border-primary bg-primary'
-                                : 'border-zinc-300 bg-white'
-                            )}
-                          >
-                            {selected && <Check className="h-3 w-3 text-white" />}
-                          </div>
-                        </button>
-                      );
-                    })}
                   </div>
 
                   <Field label="Anything else we should know?">
                     <textarea
                       value={state.notes}
                       onChange={(e) => update('notes', e.target.value)}
-                      placeholder="Existing CRM, peak season, custom requests..."
+                      placeholder="Existing CRM, peak season, custom requests…"
                       rows={3}
                       className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </Field>
+                </Step>
+              )}
 
-                  <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-600">
-                    By submitting, you&apos;ll receive a setup link and we&apos;ll begin
-                    provisioning your sub-account. <strong>OFFER50</strong> locks in 50% off
-                    your first 3 months. Cancel anytime.
-                  </div>
+              {step === 4 && (
+                <Step key="4" title="Pay & lock your spot">
+                  <PlanSummary />
+
+                  {paymentInit ? (
+                    <SubscriptionPaymentForm
+                      clientSecret={paymentInit.clientSecret}
+                      amount={paymentInit.amount}
+                      currency={paymentInit.currency}
+                      onSuccess={handlePaymentSuccess}
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {paymentInitError ? (
+                        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                          {paymentInitError}
+                          <button
+                            type="button"
+                            onClick={initializePayment}
+                            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Setting up secure checkout…
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-500">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    30-day money-back guarantee · Cancel anytime
+                  </p>
                 </Step>
               )}
             </AnimatePresence>
 
-            {/* Step nav */}
-            <div className="mt-8 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={back}
-                disabled={step === 1}
-                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ArrowLeft className="h-4 w-4" /> Back
-              </button>
-              {step < 4 ? (
+            {/* Step nav (Steps 1-3 only — Step 4 is driven by the Payment Element) */}
+            {step < 4 && (
+              <div className="mt-8 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={back}
+                  disabled={step === 1}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </button>
                 <button
                   type="button"
                   onClick={next}
-                  disabled={!stepValid}
+                  disabled={!stepValid || signupSubmitting || paymentInitializing}
                   className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Continue <ArrowRight className="h-4 w-4" />
+                  {step === 3 ? (
+                    signupSubmitting || paymentInitializing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Preparing checkout…
+                      </>
+                    ) : (
+                      <>
+                        Continue to payment
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )
+                  ) : (
+                    <>
+                      Continue
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </button>
-              ) : (
+              </div>
+            )}
+            {step === 4 && (
+              <div className="mt-6 flex items-center justify-start">
                 <button
                   type="button"
-                  onClick={handleSubmit}
-                  disabled={submitting || !stepValid}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={back}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900"
                 >
-                  {submitting
-                    ? 'Submitting…'
-                    : currentPlan
-                    ? `Claim ${currentPlan.name} — 50% off`
-                    : 'Choose a plan to continue'}
-                  {!submitting && currentPlan && <ArrowRight className="h-4 w-4" />}
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to services
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Live preview column */}
@@ -620,31 +605,79 @@ function GetStartedInner() {
               recurringDiscountPct={state.recurringDiscountPct}
               depositPercent={state.depositPercent}
             />
-            <details className="mt-4 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
+            <details className="mt-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-xs text-zinc-600">
               <summary className="flex cursor-pointer items-center justify-between font-medium text-zinc-900">
-                What happens after I submit?
+                What happens after I pay?
                 <ChevronDown className="h-4 w-4" />
               </summary>
               <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-[12px] leading-relaxed">
-                <li>You get a setup-access email within 5 minutes.</li>
-                <li>We provision your GHL sub-account with your branding and services.</li>
-                <li>Your booking page goes live on a Selestial subdomain (or your own domain on Growth/Scale).</li>
-                <li>OFFER50 is applied automatically — billing starts on day 14, after the trial.</li>
+                <li>You pick a 30-minute onboarding call slot on the next screen.</li>
+                <li>We provision your GHL sub-account and configure your branding + pricing.</li>
+                <li>Your booking page goes live within 48 hours of the call.</li>
+                <li>Your subscription auto-renews monthly. Cancel anytime in one click.</li>
               </ol>
             </details>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
 // ============================================================================
-// Bits
+// Success — calendar embed for the post-payment onboarding call
 // ============================================================================
-function TopBar() {
+function SuccessScreen({ contactName }: { contactName: string }) {
+  const firstName = contactName.split(' ')[0] || 'there';
   return (
-    <nav className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
+      <CheckoutNav />
+      <div className="mx-auto max-w-4xl px-5 py-12 md:py-16">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <Check className="h-7 w-7" />
+          </div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            Payment confirmed
+          </p>
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+            Welcome to Selestial, {firstName}.{' '}
+            <span className="text-primary">Pick your onboarding call.</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-zinc-600">
+            Grab a 30-minute slot below. We&apos;ll walk you through your branded booking page,
+            confirm your services + pricing, and have you live in 48 hours.
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+          <SelestialOnboardingCallCalendar fallbackHeight={900} />
+        </div>
+
+        <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-zinc-500">
+          <Calendar className="h-3.5 w-3.5" />
+          A confirmation email with your call details is on its way to your inbox.
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/offer"
+            className="text-xs font-medium text-zinc-500 hover:text-zinc-900"
+          >
+            Back to home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Subcomponents
+// ============================================================================
+function CheckoutNav() {
+  return (
+    <nav className="border-b border-zinc-200 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5">
         <Link href="/offer" className="flex items-center gap-2.5">
           <Image
@@ -656,14 +689,79 @@ function TopBar() {
           />
           <span className="text-base font-semibold text-zinc-900">Selestial</span>
         </Link>
-        <Link
-          href="/offer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to offer
-        </Link>
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <Lock className="h-3.5 w-3.5 text-emerald-600" />
+          Secure checkout
+        </div>
       </div>
     </nav>
+  );
+}
+
+function ProgressBar({ step }: { step: number }) {
+  return (
+    <div className="mt-6 flex items-center gap-2">
+      {STEPS.map((s, i) => {
+        const isDone = step > s.id;
+        const isCurrent = step === s.id;
+        return (
+          <div key={s.id} className="flex flex-1 items-center gap-2">
+            <div
+              className={cn(
+                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors',
+                isDone
+                  ? 'bg-primary text-white'
+                  : isCurrent
+                  ? 'border-2 border-primary bg-primary/5 text-primary'
+                  : 'border border-zinc-200 bg-white text-zinc-400'
+              )}
+            >
+              {isDone ? <Check className="h-4 w-4" /> : s.id}
+            </div>
+            <span
+              className={cn(
+                'hidden text-sm font-medium sm:inline',
+                isDone || isCurrent ? 'text-zinc-900' : 'text-zinc-400'
+              )}
+            >
+              {s.name}
+            </span>
+            {i < STEPS.length - 1 && (
+              <div className={cn('mx-1 h-px flex-1', isDone ? 'bg-primary' : 'bg-zinc-200')} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function PlanSummary() {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-semibold text-zinc-900">{PLAN.name}</p>
+        <p className="text-2xl font-semibold tracking-tight text-zinc-900">
+          ${PLAN.price}
+          <span className="ml-1 text-sm font-normal text-zinc-500">/{PLAN.interval}</span>
+        </p>
+      </div>
+      <ul className="mt-4 space-y-2 text-sm text-zinc-700">
+        {[
+          'Done-for-you setup (live in 48 hours)',
+          'Branded booking page on a Selestial subdomain',
+          'Stripe deposit collection + recurring upsell',
+          'AI follow-up sequences (SMS + email)',
+          'Unlimited bookings — no per-user fees',
+          '30-day money-back guarantee',
+        ].map((line) => (
+          <li key={line} className="flex items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

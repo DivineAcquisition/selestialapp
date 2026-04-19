@@ -88,8 +88,7 @@ function TopBanner() {
     <div className="bg-primary px-4 py-3 text-center">
       <p className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
         <Tag className="h-3.5 w-3.5" />
-        Limited offer · 50% off your first 3 months · Use code{' '}
-        <span className="rounded bg-white/15 px-1.5 py-0.5 font-mono">OFFER50</span>
+        $297/mo · Done-for-you setup · Live in 48 hours · Cancel anytime
       </p>
     </div>
   );
@@ -124,7 +123,7 @@ function Nav() {
           </a>
         </div>
         <PrimaryCTA size="sm">
-          Claim 50% off
+          Get started
           <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
         </PrimaryCTA>
       </div>
@@ -147,7 +146,7 @@ function Hero() {
               className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary"
             >
               <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-              Limited 50% offer
+              $297/mo · Live in 48 hours
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
@@ -155,8 +154,8 @@ function Hero() {
               transition={{ delay: 0.05 }}
               className="text-balance text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-zinc-900 md:text-5xl lg:text-6xl"
             >
-              Get the booking page that pays for itself in week one{' '}
-              <span className="text-primary">— 50% off for the next 14 days.</span>
+              The booking page that pays for itself in week one.{' '}
+              <span className="text-primary">$297/month, all in.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
@@ -165,8 +164,7 @@ function Hero() {
               className="mt-5 max-w-lg text-balance text-base leading-relaxed text-zinc-600 md:text-lg"
             >
               Done-for-you setup, branded booking page, AI follow-up, recurring upsell. Live in
-              48 hours. Apply <span className="font-mono text-zinc-900">OFFER50</span> at signup
-              and your first 3 months are 50% off.
+              48 hours. One plan, $297/mo, cancel anytime.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -175,7 +173,7 @@ function Hero() {
               className="mt-7 flex flex-col items-start gap-3 sm:flex-row"
             >
               <PrimaryCTA size="lg">
-                Get started — claim 50% off
+                Get started — $297/mo
                 <ArrowRight className="ml-2 h-4 w-4" />
               </PrimaryCTA>
               <SecondaryCTA href={CALENDAR_ANCHOR}>Talk to us first</SecondaryCTA>
@@ -338,7 +336,7 @@ function Preview() {
         </div>
         <div className="mt-10 flex justify-center">
           <PrimaryCTA size="lg">
-            Customize mine — claim 50% off
+            Customize mine — $297/mo
             <ArrowRight className="ml-2 h-4 w-4" />
           </PrimaryCTA>
         </div>
@@ -348,121 +346,65 @@ function Preview() {
 }
 
 // ============================================================================
-// PRICING — three plans, all with OFFER50 applied
+// PRICING — single plan, $297/month
 // ============================================================================
-const PLANS = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 297,
-    discounted: 148.5,
-    blurb: 'For solo operators or new cleaning businesses getting their first booking page live.',
-    features: [
-      'Branded booking page on a Selestial subdomain',
-      'Up to 5 services + add-ons',
-      'Stripe deposit collection',
-      'SMS + email confirmations',
-      'Recurring upsell at checkout',
-    ],
-    cta: 'Start with 50% off',
-    accent: false,
-  },
-  {
-    id: 'growth',
-    name: 'Growth',
-    price: 497,
-    discounted: 248.5,
-    blurb: 'For 15K+ MRR cleaning companies that want full automation and a custom domain.',
-    features: [
-      'Everything in Starter, plus:',
-      'Custom domain (book.yourcompany.com)',
-      'Unlimited services + add-ons',
-      'AI follow-up sequences (34+ templates)',
-      'Recurring conversion analytics',
-      'Monthly optimization call',
-    ],
-    cta: 'Most popular — 50% off',
-    accent: true,
-  },
-  {
-    id: 'scale',
-    name: 'Scale',
-    price: 997,
-    discounted: 498.5,
-    blurb: 'Multi-location operators or franchises with custom workflows.',
-    features: [
-      'Everything in Growth, plus:',
-      'Multi-location support',
-      'Dedicated GHL sub-account + agency setup',
-      'Custom workflow buildouts',
-      'Priority migration from your existing tools',
-      'Quarterly strategy review',
-    ],
-    cta: 'Get scale — 50% off',
-    accent: false,
-  },
+const INCLUDES = [
+  'Done-for-you setup, live in 48 hours',
+  'Branded booking page on a Selestial subdomain (or your own domain)',
+  'Pricing engine that adjusts by home size, service, and add-ons',
+  'Stripe deposit collection at the moment of booking',
+  'Recurring service upsell that converts one-time into subscriptions',
+  'SMS + email confirmations sent automatically',
+  'AI follow-up sequences (34+ pre-built templates)',
+  'Monthly optimization call',
+  'Unlimited bookings, no per-user fees, no feature gates',
 ];
 
 function Pricing() {
   return (
     <section id="pricing" className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto max-w-6xl px-5 py-20 md:py-24">
-        <div className="mb-12 text-center">
-          <SectionLabel>50% off · OFFER50</SectionLabel>
+      <div className="mx-auto max-w-3xl px-5 py-20 md:py-24">
+        <div className="mb-10 text-center">
+          <SectionLabel>Pricing</SectionLabel>
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            Pick a plan. Lock in 50% off your first 3 months.
+            One plan. Everything included.{' '}
+            <span className="text-primary">$297/month.</span>
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-base text-zinc-600">
-            Cancel anytime. 30-day money-back guarantee. Done-for-you setup included on all
-            plans.
+            Cancel anytime. 30-day money-back guarantee. Done-for-you setup included.
           </p>
         </div>
-        <div className="grid gap-5 md:grid-cols-3 md:gap-6">
-          {PLANS.map((p) => (
-            <div
-              key={p.id}
-              className={cn(
-                'relative flex flex-col rounded-xl border bg-white p-7 md:p-8',
-                p.accent ? 'border-primary shadow-md' : 'border-zinc-200 shadow-sm'
-              )}
-            >
-              {p.accent && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md">
-                  Most popular
-                </span>
-              )}
-              <p className="text-sm font-semibold text-zinc-900">{p.name}</p>
-              <p className="mt-1 text-xs text-zinc-500">{p.blurb}</p>
-              <div className="mt-5 flex items-baseline gap-2">
-                <span className="text-4xl font-semibold tracking-tight text-zinc-900">
-                  ${p.discounted}
-                </span>
-                <span className="text-sm text-zinc-500">/mo</span>
-              </div>
-              <p className="mt-1 text-xs text-zinc-500">
-                <span className="text-zinc-400 line-through">${p.price}/mo</span> for first 3
-                months with <span className="font-mono">OFFER50</span>
-              </p>
-              <ul className="mt-6 space-y-2 text-sm text-zinc-700">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-7">
-                <PrimaryCTA
-                  href={`${GET_STARTED}?plan=${p.id}`}
-                  size="lg"
-                  className={cn('w-full', !p.accent && 'bg-zinc-900 hover:bg-zinc-800')}
-                >
-                  {p.cta}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </PrimaryCTA>
-              </div>
-            </div>
-          ))}
+
+        <div className="rounded-xl border border-zinc-200 bg-white p-7 shadow-sm md:p-10">
+          <div className="flex items-baseline gap-2">
+            <span className="text-5xl font-semibold tracking-tight text-zinc-900">$297</span>
+            <span className="text-base text-zinc-500">/month</span>
+          </div>
+          <p className="mt-1 text-sm text-zinc-500">
+            Billed monthly · No setup fee · Cancel anytime
+          </p>
+
+          <div className="my-7 h-px bg-zinc-200" />
+
+          <ul className="space-y-3">
+            {INCLUDES.map((line) => (
+              <li
+                key={line}
+                className="flex items-start gap-3 text-sm leading-relaxed text-zinc-700"
+              >
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+
+          <PrimaryCTA size="lg" className="mt-8 w-full">
+            Get started — $297/mo
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </PrimaryCTA>
+          <p className="mt-3 text-center text-xs text-zinc-500">
+            30-day money-back guarantee
+          </p>
         </div>
       </div>
     </section>
@@ -503,18 +445,18 @@ function FinalCta() {
       <div className="mx-auto max-w-3xl px-5 py-20 text-center md:py-24">
         <Sparkles className="mx-auto mb-4 h-5 w-5 text-primary" />
         <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-          Apply OFFER50 at signup. Lock the discount for life.
+          Get started — $297/month, cancel anytime.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-zinc-600">
-          Once the offer window closes, prices return to standard. Customers who claim it now
-          keep the discount as long as they stay.
+          One plan, everything included. We&apos;ll have your branded booking page live within
+          48 hours of signup.
         </p>
         <PrimaryCTA size="lg" className="mt-7">
-          Get started — claim 50% off
+          Get started — $297/mo
           <ArrowRight className="ml-2 h-4 w-4" />
         </PrimaryCTA>
         <p className="mt-4 text-xs text-zinc-500">
-          14-day claim window · 30-day money-back · Cancel anytime
+          30-day money-back · Cancel anytime
         </p>
       </div>
     </section>

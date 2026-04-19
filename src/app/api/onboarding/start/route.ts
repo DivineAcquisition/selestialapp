@@ -1,13 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
-const PLANS: Record<string, { price_cents: number }> = {
-  starter: { price_cents: 14_850 }, // $297 -> $148.50 with OFFER50
-  growth: { price_cents: 24_850 },
-  scale: { price_cents: 49_850 },
-};
-
-const ALLOWED_PLANS = new Set(Object.keys(PLANS));
+// Single plan only. The wizard no longer asks the user to choose a tier;
+// every signup is the $297/mo Selestial plan. Snapshotted in cents so the
+// historical record on each row reflects the price at signup time even if
+// we change plan pricing later.
+const STANDARD_PLAN = { id: 'standard', price_cents: 29_700 } as const;
 
 interface ServiceLine {
   id?: string;
@@ -46,15 +44,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email looks invalid.' }, { status: 400 });
   }
 
-  const planRaw = body.plan;
-  if (typeof planRaw !== 'string' || !ALLOWED_PLANS.has(planRaw)) {
-    return NextResponse.json(
-      { error: 'A plan must be selected before submitting.' },
-      { status: 400 }
-    );
-  }
-  const safePlan = planRaw;
-  const offerCode = String(body.offerCode ?? 'OFFER50').slice(0, 32);
+  // Single-plan mode — ignore any plan field on the request and stamp every
+  // signup with the standard $297/mo plan.
+  const safePlan = STANDARD_PLAN.id;
+  const offerCode = String(body.offerCode ?? '').slice(0, 32) || null;
 
   // Filter to only real services the user actually entered: name AND price > 0.
   // Services with missing data are silently dropped so we never persist
@@ -95,7 +88,7 @@ export async function POST(request: NextRequest) {
     deposit_percent: clampInt(body.depositPercent, 5, 100, 25),
     plan: safePlan,
     offer_code: offerCode,
-    monthly_price_cents: PLANS[safePlan]?.price_cents ?? null,
+    monthly_price_cents: STANDARD_PLAN.price_cents,
     notes: clean(body.notes, 2000),
     utms: (body.utms as Record<string, unknown>) ?? {},
     source: 'offer_page',

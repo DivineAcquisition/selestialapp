@@ -161,3 +161,28 @@ export function SelestialBookingCalendar({
     />
   );
 }
+
+/**
+ * Preset for the post-payment onboarding call. Shown only on the
+ * /offer/get-started success screen after Stripe confirms payment.
+ *
+ *   Widget URL: api.divineacquisition.io/widget/booking/rInfhSLzU23HPVFvDu2c
+ *   Iframe id : 09O94JadkIsrarld4LMd_1776619444795  (per supplied snippet)
+ */
+export function SelestialOnboardingCallCalendar({
+  fallbackHeight = 900,
+  className,
+}: {
+  fallbackHeight?: number;
+  className?: string;
+}) {
+  return (
+    <GhlCalendarEmbed
+      src="https://api.divineacquisition.io/widget/booking/rInfhSLzU23HPVFvDu2c"
+      id="09O94JadkIsrarld4LMd_1776619444795"
+      fallbackHeight={fallbackHeight}
+      className={className}
+      title="Book your Selestial onboarding call"
+    />
+  );
+}
