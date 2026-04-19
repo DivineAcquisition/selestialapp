@@ -63,8 +63,10 @@ export async function middleware(request: NextRequest) {
     const accessAllowedPrefixes = [
       '/demo',
       '/retarget',
+      '/offer',
       '/welcome', // redirects to /demo via the page component
       '/api/booking-page-customization',
+      '/api/onboarding',
     ]
     if (pathname === '/') {
       return NextResponse.rewrite(new URL('/demo', request.url))

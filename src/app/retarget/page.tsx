@@ -144,6 +144,13 @@ function VSL() {
         <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-950 shadow-sm">
           <WistiaPlayer mediaId="ttvt5ujpfb" aspect={16 / 9} />
         </div>
+        <div className="mt-6 flex flex-col items-center justify-center gap-2">
+          <PrimaryCTA size="lg">
+            Book my strategy session
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </PrimaryCTA>
+          <p className="text-xs text-zinc-500">15 minutes · Real strategy · No sales pitch</p>
+        </div>
       </div>
     </section>
   );
