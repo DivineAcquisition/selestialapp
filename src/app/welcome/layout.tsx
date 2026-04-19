@@ -26,14 +26,17 @@ export default function MarketingLayout({
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
+            <a href="#product-tour" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+              Product
+            </a>
             <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Features
             </a>
             <a href="#sequences" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Workflows
             </a>
-            <a href="#demo" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-              Demo
+            <a href="#book-a-call" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+              Book a demo
             </a>
           </div>
           
@@ -62,8 +65,8 @@ export default function MarketingLayout({
         </div>
       </nav>
       
-      {/* Main Content */}
-      <main>{children}</main>
+      {/* Main Content (offset by fixed nav height) */}
+      <main className="pt-16">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-gray-100 bg-gray-50">

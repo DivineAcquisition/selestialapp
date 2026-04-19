@@ -286,6 +286,16 @@
   100% { offset-distance: 100%; }
 }
 
+/* Magic UI — Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-100% - var(--gap, 1rem))); }
+}
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-100% - var(--gap, 1rem))); }
+}
+
 @layer utilities {
   .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
   .animate-fade-out { animation: fade-out 0.2s ease-out forwards; }
@@ -306,6 +316,8 @@
   .animate-spotlight { animation: spotlight 2s ease 0.75s 1 forwards; }
   .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
   .animate-border-beam { animation: border-beam 4s linear infinite; }
+  .animate-marquee { animation: marquee var(--duration, 40s) linear infinite; }
+  .animate-marquee-vertical { animation: marquee-vertical var(--duration, 40s) linear infinite; }
 
   /* Scrollbar */
   .scrollbar-thin {
