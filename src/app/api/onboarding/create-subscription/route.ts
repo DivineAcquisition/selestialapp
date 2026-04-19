@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     let subscription: Stripe.Subscription;
     if (row.stripe_subscription_id) {
       subscription = await stripe.subscriptions.retrieve(row.stripe_subscription_id, {
-        expand: ['latest_invoice.payment_intent'],
+        expand: ['latest_invoice.confirmation_secret'],
       });
       // If retrieve found something terminal, fall through to create a new one.
       if (['canceled', 'incomplete_expired'].includes(subscription.status)) {
@@ -118,10 +118,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Pull the PaymentIntent client_secret off the latest invoice.
+    //
+    // IMPORTANT (Stripe 2025-12-15.clover billing rebuild): the legacy
+    // `invoice.payment_intent` field was removed. The client_secret now
+    // lives at `invoice.confirmation_secret.client_secret`, and the
+    // PaymentIntent id is the prefix of that secret (`pi_xxx_secret_...`).
+    // We retrieve the invoice with the new expand path and parse out
+    // both values directly.
     const latestInvoice = subscription.latest_invoice;
     const invoice =
       typeof latestInvoice === 'string'
-        ? await stripe.invoices.retrieve(latestInvoice, { expand: ['payment_intent'] })
+        ? await stripe.invoices.retrieve(latestInvoice, {
+            expand: ['confirmation_secret'],
+          })
         : latestInvoice;
 
     if (!invoice) {
@@ -131,17 +140,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pi = (invoice as Stripe.Invoice & { payment_intent?: Stripe.PaymentIntent | string })
-      .payment_intent;
-    const paymentIntent =
-      typeof pi === 'string' ? await stripe.paymentIntents.retrieve(pi) : pi;
+    const confirmationSecret = (
+      invoice as Stripe.Invoice & {
+        confirmation_secret?: { client_secret?: string; type?: string } | null;
+      }
+    ).confirmation_secret;
 
-    if (!paymentIntent || !paymentIntent.client_secret) {
+    const clientSecret = confirmationSecret?.client_secret ?? null;
+    if (!clientSecret) {
       return NextResponse.json(
         { error: 'Stripe did not return a payment client secret.' },
         { status: 502 }
       );
     }
+
+    // PaymentIntent id is the part before `_secret_` in the client secret.
+    const paymentIntentId = clientSecret.split('_secret_')[0];
 
     // 4. Persist the Stripe ids back onto the signup.
     await supabase
@@ -149,17 +163,20 @@ export async function POST(request: NextRequest) {
       .update({
         stripe_customer_id: customerId,
         stripe_subscription_id: subscription.id,
-        stripe_payment_intent_id: paymentIntent.id,
+        stripe_payment_intent_id: paymentIntentId,
         payment_status: 'requires_payment',
       })
       .eq('id', row.id);
 
     return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
+      clientSecret,
       subscriptionId: subscription.id,
       customerId,
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
+      // Invoice amount_due is set on creation for default_incomplete subs;
+      // it equals the recurring price's unit_amount for a fresh sub. Falls
+      // back to `total` if Stripe ever drops `amount_due` from this shape.
+      amount: invoice.amount_due ?? invoice.total ?? 0,
+      currency: invoice.currency,
     });
   } catch (err) {
     console.error('[create-subscription] stripe error:', err);
@@ -180,7 +197,9 @@ async function createSelestialSubscription(
     items: [{ price: priceId }],
     payment_behavior: 'default_incomplete',
     payment_settings: { save_default_payment_method: 'on_subscription' },
-    expand: ['latest_invoice.payment_intent'],
+    // 2025-12-15.clover: confirmation_secret replaces the legacy
+    // payment_intent expansion path on invoices.
+    expand: ['latest_invoice.confirmation_secret'],
     metadata: { selestial_signup_id: signupId },
   });
 }
