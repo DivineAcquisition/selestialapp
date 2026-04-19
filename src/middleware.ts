@@ -57,18 +57,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL(newPath, request.url))
   }
 
-  // access.selestial.io - Marketing landing pages (PUBLIC)
+  // access.selestial.io - Single canonical landing page at /demo (PUBLIC).
+  // /welcome is a back-compat redirect to /demo.
   if (subdomain === 'access') {
-    // Public marketing routes that should pass through unchanged.
-    const accessAllowedPrefixes = ['/welcome', '/demo', '/api/booking-page-customization']
+    const accessAllowedPrefixes = [
+      '/demo',
+      '/welcome', // redirects to /demo via the page component
+      '/api/booking-page-customization',
+    ]
     if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/welcome', request.url))
+      return NextResponse.rewrite(new URL('/demo', request.url))
     }
     if (accessAllowedPrefixes.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
       return NextResponse.rewrite(new URL(pathname, request.url))
     }
-    // Anything else on access.* (auth pages, dashboard, etc.) → 404 to /welcome
-    return NextResponse.rewrite(new URL('/welcome', request.url))
+    // Anything else on access.* (auth pages, dashboard, etc.) → /demo
+    return NextResponse.rewrite(new URL('/demo', request.url))
   }
 
   // book.selestial.io - Customer booking widget (PUBLIC)
