@@ -11,11 +11,12 @@ import {
   ChevronDown,
   Clock,
   CreditCard,
+  Lock,
   RefreshCw,
   Sparkles,
   Star,
+  Video,
   Zap,
-  Lock,
 } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
@@ -96,6 +97,19 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ============================================================================
+// TOP BANNER (full-width purple bar)
+// ============================================================================
+function TopBanner() {
+  return (
+    <div className="bg-primary px-4 py-3 text-center">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
+        For Remote-Operated Cleaning Companies Doing 15K+ in Revenue
+      </p>
+    </div>
+  );
+}
+
+// ============================================================================
 // NAV
 // ============================================================================
 function Nav() {
@@ -150,33 +164,33 @@ function Hero() {
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[11px] font-medium text-primary"
+              className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary"
             >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-              </span>
-              For residential cleaning companies doing 20+ jobs/month
+              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+              Free Growth Blueprint
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-zinc-900 md:text-5xl lg:text-6xl"
+              className="text-balance text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-zinc-900 md:text-5xl lg:text-6xl"
             >
-              The booking page that turns your website into your{' '}
-              <span className="text-primary">best salesperson.</span>
+              <span className="text-primary">More jobs. More referrals. More recurring revenue.</span>{' '}
+              <span className="text-zinc-900">
+                Built for remote cleaning companies that run on systems, not phone calls.
+              </span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mt-5 max-w-lg text-base leading-relaxed text-zinc-600 md:text-lg"
+              className="mt-5 max-w-lg text-balance text-base leading-relaxed text-zinc-600 md:text-lg"
             >
-              Show pricing upfront. Collect a deposit. Book the job in 60 seconds. No quote
-              forms, no callbacks, no lost customers.
+              We&apos;ll install AI-powered booking, follow-up, and retention systems so you stop
+              chasing leads and start building a business that grows on autopilot. Book your free
+              strategy session now.
             </motion.p>
 
             <motion.div
@@ -186,7 +200,7 @@ function Hero() {
               className="mt-7 flex flex-col items-start gap-3 sm:flex-row"
             >
               <PrimaryCTA size="lg">
-                Book a 15-min demo
+                Book my strategy session
                 <ArrowRight className="ml-2 h-4 w-4" />
               </PrimaryCTA>
               <SecondaryCTA href="#product">See it in action</SecondaryCTA>
@@ -565,7 +579,7 @@ function Sequences() {
 const TESTIMONIALS = [
   {
     name: 'BadgerLuxClean',
-    role: 'Premium Residential Cleaning',
+    role: 'Remote-Operated Residential Cleaning',
     initials: 'BL',
     quote:
       'We processed 1,740 bookings and tracked $510K in revenue through Selestial. 32% of our one-time customers converted to recurring service at the booking page — not after weeks of follow-up.',
@@ -578,7 +592,7 @@ const TESTIMONIALS = [
   },
   {
     name: 'Bay Area Cleaning Pros',
-    role: 'Residential Cleaning, Bay Area CA',
+    role: 'Remote-Operated Residential Cleaning · Bay Area, CA',
     initials: 'BA',
     quote:
       "We added $50K in new annual revenue from bookings that would've been phone tag before Selestial. Customers see the price, pick their time, and the job's on the calendar before I'd even have called them back.",
@@ -602,22 +616,37 @@ function Proof() {
   return (
     <section className="border-b border-zinc-200 bg-white">
       <div className="mx-auto max-w-6xl px-5 py-20 md:py-28">
-        <div className="mb-12 max-w-2xl">
-          <SectionLabel>Proof</SectionLabel>
-          <h2 className="text-3xl font-semibold leading-tight tracking-tight text-zinc-900 md:text-4xl">
-            Real cleaning companies. Real numbers.
+        <div className="mb-12 text-center md:text-left md:max-w-2xl">
+          <SectionLabel>Real Results</SectionLabel>
+          <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight text-zinc-900 md:text-4xl lg:text-5xl">
+            Built on <span className="text-primary">live revenue.</span> Not theory.
           </h2>
+          <p className="mt-4 text-balance text-base leading-relaxed text-zinc-600">
+            Two remote-operated cleaning companies are running Selestial right now.
+            Here&apos;s what it&apos;s doing for them — with live interviews coming soon.
+          </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2 md:gap-7">
           {TESTIMONIALS.map((t) => (
-            <div key={t.name} className="rounded-xl border border-zinc-200 bg-white p-7 md:p-8">
+            <article
+              key={t.name}
+              className="relative flex flex-col rounded-xl border border-zinc-200 bg-white p-7 shadow-sm md:p-8"
+            >
+              {/* Floating "Live Interview Coming Soon" badge */}
+              <span className="absolute -top-3 right-6 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-md">
+                <Video className="h-3 w-3" />
+                Live interview soon
+              </span>
+
               <div className="mb-4 flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className="h-3.5 w-3.5 fill-primary text-primary" />
                 ))}
               </div>
-              <p className="text-base leading-relaxed text-zinc-700">&ldquo;{t.quote}&rdquo;</p>
+              <blockquote className="flex-1 text-base leading-relaxed text-zinc-700">
+                &ldquo;{t.quote}&rdquo;
+              </blockquote>
               <div className="mt-6 flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
                   {t.initials}
@@ -640,7 +669,7 @@ function Proof() {
                   </div>
                 ))}
               </div>
-            </div>
+            </article>
           ))}
         </div>
 
@@ -1141,21 +1170,30 @@ function FinalCta() {
 // FOOTER
 // ============================================================================
 function Footer() {
+  const year = new Date().getFullYear();
   return (
-    <footer className="bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row">
-        <div className="flex items-center gap-2.5 text-zinc-500">
+    <footer className="border-t border-zinc-200 bg-white py-10 px-4">
+      <div className="mx-auto max-w-3xl text-center">
+        <div className="mb-4 flex items-center justify-center gap-2.5">
           <Image
             src="/logo-icon-new.png"
             alt="Selestial"
-            width={24}
-            height={24}
+            width={28}
+            height={28}
             className="rounded"
           />
-          <span className="text-sm font-medium text-zinc-900">Selestial</span>
-          <span className="text-xs text-zinc-400">© {new Date().getFullYear()}</span>
+          <span className="text-sm font-semibold text-zinc-900">Selestial</span>
         </div>
-        <div className="flex items-center gap-5 text-xs text-zinc-500">
+        <p className="mb-4 text-sm text-zinc-500">
+          © {year} Selestial. All rights reserved.
+        </p>
+        <p className="mx-auto max-w-2xl text-[11px] leading-relaxed text-zinc-400">
+          This site is not a part of the Facebook website or Facebook Inc. Additionally,
+          this site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of
+          FACEBOOK, Inc. We use cookies, including third-party cookies, on this website to
+          help operate our site and for analytics and advertising purposes.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-500">
           <a
             href="https://selestial.io/privacy"
             target="_blank"
@@ -1187,6 +1225,7 @@ function Footer() {
 export default function DemoLandingPage() {
   return (
     <main className="bg-white text-zinc-900 antialiased">
+      <TopBanner />
       <Nav />
       <Hero />
       <SocialProofStrip />
