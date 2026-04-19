@@ -25,6 +25,7 @@ import { Marquee } from '@/components/ui/marquee';
 import { CleanBookingDemo } from '@/components/marketing/CleanBookingDemo';
 import { HeroDashboardPreview } from '@/components/marketing/HeroDashboardPreview';
 import { SelestialBookingCalendar } from '@/components/marketing/GhlCalendarEmbed';
+import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { cn } from '@/lib/utils';
 
 const CALENDAR_ANCHOR = '#book-a-call';
@@ -112,6 +113,9 @@ function Nav() {
           <span className="text-base font-semibold text-zinc-900">Selestial</span>
         </Link>
         <div className="hidden md:flex items-center gap-7 text-sm text-zinc-600">
+          <a href="#vsl" className="transition-colors hover:text-zinc-900">
+            Watch
+          </a>
           <a href="#product" className="transition-colors hover:text-zinc-900">
             Product
           </a>
@@ -254,6 +258,32 @@ function SocialProofStrip() {
               <p className="mt-1 text-xs text-zinc-500">{stat.label}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// VSL — video sales letter
+// ============================================================================
+function VSL() {
+  return (
+    <section id="vsl" className="border-b border-zinc-200 bg-white">
+      <div className="mx-auto max-w-4xl px-5 py-20 md:py-28">
+        <div className="mb-10 text-center">
+          <SectionLabel>Watch first</SectionLabel>
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+            See Selestial in 60 seconds.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-zinc-600 md:text-base">
+            The actual booking flow on a real cleaning company&apos;s site — price shown,
+            deposit collected, job scheduled.
+          </p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-950 shadow-sm">
+          <WistiaPlayer mediaId="7zigms7aiy" aspect={16 / 9} />
         </div>
       </div>
     </section>
@@ -1160,6 +1190,7 @@ export default function DemoLandingPage() {
       <Nav />
       <Hero />
       <SocialProofStrip />
+      <VSL />
       <LiveDashboard />
       <Pain />
       <Product />

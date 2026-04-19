@@ -143,7 +143,7 @@ export function SelestialBookingCalendar({
   return (
     <GhlCalendarEmbed
       src="https://api.divineacquisition.io/widget/booking/bdGyTVXFRxIW5RI49fGp"
-      id="09O94JadkIsrarld4LMd_1776541575407"
+      id="09O94JadkIsrarld4LMd_1776611832274"
       minHeight={minHeight}
       maxHeight={maxHeight}
       className={className}
