@@ -62,6 +62,7 @@ export async function middleware(request: NextRequest) {
   if (subdomain === 'access') {
     const accessAllowedPrefixes = [
       '/demo',
+      '/retarget',
       '/welcome', // redirects to /demo via the page component
       '/api/booking-page-customization',
     ]
