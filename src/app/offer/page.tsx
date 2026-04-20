@@ -17,10 +17,10 @@ import {
 
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
 import { BrandButton } from '@/components/marketing/BrandButton';
+import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { cn } from '@/lib/utils';
 
 const GET_STARTED = '/offer/get-started';
-const CALENDAR_ANCHOR = '#book-a-call';
 
 // ============================================================================
 // CTAs
@@ -50,22 +50,6 @@ function PrimaryCTA({
           className
         )}
       >
-        {children}
-      </button>
-    </Link>
-  );
-}
-
-function SecondaryCTA({
-  children,
-  href,
-}: {
-  children: React.ReactNode;
-  href: string;
-}) {
-  return (
-    <Link href={href}>
-      <button className="inline-flex items-center justify-center rounded-md border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition-colors hover:border-zinc-300 hover:bg-zinc-50">
         {children}
       </button>
     </Link>
@@ -137,90 +121,78 @@ function Nav() {
 function Hero() {
   return (
     <section className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto max-w-6xl px-5 py-16 md:py-24">
-        <div className="grid gap-12 md:grid-cols-2 md:items-center md:gap-14">
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary"
-            >
-              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-              $297/mo · Live in 48 hours
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="text-balance text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-zinc-900 md:text-5xl lg:text-6xl"
-            >
-              The booking page that pays for itself in week one.{' '}
-              <span className="text-primary">$297/month, all in.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mt-5 max-w-lg text-balance text-base leading-relaxed text-zinc-600 md:text-lg"
-            >
-              Done-for-you setup, branded booking page, AI follow-up, recurring upsell. Live in
-              48 hours. One plan, $297/mo, cancel anytime.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="mt-7 flex flex-col items-start gap-3 sm:flex-row"
-            >
-              <PrimaryCTA size="lg">
-                Get started — $297/mo
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </PrimaryCTA>
-              <SecondaryCTA href={CALENDAR_ANCHOR}>Talk to us first</SecondaryCTA>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="mt-6 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-zinc-500"
-            >
-              <span className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                No credit card required at signup
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                Live in 48 hours
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                30-day money-back
-              </span>
-            </motion.div>
+      <div className="mx-auto max-w-4xl px-5 py-16 md:py-24">
+        <div className="text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary"
+          >
+            <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+            Free Growth Blueprint
+          </motion.div>
+
+          {/* Two-tone headline mirroring / (i.e. /demo) */}
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="text-balance text-4xl font-semibold leading-[1.08] tracking-[-0.02em] text-zinc-900 md:text-5xl lg:text-6xl"
+          >
+            <span className="text-primary">More jobs. More referrals. More recurring revenue.</span>{' '}
+            <span className="text-zinc-900">
+              Built for remote cleaning companies that run on systems, not phone calls.
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-zinc-600 md:text-lg"
+          >
+            We&apos;ll install AI-powered booking, follow-up, and retention systems so you
+            stop chasing leads and start building a business that grows on autopilot.
+          </motion.p>
+        </div>
+
+        {/* VSL directly under the headline */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+          className="mt-10"
+        >
+          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-950 shadow-sm">
+            <WistiaPlayer mediaId="7zigms7aiy" aspect={16 / 9} />
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <BookingPagePreview
-              businessName="Sparkle Clean Co."
-              brandColor="#7c3aed"
-              tagline="Powered by Selestial"
-              services={[
-                { id: 'standard', name: 'Standard Clean', price: 175 },
-                { id: 'recurring', name: 'Recurring Maintenance', price: 220 },
-                { id: 'movein', name: 'Move-In / Move-Out', price: 350 },
-              ]}
-              recurringDiscountPct={10}
-              depositPercent={25}
-            />
-            <p className="mt-3 text-center text-xs text-zinc-500">
-              Live preview — what your branded page looks like out of the box.
+          {/* Book a call CTA directly below the VSL, routes to /book-demo */}
+          <div className="mt-7 flex flex-col items-center justify-center gap-3">
+            <BrandButton href="/book-demo" variant="primary" size="xl">
+              Book a 15-min call
+              <ArrowRight className="h-4 w-4" />
+            </BrandButton>
+            <p className="text-xs text-zinc-500">
+              15 minutes · Real strategy · No sales pitch
             </p>
-          </motion.div>
-        </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-zinc-500">
+            <span className="flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              No credit card required
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              Live in 48 hours
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              30-day money-back
+            </span>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
