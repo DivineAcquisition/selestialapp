@@ -8,14 +8,12 @@ import { toast } from 'sonner';
 import {
   ArrowLeft,
   ArrowRight,
-  Calendar,
   Check,
   ChevronDown,
   FileText,
   Home,
   Loader2,
   Lock,
-  ShieldCheck,
   Trash2,
   Upload,
   Building2,
@@ -24,7 +22,6 @@ import {
 
 import { Input } from '@/components/ui/input';
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
-import { SubscriptionPaymentForm } from '@/components/marketing/SubscriptionPaymentForm';
 import { SelestialOnboardingCallCalendar } from '@/components/marketing/GhlCalendarEmbed';
 import { BrandButton } from '@/components/marketing/BrandButton';
 import { cn } from '@/lib/utils';
@@ -55,13 +52,6 @@ interface OnboardingState {
   notes: string;
 }
 
-const PLAN = {
-  name: 'Selestial',
-  price: 297,
-  cents: 29_700,
-  interval: 'month',
-} as const;
-
 const DEFAULT_STATE: OnboardingState = {
   businessName: '',
   contactName: '',
@@ -82,7 +72,7 @@ const STEPS = [
   { id: 1, name: 'Business' },
   { id: 2, name: 'Branding' },
   { id: 3, name: 'Pricing' },
-  { id: 4, name: 'Payment' },
+  { id: 4, name: 'Book call' },
 ] as const;
 
 // ============================================================================
@@ -100,17 +90,13 @@ function GetStartedInner() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<OnboardingState>(DEFAULT_STATE);
 
+  // Signup persistence + "next screen = calendar" lifecycle. The Stripe
+  // subscription flow was removed — no payment is captured on signup. The
+  // onboarding fee is discussed on the call.
   const [signupId, setSignupId] = useState<string | null>(null);
   const [signupSubmitting, setSignupSubmitting] = useState(false);
-
-  const [paymentInit, setPaymentInit] = useState<{
-    clientSecret: string;
-    amount: number;
-    currency: string;
-  } | null>(null);
-  const [paymentInitializing, setPaymentInitializing] = useState(false);
-  const [paymentInitError, setPaymentInitError] = useState<string | null>(null);
-  const [paid, setPaid] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [signupDone, setSignupDone] = useState(false);
 
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
@@ -137,77 +123,41 @@ function GetStartedInner() {
       toast.error('Please complete the highlighted fields.');
       return;
     }
+    // Advancing from Step 3 persists the signup, then flips Step 4 to show
+    // the onboarding-call calendar directly (no payment collected at signup).
     if (step === 3) {
-      await initializePayment();
+      await persistSignupThenShowCalendar();
       return;
     }
     if (step < STEPS.length) setStep((s) => s + 1);
   };
 
-  const initializePayment = async () => {
-    if (paymentInit) {
+  const persistSignupThenShowCalendar = async () => {
+    if (signupId) {
       setStep(4);
       return;
     }
     setSignupSubmitting(true);
-    setPaymentInitError(null);
-
+    setSignupError(null);
     try {
-      let id = signupId;
-      if (!id) {
-        const res = await fetch('/api/onboarding/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(state),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || 'Failed to save your details.');
-        id = data.signup.id as string;
-        setSignupId(id);
-      }
-
-      setPaymentInitializing(true);
-      const subRes = await fetch('/api/onboarding/create-subscription', {
+      const res = await fetch('/api/onboarding/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signupId: id }),
+        body: JSON.stringify(state),
       });
-      const subData = await subRes.json();
-      if (!subRes.ok) throw new Error(subData?.error || 'Could not initialize payment.');
-
-      setPaymentInit({
-        clientSecret: subData.clientSecret,
-        amount: subData.amount,
-        currency: subData.currency,
-      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to save your details.');
+      setSignupId(data.signup.id as string);
+      setSignupDone(true);
       setStep(4);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
-      setPaymentInitError(msg);
+      setSignupError(msg);
       toast.error(msg);
     } finally {
       setSignupSubmitting(false);
-      setPaymentInitializing(false);
     }
   };
-
-  const handlePaymentSuccess = async (paymentIntentId: string) => {
-    if (!signupId) return;
-    try {
-      await fetch('/api/onboarding/payment-confirmed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signupId, paymentIntentId }),
-      });
-    } catch (err) {
-      console.error('[payment-confirmed] flip failed:', err);
-    }
-    setPaid(true);
-  };
-
-  if (paid) {
-    return <SuccessScreen contactName={state.contactName} />;
-  }
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
@@ -220,7 +170,7 @@ function GetStartedInner() {
           </p>
           <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
             {step === 4
-              ? 'One last step — secure your spot.'
+              ? 'Book your onboarding call.'
               : 'Set up your branded booking page.'}
           </h1>
           <ProgressBar step={step} />
@@ -436,43 +386,46 @@ function GetStartedInner() {
               )}
 
               {step === 4 && (
-                <Step key="4" title="Pay & lock your spot">
-                  <PlanSummary />
+                <Step key="4" title="Pick a time for your onboarding call">
+                  <div className="mb-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+                    <p className="font-medium text-zinc-900">
+                      {signupDone ? `You're in, ${state.contactName.split(' ')[0] || 'there'}.` : 'Almost there.'}
+                    </p>
+                    <p className="mt-1 leading-relaxed text-zinc-600">
+                      Pick a 30-minute slot below. On the call we&apos;ll finalize your
+                      pricing, walk through your branded booking page, and get you
+                      live within 48 hours.
+                    </p>
+                  </div>
 
-                  {paymentInit ? (
-                    <SubscriptionPaymentForm
-                      clientSecret={paymentInit.clientSecret}
-                      amount={paymentInit.amount}
-                      currency={paymentInit.currency}
-                      onSuccess={handlePaymentSuccess}
-                    />
-                  ) : (
-                    <div className="space-y-3">
-                      {paymentInitError ? (
-                        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                          {paymentInitError}
-                          <BrandButton
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={initializePayment}
-                            className="mt-3"
-                          >
-                            Retry
-                          </BrandButton>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Setting up secure checkout…
-                        </div>
-                      )}
+                  {signupError ? (
+                    <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                      {signupError}
+                      <BrandButton
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={persistSignupThenShowCalendar}
+                        className="mt-3"
+                      >
+                        Retry
+                      </BrandButton>
                     </div>
-                  )}
+                  ) : null}
 
-                  <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-500">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                    30-day money-back guarantee · Cancel anytime
+                  <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+                    <SelestialOnboardingCallCalendar />
+                  </div>
+
+                  <p className="text-center text-xs text-zinc-500">
+                    Can&apos;t find a time that works?{' '}
+                    <a
+                      href="mailto:hello@selestial.io"
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Email us
+                    </a>{' '}
+                    and we&apos;ll find one.
                   </p>
                 </Step>
               )}
@@ -494,17 +447,17 @@ function GetStartedInner() {
                   variant="primary"
                   size="lg"
                   onClick={next}
-                  disabled={!stepValid || signupSubmitting || paymentInitializing}
+                  disabled={!stepValid || signupSubmitting}
                 >
                   {step === 3 ? (
-                    signupSubmitting || paymentInitializing ? (
+                    signupSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Preparing checkout…
+                        Saving…
                       </>
                     ) : (
                       <>
-                        Continue to payment
+                        Continue to booking
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )
@@ -667,54 +620,6 @@ function PricingDocUploader({
 }
 
 // ============================================================================
-// Success
-// ============================================================================
-function SuccessScreen({ contactName }: { contactName: string }) {
-  const firstName = contactName.split(' ')[0] || 'there';
-  return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
-      <CheckoutNav />
-      <div className="mx-auto max-w-4xl px-5 py-12 md:py-16">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-            <Check className="h-7 w-7" />
-          </div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-            Payment confirmed
-          </p>
-          <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            Welcome to Selestial, {firstName}.{' '}
-            <span className="text-primary">Pick your onboarding call.</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-zinc-600">
-            Grab a 30-minute slot below. We&apos;ll walk you through your branded booking page,
-            confirm your services + pricing, and have you live in 48 hours.
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <SelestialOnboardingCallCalendar fallbackHeight={900} />
-        </div>
-
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-zinc-500">
-          <Calendar className="h-3.5 w-3.5" />
-          A confirmation email is on its way to your inbox.
-        </div>
-
-        <div className="mt-10 text-center">
-          <Link
-            href="/offer"
-            className="text-xs font-medium text-zinc-500 hover:text-zinc-900"
-          >
-            Back to home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
 // Subcomponents
 // ============================================================================
 function CheckoutNav() {
@@ -733,7 +638,7 @@ function CheckoutNav() {
         </Link>
         <div className="flex items-center gap-1.5 text-xs text-zinc-500">
           <Lock className="h-3.5 w-3.5 text-emerald-600" />
-          Secure checkout
+          No card required
         </div>
       </div>
     </nav>
@@ -774,35 +679,6 @@ function ProgressBar({ step }: { step: number }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function PlanSummary() {
-  return (
-    <div className="rounded-md border border-zinc-200 bg-white p-5">
-      <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold text-zinc-900">{PLAN.name}</p>
-        <p className="text-2xl font-semibold tracking-tight text-zinc-900">
-          ${PLAN.price}
-          <span className="ml-1 text-sm font-normal text-zinc-500">/{PLAN.interval}</span>
-        </p>
-      </div>
-      <ul className="mt-4 space-y-2 text-sm text-zinc-700">
-        {[
-          'Done-for-you setup (live in 48 hours)',
-          'Branded booking page on a Selestial subdomain',
-          'Stripe deposit collection + recurring upsell',
-          'AI follow-up sequences (SMS + email)',
-          'Unlimited bookings — no per-user fees',
-          '30-day money-back guarantee',
-        ].map((line) => (
-          <li key={line} className="flex items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{line}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
