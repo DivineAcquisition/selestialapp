@@ -7,34 +7,28 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title:
-    "Selestial — Online Booking Built for Residential Cleaning Companies | Instant Pricing, No Quote Forms",
+    "Selestial — The Retention System Built for Residential Cleaning Companies",
   description:
-    "The booking page for residential cleaning companies. Show pricing upfront, collect deposits, book jobs in 60 seconds. Live in 48 hours. $97/mo.",
+    "Branded booking, automated follow-up, referral capture — installed on top of your existing CRM. Stop leaking revenue from customers you already paid to acquire.",
   openGraph: {
-    title: "Selestial — Online Booking for Residential Cleaning Companies",
+    title: "Selestial — Retention System for Residential Cleaning Companies",
     description:
-      "Show pricing upfront. Book jobs in 60 seconds. Live in 48 hours. $97/month.",
+      "Branded booking, automated follow-up, referral capture. Installed on top of your existing CRM.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Selestial — Online Booking for Residential Cleaning Companies",
+    title: "Selestial — Retention System for Residential Cleaning Companies",
     description:
-      "Show pricing upfront. Book jobs in 60 seconds. Live in 48 hours. $97/month.",
+      "Branded booking, automated follow-up, referral capture. Installed on top of your existing CRM.",
   },
-  icons: {
-    icon: [
-      {
-        url: "/logo-icon-new.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/logo-icon-new.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
-    apple: "/logo-icon-new.png",
-  },
+  // Icons (favicon, apple-touch-icon, and PNG icon) are picked up
+  // automatically from the file-system conventions in this directory:
+  //   src/app/favicon.ico
+  //   src/app/icon.png
+  //   src/app/apple-icon.png
+  // No `icons` field is needed here — Next.js generates the correct
+  // <link> tags from those files.
 };
 
 export default function RootLayout({
