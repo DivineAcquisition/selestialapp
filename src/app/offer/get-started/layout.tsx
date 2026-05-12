@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Get Started — Selestial · $297/mo',
+  title: 'Get Started — Selestial',
   description:
-    'Set up your branded Selestial booking page in 4 quick steps. \u0024297/mo, cancel anytime, live in 48 hours.',
+    'Set up your branded Selestial retention system in 4 quick steps. Done-for-you, live across your customer base in under a month.',
   robots: { index: false, follow: false },
 };
 

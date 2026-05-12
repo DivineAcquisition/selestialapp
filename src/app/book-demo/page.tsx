@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { AlertTriangle, Calendar, Clock, Lock, Video } from 'lucide-react';
 
-import { SelestialBookingCalendar } from '@/components/marketing/GhlCalendarEmbed';
+import { SelestialRetentionAuditCalendar } from '@/components/marketing/IClosedCalendar';
 import { PixelEventOnMount } from '@/components/marketing/MetaPixel';
 
 /**
@@ -48,7 +48,7 @@ export default function BookDemoPage() {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-          <SelestialBookingCalendar fallbackHeight={900} />
+          <SelestialRetentionAuditCalendar height={760} />
         </div>
 
         {/* What to know before you book */}

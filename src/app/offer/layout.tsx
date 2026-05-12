@@ -3,9 +3,9 @@ import { MetaPixel } from '@/components/marketing/MetaPixel';
 
 export const metadata: Metadata = {
   title:
-    'Selestial — 50% off the cleaning booking page that pays for itself in week one',
+    'Selestial — the done-for-you retention system for cleaning companies',
   description:
-    'For the next 14 days only — get the Selestial booking system at 50% off your first 3 months. Live in 48 hours. Done-for-you setup included.',
+    'Branded booking, automated follow-up, referral capture — installed on top of your existing CRM. Stop leaking revenue from customers you already paid to acquire.',
   robots: { index: false, follow: false },
 };
 

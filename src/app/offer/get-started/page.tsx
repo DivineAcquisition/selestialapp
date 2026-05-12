@@ -22,7 +22,7 @@ import {
 
 import { Input } from '@/components/ui/input';
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
-import { SelestialOnboardingCallCalendar } from '@/components/marketing/GhlCalendarEmbed';
+import { SelestialRetentionAuditCalendar } from '@/components/marketing/IClosedCalendar';
 import { BrandButton } from '@/components/marketing/BrandButton';
 import { cn } from '@/lib/utils';
 
@@ -60,7 +60,7 @@ const DEFAULT_STATE: OnboardingState = {
   website: '',
   serviceArea: '',
   businessType: null,
-  brandColor: '#5500FF',
+  brandColor: '#6428F9',
   logoUrl: '',
   tagline: '',
   pricingDocUrl: '',
@@ -306,7 +306,7 @@ function GetStartedInner() {
                         className="w-32 font-mono"
                       />
                       <div className="flex gap-1.5">
-                        {['#5500FF', '#9D96FF', '#0F766E', '#1D4ED8', '#DC2626', '#0A0A0A'].map(
+                        {['#6428F9', '#9294FF', '#0F766E', '#1D4ED8', '#DC2626', '#0A0A0A'].map(
                           (c) => (
                             <button
                               key={c}
@@ -414,7 +414,7 @@ function GetStartedInner() {
                   ) : null}
 
                   <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
-                    <SelestialOnboardingCallCalendar />
+                    <SelestialRetentionAuditCalendar height={760} />
                   </div>
 
                   <p className="text-center text-xs text-zinc-500">
@@ -499,14 +499,14 @@ function GetStartedInner() {
             />
             <details className="mt-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-xs text-zinc-600">
               <summary className="flex cursor-pointer items-center justify-between font-medium text-zinc-900">
-                What happens after I pay?
+                What happens after the call?
                 <ChevronDown className="h-4 w-4" />
               </summary>
               <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-[12px] leading-relaxed">
-                <li>You pick a 30-minute onboarding call slot on the next screen.</li>
-                <li>We provision your GHL sub-account and configure your branding.</li>
-                <li>On the call we set up your pricing tiers, services, and add-ons.</li>
-                <li>Your booking page goes live within 48 hours of the call.</li>
+                <li>We audit your customer database + current rebook rate.</li>
+                <li>We integrate with your existing CRM (Jobber, GHL, ServiceTitan).</li>
+                <li>We deploy your retention sequences + branded booking layer.</li>
+                <li>System goes live across your customer base — first rebookings within 2 weeks.</li>
               </ol>
             </details>
           </div>
