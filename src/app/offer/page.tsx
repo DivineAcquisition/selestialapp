@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -28,6 +26,11 @@ import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
 import { BrandButton } from '@/components/marketing/BrandButton';
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { SelestialRetentionAuditCalendar } from '@/components/marketing/IClosedCalendar';
+import {
+  MarketingFooter,
+  MarketingNav,
+  MarketingTopBanner,
+} from '@/components/marketing/MarketingChrome';
 
 const CALENDAR_ANCHOR = '#calendar';
 
@@ -80,57 +83,14 @@ function SectionHeading({
 }
 
 // ============================================================================
-// TOP BANNER
+// TOP BANNER + NAV — shared marketing chrome
 // ============================================================================
-function TopBanner() {
-  return (
-    <div className="bg-[linear-gradient(90deg,#4F1FD0_0%,#6428F9_50%,#9294FF_100%)] px-4 py-2.5 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-[12px]">
-        Done-for-you retention system · Live in 2 weeks · For cleaning companies
-      </p>
-    </div>
-  );
-}
-
-// ============================================================================
-// NAV — Linear-style minimal top bar
-// ============================================================================
-function Nav() {
-  return (
-    <nav className="sticky top-0 z-30 border-b border-zinc-200/70 bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link href="/offer" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-full.png"
-            alt="Selestial"
-            width={300}
-            height={80}
-            className="h-12 w-auto md:h-14"
-            priority
-          />
-        </Link>
-        <div className="hidden items-center gap-7 text-[13px] font-medium text-zinc-600 md:flex">
-          <a href="#benefits" className="transition-colors hover:text-zinc-900">
-            Benefits
-          </a>
-          <a href="#how" className="transition-colors hover:text-zinc-900">
-            How it works
-          </a>
-          <a href="#preview" className="transition-colors hover:text-zinc-900">
-            Preview
-          </a>
-          <a href="#calendar" className="transition-colors hover:text-zinc-900">
-            Book a call
-          </a>
-        </div>
-        <BrandButton href={CALENDAR_ANCHOR} variant="primary" size="sm">
-          Book a call
-          <ArrowRight className="h-3.5 w-3.5" />
-        </BrandButton>
-      </div>
-    </nav>
-  );
-}
+const NAV_LINKS = [
+  { href: '#benefits', label: 'Benefits' },
+  { href: '#how', label: 'How it works' },
+  { href: '#preview', label: 'Preview' },
+  { href: '#calendar', label: 'Book a call' },
+];
 
 // ============================================================================
 // HERO — Stripe/Linear inspired headline + VSL
@@ -659,43 +619,19 @@ function FinalCta() {
 }
 
 // ============================================================================
-// FOOTER
-// ============================================================================
-function Footer() {
-  const year = new Date().getFullYear();
-  return (
-    <footer className="bg-white px-4 py-12">
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-5 flex items-center justify-center">
-          <Image
-            src="/logo-full.png"
-            alt="Selestial"
-            width={300}
-            height={80}
-            className="h-12 w-auto md:h-14"
-          />
-        </div>
-        <p className="mb-4 text-[13px] text-zinc-500">
-          © {year} Selestial. All rights reserved.
-        </p>
-        <p className="mx-auto max-w-2xl text-[11px] leading-relaxed text-zinc-400">
-          This site is not a part of the Facebook website or Facebook Inc. Additionally, this
-          site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK,
-          Inc.
-        </p>
-      </div>
-    </footer>
-  );
-}
-
-// ============================================================================
 // MAIN PAGE
 // ============================================================================
 export default function OfferPage() {
   return (
     <main className="bg-white text-zinc-900 antialiased">
-      <TopBanner />
-      <Nav />
+      <MarketingTopBanner>
+        Done-for-you retention system · Live in 2 weeks · For cleaning companies
+      </MarketingTopBanner>
+      <MarketingNav
+        homeHref="/offer"
+        links={NAV_LINKS}
+        cta={{ href: CALENDAR_ANCHOR, label: 'Book a call' }}
+      />
       <Hero />
       <TrustStrip />
       <Benefits />
@@ -704,7 +640,7 @@ export default function OfferPage() {
       <Preview />
       <CalendarSection />
       <FinalCta />
-      <Footer />
+      <MarketingFooter />
     </main>
   );
 }

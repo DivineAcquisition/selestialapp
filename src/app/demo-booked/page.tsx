@@ -1,11 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Calendar, Check, Mail, Sparkles } from 'lucide-react';
 
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { PixelEventOnMount } from '@/components/marketing/MetaPixel';
+import {
+  MarketingCheckoutNav,
+  MarketingFooter,
+} from '@/components/marketing/MarketingChrome';
 
 /**
  * /demo-booked — confirmation page GHL redirects to after a calendar booking.
@@ -21,9 +24,9 @@ import { PixelEventOnMount } from '@/components/marketing/MetaPixel';
 export default function DemoBookedPage() {
   return (
     <main className="min-h-screen bg-white text-zinc-900 antialiased">
-      <PixelEventOnMount event="Schedule" params={{ value: 297, currency: 'USD' }} />
+      <PixelEventOnMount event="Schedule" params={{ content_name: 'Retention Audit Booked' }} />
 
-      <CheckoutNav />
+      <MarketingCheckoutNav homeHref="/demo" rightLabel="Demo confirmed" />
 
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-12 md:pb-24 md:pt-16">
         <div className="mb-8 text-center md:mb-10">
@@ -34,9 +37,11 @@ export default function DemoBookedPage() {
             <Calendar className="h-3.5 w-3.5" />
             Demo confirmed
           </p>
-          <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-zinc-900 md:text-[42px]">
             You&apos;re booked.{' '}
-            <span className="text-primary">Check your email for the Zoom link.</span>
+            <span className="bg-[linear-gradient(135deg,#6428F9_0%,#9294FF_100%)] bg-clip-text text-transparent">
+              Check your email for the Zoom link.
+            </span>
           </h1>
           <p className="mx-auto mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-500">
             <Mail className="h-3.5 w-3.5" />
@@ -105,26 +110,8 @@ export default function DemoBookedPage() {
           </Link>
         </div>
       </section>
-    </main>
-  );
-}
 
-function CheckoutNav() {
-  return (
-    <nav className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/demo" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
-          <span className="text-base font-semibold text-zinc-900">Selestial</span>
-        </Link>
-        <span className="text-xs text-zinc-500">Demo confirmed</span>
-      </div>
-    </nav>
+      <MarketingFooter />
+    </main>
   );
 }

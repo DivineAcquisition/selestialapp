@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title:
     'Selestial — Stop losing cleaning bookings to quote forms | Book a 15-min demo',
   description:
-    'The booking page built for residential cleaning companies. Show pricing upfront, collect deposits, book jobs in 60 seconds. Live in 48 hours. $297/month. Book a 15-min demo.',
+    'The retention system built for residential cleaning companies. Branded booking, automated follow-up, referral capture — installed on top of your existing CRM. Book a 15-min demo.',
   robots: {
     index: false,
     follow: false,

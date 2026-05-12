@@ -1,8 +1,6 @@
 'use client';
 
 import { Suspense, useMemo, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -13,7 +11,6 @@ import {
   FileText,
   Home,
   Loader2,
-  Lock,
   Trash2,
   Upload,
   Building2,
@@ -24,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { BookingPagePreview } from '@/components/marketing/BookingPagePreview';
 import { SelestialRetentionAuditCalendar } from '@/components/marketing/IClosedCalendar';
 import { BrandButton } from '@/components/marketing/BrandButton';
+import { MarketingCheckoutNav } from '@/components/marketing/MarketingChrome';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -161,7 +159,7 @@ function GetStartedInner() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 antialiased">
-      <CheckoutNav />
+      <MarketingCheckoutNav homeHref="/offer" rightLabel="No card required" />
 
       <div className="mx-auto max-w-7xl px-5 py-8 md:py-12">
         <div className="mb-8 md:mb-10">
@@ -622,29 +620,6 @@ function PricingDocUploader({
 // ============================================================================
 // Subcomponents
 // ============================================================================
-function CheckoutNav() {
-  return (
-    <nav className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5">
-        <Link href="/offer" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
-          <span className="text-base font-semibold text-zinc-900">Selestial</span>
-        </Link>
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-          <Lock className="h-3.5 w-3.5 text-emerald-600" />
-          No card required
-        </div>
-      </div>
-    </nav>
-  );
-}
-
 function ProgressBar({ step }: { step: number }) {
   return (
     <div className="mt-6 flex items-center gap-2">

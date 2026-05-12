@@ -1,11 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { AlertTriangle, Calendar, Clock, Lock, Video } from 'lucide-react';
+import { AlertTriangle, Calendar, Clock, Video } from 'lucide-react';
 
 import { SelestialRetentionAuditCalendar } from '@/components/marketing/IClosedCalendar';
 import { PixelEventOnMount } from '@/components/marketing/MetaPixel';
+import {
+  MarketingCheckoutNav,
+  MarketingFooter,
+} from '@/components/marketing/MarketingChrome';
 
 /**
  * /book-demo — focused calendar landing page for paid traffic.
@@ -26,17 +28,17 @@ export default function BookDemoPage() {
         params={{ content_name: 'Demo Calendar', content_category: 'Calendar' }}
       />
 
-      <CheckoutNav />
+      <MarketingCheckoutNav homeHref="/demo" rightLabel="Secure scheduling" />
 
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-12 md:pb-24 md:pt-16">
         <div className="mb-8 text-center md:mb-10">
-          <p className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+          <p className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#6428F9]/20 bg-[#F2EFFF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6428F9]">
             <Calendar className="h-3.5 w-3.5" />
             15-minute call
           </p>
-          <h1 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-zinc-900 md:text-[42px]">
             Pick a time —{' '}
-            <span className="text-primary">
+            <span className="bg-[linear-gradient(135deg,#6428F9_0%,#9294FF_100%)] bg-clip-text text-transparent">
               we&apos;ll walk you through Selestial on a real cleaning company&apos;s setup.
             </span>
           </h1>
@@ -123,29 +125,8 @@ export default function BookDemoPage() {
           Confirmation + Zoom link sent to your email immediately after you book.
         </p>
       </section>
-    </main>
-  );
-}
 
-function CheckoutNav() {
-  return (
-    <nav className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/demo" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
-          <span className="text-base font-semibold text-zinc-900">Selestial</span>
-        </Link>
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-          <Lock className="h-3.5 w-3.5 text-emerald-600" />
-          Secure scheduling
-        </div>
-      </div>
-    </nav>
+      <MarketingFooter />
+    </main>
   );
 }

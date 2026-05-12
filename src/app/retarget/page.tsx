@@ -1,12 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Video } from 'lucide-react';
 
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { BrandButton } from '@/components/marketing/BrandButton';
+import {
+  MarketingFooter,
+  MarketingNav,
+  MarketingTopBanner,
+} from '@/components/marketing/MarketingChrome';
 import { cn } from '@/lib/utils';
 
 // Hero / mid-page CTAs deep-link to the dedicated /book-demo page so users
@@ -14,84 +17,11 @@ import { cn } from '@/lib/utils';
 // stays for users who scrolled past and want a second nudge.
 const CALENDAR_ANCHOR = '/book-demo';
 
-// ============================================================================
-// CTAs (kept consistent with /demo)
-// ============================================================================
-function PrimaryCTA({
-  children,
-  href = CALENDAR_ANCHOR,
-  className,
-  size = 'md',
-}: {
-  children: React.ReactNode;
-  href?: string;
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
-}) {
-  const sizes = {
-    sm: 'px-4 py-2 text-xs',
-    md: 'px-5 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-sm',
-  };
-  return (
-    <Link href={href}>
-      <button
-        className={cn(
-          'inline-flex items-center justify-center rounded-md bg-primary font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-          sizes[size],
-          className
-        )}
-      >
-        {children}
-      </button>
-    </Link>
-  );
-}
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
       {children}
     </p>
-  );
-}
-
-// ============================================================================
-// TOP BANNER (matches /demo)
-// ============================================================================
-function TopBanner() {
-  return (
-    <div className="bg-primary px-4 py-3 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
-        For Remote-Operated Cleaning Companies Doing 15K+ in Revenue
-      </p>
-    </div>
-  );
-}
-
-// ============================================================================
-// MINIMAL NAV (logo + single CTA — no other links on a retargeting page)
-// ============================================================================
-function Nav() {
-  return (
-    <nav className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/retarget" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
-          <span className="text-base font-semibold text-zinc-900">Selestial</span>
-        </Link>
-        <PrimaryCTA size="sm">
-          Book Demo
-          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-        </PrimaryCTA>
-      </div>
-    </nav>
   );
 }
 
@@ -148,10 +78,10 @@ function VSL() {
           <WistiaPlayer mediaId="ttvt5ujpfb" aspect={16 / 9} />
         </div>
         <div className="mt-6 flex flex-col items-center justify-center gap-2">
-          <PrimaryCTA size="lg">
+          <BrandButton href={CALENDAR_ANCHOR} variant="primary" size="xl">
             Book my strategy session
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </PrimaryCTA>
+            <ArrowRight className="h-4 w-4" />
+          </BrandButton>
           <p className="text-xs text-zinc-500">15 minutes · Real strategy · No sales pitch</p>
         </div>
       </div>
@@ -273,50 +203,23 @@ function BookACall() {
 }
 
 // ============================================================================
-// FOOTER (same disclaimer as /demo)
-// ============================================================================
-function Footer() {
-  const year = new Date().getFullYear();
-  return (
-    <footer className="bg-white px-4 py-10">
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-4 flex items-center justify-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded"
-          />
-          <span className="text-sm font-semibold text-zinc-900">Selestial</span>
-        </div>
-        <p className="mb-4 text-sm text-zinc-500">
-          © {year} Selestial. All rights reserved.
-        </p>
-        <p className="mx-auto max-w-2xl text-[11px] leading-relaxed text-zinc-400">
-          This site is not a part of the Facebook website or Facebook Inc. Additionally, this
-          site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK,
-          Inc. We use cookies, including third-party cookies, on this website to help operate
-          our site and for analytics and advertising purposes.
-        </p>
-      </div>
-    </footer>
-  );
-}
-
-// ============================================================================
 // MAIN PAGE
 // ============================================================================
 export default function RetargetPage() {
   return (
     <main className="bg-white text-zinc-900 antialiased">
-      <TopBanner />
-      <Nav />
+      <MarketingTopBanner>
+        For Remote-Operated Cleaning Companies Doing 15K+ in Revenue
+      </MarketingTopBanner>
+      <MarketingNav
+        homeHref="/retarget"
+        cta={{ href: CALENDAR_ANCHOR, label: 'Book demo' }}
+      />
       <Headline />
       <VSL />
       <Testimonials />
       <BookACall />
-      <Footer />
+      <MarketingFooter />
     </main>
   );
 }

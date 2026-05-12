@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -27,128 +25,27 @@ import { CleanBookingDemo } from '@/components/marketing/CleanBookingDemo';
 import { HeroDashboardPreview } from '@/components/marketing/HeroDashboardPreview';
 import { WistiaPlayer } from '@/components/marketing/WistiaPlayer';
 import { BrandButton } from '@/components/marketing/BrandButton';
+import {
+  MarketingFooter,
+  MarketingNav,
+  MarketingTopBanner,
+} from '@/components/marketing/MarketingChrome';
 import { cn } from '@/lib/utils';
 
 const CALENDAR_ANCHOR = '/book-demo';
 
-// ============================================================================
-// CTAs (violet primary, white secondary, monochrome typography)
-// ============================================================================
-function PrimaryCTA({
-  children,
-  href = CALENDAR_ANCHOR,
-  className,
-  size = 'md',
-}: {
-  children: React.ReactNode;
-  href?: string;
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
-}) {
-  const sizes = {
-    sm: 'px-4 py-2 text-xs',
-    md: 'px-5 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-sm',
-  };
-  return (
-    <Link href={href}>
-      <button
-        className={cn(
-          'inline-flex items-center justify-center rounded-md bg-primary font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-          sizes[size],
-          className
-        )}
-      >
-        {children}
-      </button>
-    </Link>
-  );
-}
-
-function SecondaryCTA({
-  children,
-  href,
-  className,
-}: {
-  children: React.ReactNode;
-  href: string;
-  className?: string;
-}) {
-  return (
-    <Link href={href}>
-      <button
-        className={cn(
-          'inline-flex items-center justify-center rounded-md border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition-colors hover:border-zinc-300 hover:bg-zinc-50',
-          className
-        )}
-      >
-        {children}
-      </button>
-    </Link>
-  );
-}
+const NAV_LINKS = [
+  { href: '#vsl', label: 'Watch' },
+  { href: '#product', label: 'Product' },
+  { href: '#sequences', label: 'Workflows' },
+  { href: '#book-a-call', label: 'Demo' },
+];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
       {children}
     </p>
-  );
-}
-
-// ============================================================================
-// TOP BANNER (full-width purple bar)
-// ============================================================================
-function TopBanner() {
-  return (
-    <div className="bg-primary px-4 py-3 text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-xs">
-        For Remote-Operated Cleaning Companies Doing 15K+ in Revenue
-      </p>
-    </div>
-  );
-}
-
-// ============================================================================
-// NAV
-// ============================================================================
-function Nav() {
-  return (
-    <nav className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/demo" className="flex items-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
-          <span className="text-base font-semibold text-zinc-900">Selestial</span>
-        </Link>
-        <div className="hidden md:flex items-center gap-7 text-sm text-zinc-600">
-          <a href="#vsl" className="transition-colors hover:text-zinc-900">
-            Watch
-          </a>
-          <a href="#product" className="transition-colors hover:text-zinc-900">
-            Product
-          </a>
-          <a href="#sequences" className="transition-colors hover:text-zinc-900">
-            Workflows
-          </a>
-          <a href="#pricing" className="transition-colors hover:text-zinc-900">
-            Pricing
-          </a>
-          <a href="#book-a-call" className="transition-colors hover:text-zinc-900">
-            Demo
-          </a>
-        </div>
-        <PrimaryCTA size="sm">
-          Book Demo
-          <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-        </PrimaryCTA>
-      </div>
-    </nav>
   );
 }
 
@@ -199,11 +96,13 @@ function Hero() {
               transition={{ delay: 0.15 }}
               className="mt-7 flex flex-col items-start gap-3 sm:flex-row"
             >
-              <PrimaryCTA size="lg">
+              <BrandButton href={CALENDAR_ANCHOR} variant="primary" size="lg">
                 Book my strategy session
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </PrimaryCTA>
-              <SecondaryCTA href="#product">See it in action</SecondaryCTA>
+                <ArrowRight className="h-4 w-4" />
+              </BrandButton>
+              <BrandButton href="#product" variant="outline" size="lg">
+                See it in action
+              </BrandButton>
             </motion.div>
 
             <motion.div
@@ -713,26 +612,23 @@ const INCLUDES = [
 
 function Pricing() {
   return (
-    <section id="pricing" className="border-b border-zinc-200 bg-zinc-50">
+    <section id="pricing" className="border-b border-zinc-200 bg-zinc-50/60">
       <div className="mx-auto max-w-3xl px-5 py-20 md:py-28">
         <div className="mb-10 text-center">
-          <SectionLabel>Pricing</SectionLabel>
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
-            One plan. Everything included. <span className="text-primary">$297/month.</span>
+          <SectionLabel>What&apos;s included</SectionLabel>
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+            One plan.{' '}
+            <span className="bg-[linear-gradient(135deg,#6428F9_0%,#9294FF_100%)] bg-clip-text text-transparent">
+              Everything installed, branded, and running.
+            </span>
           </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-zinc-600">
+            Investment is discussed on the strategy call once we&apos;ve sized your customer
+            base. Here&apos;s exactly what gets shipped on day one.
+          </p>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-7 shadow-sm md:p-10">
-          <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-semibold tracking-tight text-zinc-900">$297</span>
-            <span className="text-base text-zinc-500">/month</span>
-          </div>
-          <p className="mt-1 text-sm text-zinc-500">
-            Done-for-you setup included. No setup fee. Cancel anytime.
-          </p>
-
-          <div className="my-7 h-px bg-zinc-200" />
-
+        <div className="rounded-2xl border border-zinc-200 bg-white p-7 shadow-[0_8px_30px_-12px_rgba(100,40,249,0.18)] md:p-10">
           <ul className="space-y-3">
             {INCLUDES.map((line) => (
               <li
@@ -745,11 +641,18 @@ function Pricing() {
             ))}
           </ul>
 
-          <PrimaryCTA size="lg" className="mt-8 w-full">
+          <BrandButton
+            href={CALENDAR_ANCHOR}
+            variant="primary"
+            size="lg"
+            className="mt-8 w-full"
+          >
             Book your 15-min demo
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </PrimaryCTA>
-          <p className="mt-3 text-center text-xs text-zinc-500">30-day money-back guarantee</p>
+            <ArrowRight className="h-4 w-4" />
+          </BrandButton>
+          <p className="mt-3 text-center text-xs text-zinc-500">
+            Real strategy on the call · Cancel anytime
+          </p>
         </div>
       </div>
     </section>
@@ -1144,78 +1047,31 @@ function BookACall() {
 // ============================================================================
 function FinalCta() {
   return (
-    <section className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto max-w-3xl px-5 py-20 text-center md:py-28">
-        <Sparkles className="mx-auto mb-4 h-5 w-5 text-primary" />
-        <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+    <section className="relative overflow-hidden border-b border-zinc-200 bg-white">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-0 bg-[radial-gradient(ellipse_50%_60%_at_50%_50%,rgba(100,40,249,0.10),transparent_70%)]"
+      />
+      <div className="relative mx-auto max-w-3xl px-5 py-20 text-center md:py-28">
+        <Sparkles className="mx-auto mb-4 h-5 w-5 text-[#6428F9]" />
+        <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-zinc-900 md:text-[42px]">
           Stop losing cleaning bookings you never knew you had.
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-zinc-600">
+        <p className="mx-auto mt-4 max-w-xl text-balance text-base leading-relaxed text-zinc-600 md:text-[17px]">
           Your website is generating traffic right now. Most of it is leaving because of a
           form your customers don&apos;t want to fill out. Selestial fixes it in 48 hours.
         </p>
-        <PrimaryCTA size="lg" className="mt-7">
-          Book my 15-min demo
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </PrimaryCTA>
+        <div className="mt-7 flex justify-center">
+          <BrandButton href={CALENDAR_ANCHOR} variant="primary" size="xl">
+            Book my 15-min demo
+            <ArrowRight className="h-4 w-4" />
+          </BrandButton>
+        </div>
         <p className="mt-4 text-xs text-zinc-500">
-          $297/month · 30-day money-back · Cancel anytime
+          Real strategy on the call · No pitch · Cancel anytime
         </p>
       </div>
     </section>
-  );
-}
-
-// ============================================================================
-// FOOTER
-// ============================================================================
-function Footer() {
-  const year = new Date().getFullYear();
-  return (
-    <footer className="border-t border-zinc-200 bg-white py-10 px-4">
-      <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-4 flex items-center justify-center gap-2.5">
-          <Image
-            src="/logo-icon-new.png"
-            alt="Selestial"
-            width={28}
-            height={28}
-            className="rounded"
-          />
-          <span className="text-sm font-semibold text-zinc-900">Selestial</span>
-        </div>
-        <p className="mb-4 text-sm text-zinc-500">
-          © {year} Selestial. All rights reserved.
-        </p>
-        <p className="mx-auto max-w-2xl text-[11px] leading-relaxed text-zinc-400">
-          This site is not a part of the Facebook website or Facebook Inc. Additionally,
-          this site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of
-          FACEBOOK, Inc. We use cookies, including third-party cookies, on this website to
-          help operate our site and for analytics and advertising purposes.
-        </p>
-        <div className="mt-6 flex items-center justify-center gap-5 text-[11px] text-zinc-500">
-          <a
-            href="https://selestial.io/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-zinc-900"
-          >
-            Privacy
-          </a>
-          <a
-            href="https://selestial.io/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-zinc-900"
-          >
-            Terms
-          </a>
-          <a href="mailto:hello@selestial.io" className="hover:text-zinc-900">
-            hello@selestial.io
-          </a>
-        </div>
-      </div>
-    </footer>
   );
 }
 
@@ -1225,8 +1081,14 @@ function Footer() {
 export default function DemoLandingPage() {
   return (
     <main className="bg-white text-zinc-900 antialiased">
-      <TopBanner />
-      <Nav />
+      <MarketingTopBanner>
+        For Remote-Operated Cleaning Companies Doing 15K+ in Revenue
+      </MarketingTopBanner>
+      <MarketingNav
+        homeHref="/demo"
+        links={NAV_LINKS}
+        cta={{ href: CALENDAR_ANCHOR, label: 'Book demo' }}
+      />
       <Hero />
       <SocialProofStrip />
       <VSL />
@@ -1240,7 +1102,7 @@ export default function DemoLandingPage() {
       <CustomBookingPageSection />
       <BookACall />
       <FinalCta />
-      <Footer />
+      <MarketingFooter showLinks />
     </main>
   );
 }
