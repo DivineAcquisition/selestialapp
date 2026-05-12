@@ -85,8 +85,7 @@ function SectionHeading({
 function TopBanner() {
   return (
     <div className="bg-[linear-gradient(90deg,#4F1FD0_0%,#6428F9_50%,#9294FF_100%)] px-4 py-2.5 text-center">
-      <p className="flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-[12px]">
-        <Sparkles className="h-3.5 w-3.5" />
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white sm:text-[12px]">
         Done-for-you retention system · Live in 2 weeks · For cleaning companies
       </p>
     </div>
@@ -99,14 +98,14 @@ function TopBanner() {
 function Nav() {
   return (
     <nav className="sticky top-0 z-30 border-b border-zinc-200/70 bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Link href="/offer" className="flex items-center gap-2.5">
           <Image
             src="/logo-full.png"
             alt="Selestial"
-            width={150}
-            height={40}
-            className="h-7 w-auto"
+            width={300}
+            height={80}
+            className="h-12 w-auto md:h-14"
             priority
           />
         </Link>
@@ -667,13 +666,13 @@ function Footer() {
   return (
     <footer className="bg-white px-4 py-12">
       <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-4 flex items-center justify-center">
+        <div className="mb-5 flex items-center justify-center">
           <Image
             src="/logo-full.png"
             alt="Selestial"
-            width={150}
-            height={40}
-            className="h-7 w-auto"
+            width={300}
+            height={80}
+            className="h-12 w-auto md:h-14"
           />
         </div>
         <p className="mb-4 text-[13px] text-zinc-500">
