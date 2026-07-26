@@ -5,6 +5,11 @@
 -- row here, and every dashboard number derives from it.
 -- =============================================================================
 
+select public.v2_assert_no_table_conflicts(
+  array['tracked_links', 'engagement_events', 'inbound_webhooks'],
+  array['token', 'event_type', 'provider']
+);
+
 -- ---------------------------------------------------------------------------
 -- tracked_links — one token per contact per message per destination
 -- ---------------------------------------------------------------------------

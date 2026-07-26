@@ -34,4 +34,19 @@ run psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" -f supabase/tests/rls_isolation_tes
 echo "==> running invariants test"
 run psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" -f supabase/tests/invariants_test.sql
 
+echo "==> re-applying migrations (must be a no-op)"
+for f in supabase/migrations/20260726*_v2_*.sql; do
+  run psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" -f "$f" > /dev/null 2>&1 \
+    || { echo "FAIL: re-applying $f is not idempotent"; exit 1; }
+done
+
+echo "==> conflict guard (separate database, no v2 tables)"
+GUARD_DB="${DB_NAME}_guard"
+run dropdb --if-exists "$GUARD_DB"
+run createdb "$GUARD_DB"
+run psql -v ON_ERROR_STOP=1 -q -d "$GUARD_DB" -f supabase/tests/shim.sql > /dev/null 2>&1
+run psql -v ON_ERROR_STOP=1 -q -d "$GUARD_DB" -f supabase/migrations/20260726000100_v2_workspaces_core.sql > /dev/null 2>&1
+run psql -v ON_ERROR_STOP=1 -q -d "$GUARD_DB" -f supabase/tests/conflict_guard_test.sql
+run dropdb --if-exists "$GUARD_DB"
+
 echo "==> OK"

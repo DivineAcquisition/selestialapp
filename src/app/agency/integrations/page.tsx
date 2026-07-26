@@ -16,6 +16,7 @@ import { isAiConfigured, GENERATION_MODEL, SUMMARY_MODEL } from '@/lib/v2/ai';
 import { hoursAgoIso } from '@/lib/v2/metrics';
 import { agencyNav } from '@/lib/v2/nav';
 import { listWorkspaces, requireAgencyAdmin } from '@/lib/v2/workspace';
+import { GhlPreflight } from './GhlPreflight';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,6 +118,8 @@ export default async function IntegrationsPage({
               </p>
             )}
           </div>
+
+          <GhlPreflight hasLocation={workspaces.some((w) => Boolean(w.ghl_location_id))} />
         </Card>
 
         <div className="space-y-6">

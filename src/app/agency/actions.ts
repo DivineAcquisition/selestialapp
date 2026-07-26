@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { runGhlPreflight, type PreflightResult } from '@/lib/ghl/preflight';
 import { logActivity } from '@/lib/v2/activity';
 import { adminDb } from '@/lib/v2/db';
 import { sendWorkspaceInvite } from '@/lib/v2/invites';
@@ -189,6 +190,20 @@ export async function resendInvite(workspaceId: string): Promise<AgencyActionRes
   } catch (err) {
     return fail(err);
   }
+}
+
+/** Live GoHighLevel capability check, probed against the first connected sub-account. */
+export async function checkGhlScopes(): Promise<PreflightResult> {
+  await requireAgencyAdmin();
+
+  const { data } = await adminDb()
+    .from('workspaces')
+    .select('ghl_location_id')
+    .not('ghl_location_id', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  return runGhlPreflight((data?.ghl_location_id as string) ?? null);
 }
 
 export async function retryWebhook(webhookId: string): Promise<AgencyActionResult> {

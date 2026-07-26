@@ -1,8 +1,9 @@
 import 'server-only';
 
-import { createHmac, createVerify, timingSafeEqual } from 'node:crypto';
-
 import { adminDb } from './db';
+import { verifyRsaSignature, verifySvixSignature } from './signatures';
+
+export { verifySvixSignature };
 
 /**
  * Shared webhook intake: log the raw payload first, then process.
@@ -102,75 +103,9 @@ export async function markWebhookFailed(id: string | null, error: string): Promi
 // Signature verification
 // ---------------------------------------------------------------------------
 
-function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  if (left.length !== right.length) return false;
-  return timingSafeEqual(left, right);
-}
-
-/**
- * Verifies a Svix-style signature, which is what Resend uses.
- *
- * The signed payload is `${id}.${timestamp}.${body}`, HMAC-SHA256 with the secret after
- * its `whsec_` prefix is base64-decoded. The header may carry several space-separated
- * `v1,<sig>` values during a secret rotation, so any match counts.
- */
-export function verifySvixSignature(params: {
-  secret: string;
-  id: string | null;
-  timestamp: string | null;
-  signature: string | null;
-  body: string;
-  toleranceSeconds?: number;
-}): boolean {
-  const { secret, id, timestamp, signature, body } = params;
-  if (!secret || !id || !timestamp || !signature) return false;
-
-  // Reject replays of an old capture.
-  const tolerance = params.toleranceSeconds ?? 300;
-  const sentAt = Number(timestamp);
-  if (!Number.isFinite(sentAt)) return false;
-  if (Math.abs(Date.now() / 1000 - sentAt) > tolerance) return false;
-
-  const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
-  const expected = createHmac('sha256', key).update(`${id}.${timestamp}.${body}`).digest('base64');
-
-  return signature
-    .split(' ')
-    .map((part) => part.split(',', 2)[1] ?? part)
-    .some((candidate) => safeEqual(candidate, expected));
-}
-
-/**
- * Verifies GoHighLevel's `x-wh-signature`, an RSA-SHA256 signature over the raw body,
- * checked against GHL's published public key.
- *
- * Returns false when no key is configured. The caller decides what to do with an
- * unverified payload — the endpoints here record it and process it, but flag
- * `signature_verified: false` so the gap is visible in the admin screen rather than
- * invisible.
- */
+/** Verifies GoHighLevel's `x-wh-signature` against the configured public key. */
 export function verifyGhlSignature(body: string, signature: string | null): boolean {
-  const publicKey = process.env.GHL_WEBHOOK_PUBLIC_KEY;
-  if (!publicKey || !signature) return false;
-
-  try {
-    const verifier = createVerify('SHA256');
-    verifier.update(body);
-    verifier.end();
-    return verifier.verify(normalizePublicKey(publicKey), signature, 'base64');
-  } catch (err) {
-    console.error('[webhook] GHL signature verification threw', err);
-    return false;
-  }
-}
-
-/** Accepts the key with real newlines or with the `\n` escapes an env var usually carries. */
-function normalizePublicKey(key: string): string {
-  const unescaped = key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
-  if (unescaped.includes('BEGIN PUBLIC KEY')) return unescaped;
-  return `-----BEGIN PUBLIC KEY-----\n${unescaped.trim()}\n-----END PUBLIC KEY-----`;
+  return verifyRsaSignature(body, signature, process.env.GHL_WEBHOOK_PUBLIC_KEY);
 }
 
 export function headerMap(headers: Headers): Record<string, string> {

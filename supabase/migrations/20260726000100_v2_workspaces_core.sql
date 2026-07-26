@@ -8,6 +8,68 @@
 create extension if not exists "pgcrypto";
 
 -- ---------------------------------------------------------------------------
+-- Preflight: refuse to run if a v2 table name is already taken.
+-- ---------------------------------------------------------------------------
+-- Every table below is created with `if not exists`, which is what makes these
+-- migrations re-runnable. The failure mode that guards against is a table that
+-- already exists under the same name with a different shape: creation is skipped,
+-- the later index and constraint statements fail with a confusing error, and in the
+-- worst case application code ends up reading and writing someone else's table.
+--
+-- This is not hypothetical. The v1 generated types file lists no `contacts` table,
+-- but a live Selestial database has one with an unrelated nine-column shape.
+--
+-- The check is by marker column rather than by name alone, so re-running these
+-- migrations against a database where v2 is already installed is still a no-op.
+-- ---------------------------------------------------------------------------
+create or replace function public.v2_assert_no_table_conflicts(
+  p_tables text[],
+  p_markers text[]
+)
+returns void
+language plpgsql
+as $$
+declare
+  v_conflicts text;
+begin
+  select string_agg(format('%s (expected a "%s" column)', t.name, t.marker), '; ' order by t.name)
+    into v_conflicts
+  from unnest(p_tables, p_markers) as t(name, marker)
+  where to_regclass('public.' || quote_ident(t.name)) is not null
+    and not exists (
+      select 1
+      from information_schema.columns c
+      where c.table_schema = 'public'
+        and c.table_name = t.name
+        and c.column_name = t.marker
+    );
+
+  if v_conflicts is not null then
+    raise exception
+      'Selestial v2 migration aborted. These table names are already used by a different schema: %',
+      v_conflicts
+      using hint =
+        'v2 will not adopt an existing table it did not create. Rename the conflicting table(s), '
+        'or install v2 into a database that does not have them. Never let v2 write to a table '
+        'whose shape it does not own.';
+  end if;
+end;
+$$;
+
+select public.v2_assert_no_table_conflicts(
+  array[
+    'agency_admins', 'workspaces', 'workspace_members', 'workspace_invites',
+    'workspace_provisioning_steps', 'integration_logs', 'ghl_oauth_tokens',
+    'workspace_activity', 'sending_identities'
+  ],
+  array[
+    'user_id', 'slug', 'workspace_id', 'workspace_id',
+    'step_key', 'provider', 'access_token',
+    'action', 'from_email'
+  ]
+);
+
+-- ---------------------------------------------------------------------------
 -- Enums
 -- ---------------------------------------------------------------------------
 do $$ begin

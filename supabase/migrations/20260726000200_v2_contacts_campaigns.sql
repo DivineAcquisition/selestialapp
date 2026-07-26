@@ -2,6 +2,22 @@
 -- Selestial v2 — Part 2: contacts, lists/imports, campaigns, sequence, messages
 -- =============================================================================
 
+-- Refuse to run if any of these names is already taken by a different schema.
+-- See the note in part 1: a live Selestial database already has an unrelated
+-- `contacts` table, which is exactly the case this catches.
+select public.v2_assert_no_table_conflicts(
+  array[
+    'contacts', 'contact_lists', 'contact_list_members', 'import_rejects',
+    'contact_notes', 'saved_segments', 'campaigns', 'campaign_attachments',
+    'campaign_touches', 'campaign_enrollments', 'outreach_messages'
+  ],
+  array[
+    'workspace_id', 'workspace_id', 'workspace_id', 'workspace_id',
+    'workspace_id', 'workspace_id', 'workspace_id', 'workspace_id',
+    'workspace_id', 'workspace_id', 'workspace_id'
+  ]
+);
+
 -- ---------------------------------------------------------------------------
 -- Enums
 -- ---------------------------------------------------------------------------
