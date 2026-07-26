@@ -213,6 +213,46 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Storage path parsing must never throw. A cast error inside an RLS policy fails
+-- the whole query, so one stray upload with a non-UUID path would break listing
+-- the bucket for every user.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_ws uuid;
+begin
+  insert into public.workspaces (name, slug) values ('Storage Co', 'storage-co') returning id into v_ws;
+
+  if public.v2_path_workspace_id(v_ws || '/offer.pdf') <> v_ws then
+    raise exception 'FAIL: a valid attachment path did not yield its workspace id';
+  end if;
+
+  -- Every one of these would raise invalid_text_representation on a bare ::uuid cast.
+  if public.v2_path_workspace_id('not-a-uuid/offer.pdf') is not null then
+    raise exception 'FAIL: a non-UUID path segment should yield null';
+  end if;
+  if public.v2_path_workspace_id('offer.pdf') is not null then
+    raise exception 'FAIL: a path with no folder should yield null';
+  end if;
+  if public.v2_path_workspace_id('/leading-slash.pdf') is not null then
+    raise exception 'FAIL: an empty first segment should yield null';
+  end if;
+  if public.v2_path_workspace_id('') is not null then
+    raise exception 'FAIL: an empty path should yield null';
+  end if;
+  if public.v2_path_workspace_id(null) is not null then
+    raise exception 'FAIL: a null path should yield null';
+  end if;
+
+  -- Fails closed: a null workspace grants nothing to a non-admin session.
+  if public.is_workspace_member(null) then
+    raise exception 'FAIL: is_workspace_member(null) granted access outside an admin session';
+  end if;
+
+  raise notice 'storage path parsing: PASS';
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- workspace_week_stats must count from the events table and respect its bounds.
 -- ---------------------------------------------------------------------------
 do $$

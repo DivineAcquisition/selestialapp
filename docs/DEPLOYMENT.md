@@ -74,9 +74,22 @@ That is enough to list sub-accounts on the onboarding screen, and not enough for
 else. With this token alone: provisioning fails at the custom-fields step, imported
 contacts are never mirrored, and **no SMS can be sent**.
 
+### The token string does not gain scopes retroactively
+
+Adding scopes to the integration in GoHighLevel does **not** widen a token that was
+already issued. The existing `pit-…` string keeps whatever it was minted with, so the
+scope list can look correct in the dashboard while every call still returns 401.
+
+After changing scopes, **regenerate the token and copy the new value.** Re-tested 45
+seconds apart to rule out propagation lag: read and write probes against contacts,
+conversations, custom fields, tags, calendars and opportunities all still returned
+`401 The token is not authorized for this scope`, as did `POST /oauth/locationToken`,
+so there is no alternate route around it.
+
 ### Scopes to add
 
-In GoHighLevel: **Settings → Private Integrations → edit the integration → Scopes.**
+In GoHighLevel: **Settings → Private Integrations → edit the integration → Scopes**,
+then regenerate.
 
 ```
 contacts.readonly              contacts.write
@@ -98,7 +111,7 @@ per-location tokens and avoids one static credential covering every client.
 
 ## Supabase — blocked on billing
 
-A dedicated `Selestial` project could not be created:
+A dedicated `selestial` project could not be created:
 
 ```
 PaymentRequiredException: There are overdue invoices in the organization(s)
@@ -106,9 +119,17 @@ DivineAcquisition™. Head to the organization's invoices page to settle the
 invoices before creating a new project.
 ```
 
-The organization is on the Pro plan with three existing projects. Settle the invoices,
-then create the project and apply the three migrations in
-`supabase/migrations/20260726*` in filename order.
+The connected credential sees exactly one organization, `DivineAcquisition™`
+(`rwlqjppxddcpsvisthgs`), on the Pro plan with three existing projects. There is no
+`DA Enterprise` organization visible to it, and the Supabase management API has no
+create-organization operation — organizations can only be created in the dashboard.
+
+To place the project under a different organization, create that organization in the
+Supabase dashboard first. If it belongs to a separate Supabase account, that account's
+access token has to be connected before it can be reached.
+
+Once an organization is available and its invoices are clear, create the project and
+apply the three migrations in `supabase/migrations/20260726*` in filename order.
 
 ### Do not install v2 into one of the existing projects without checking
 

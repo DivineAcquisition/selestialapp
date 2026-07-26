@@ -192,20 +192,49 @@ insert into storage.buckets (id, name, public)
 values ('campaign-attachments', 'campaign-attachments', false)
 on conflict (id) do nothing;
 
-drop policy if exists "campaign attachments readable by workspace members"
-  on storage.objects;
-create policy "campaign attachments readable by workspace members"
-  on storage.objects for select to authenticated
-  using (
-    bucket_id = 'campaign-attachments'
-    and public.is_workspace_member(nullif(split_part(name, '/', 1), '')::uuid)
-  );
+-- Attachment paths are `<workspace_id>/<filename>`. A plain `::uuid` cast on the
+-- first segment throws for any object whose path does not start with a UUID, and a
+-- cast error inside a policy fails the whole query — one stray upload would break
+-- listing the bucket for everyone. This returns null instead, which fails closed.
+create or replace function public.v2_path_workspace_id(p_name text)
+returns uuid
+language plpgsql
+immutable
+returns null on null input
+as $$
+begin
+  return nullif(split_part(p_name, '/', 1), '')::uuid;
+exception when invalid_text_representation then
+  return null;
+end;
+$$;
 
-drop policy if exists "campaign attachments writable by workspace writers"
-  on storage.objects;
-create policy "campaign attachments writable by workspace writers"
-  on storage.objects for insert to authenticated
-  with check (
-    bucket_id = 'campaign-attachments'
-    and public.can_write_workspace(nullif(split_part(name, '/', 1), '')::uuid)
-  );
+-- Supabase owns storage.objects, and some projects refuse policy changes on it from
+-- a migration. The bucket and the application both work without these policies —
+-- files are served through the tokenized viewer using a service-role signed URL, so
+-- they are defence in depth against direct client access, not the primary control.
+-- A permissions failure here must not abort the rest of the migration.
+do $$
+begin
+  drop policy if exists "campaign attachments readable by workspace members"
+    on storage.objects;
+  create policy "campaign attachments readable by workspace members"
+    on storage.objects for select to authenticated
+    using (
+      bucket_id = 'campaign-attachments'
+      and public.is_workspace_member(public.v2_path_workspace_id(name))
+    );
+
+  drop policy if exists "campaign attachments writable by workspace writers"
+    on storage.objects;
+  create policy "campaign attachments writable by workspace writers"
+    on storage.objects for insert to authenticated
+    with check (
+      bucket_id = 'campaign-attachments'
+      and public.can_write_workspace(public.v2_path_workspace_id(name))
+    );
+exception when insufficient_privilege then
+  raise notice
+    'Skipped storage.objects policies: this role cannot alter them. Add them from the '
+    'Supabase dashboard under Storage > Policies. Attachment serving is unaffected.';
+end $$;
