@@ -31,4 +31,7 @@ done
 echo "==> running isolation test"
 run psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" -f supabase/tests/rls_isolation_test.sql
 
+echo "==> running invariants test"
+run psql -v ON_ERROR_STOP=1 -q -d "$DB_NAME" -f supabase/tests/invariants_test.sql
+
 echo "==> OK"

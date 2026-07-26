@@ -697,3 +697,140 @@
     @apply max-w-screen-xl mx-auto;
   }
 }
+
+/* ==================== DOCS PROSE ====================
+   Styling for markdown rendered by /docs. Hand-written rather than pulling in the
+   typography plugin: the docs use a small, known set of elements, and the brand
+   tokens above already define the palette. */
+.doc-prose {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.doc-prose > *:first-child {
+  margin-top: 0;
+}
+
+.doc-prose h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+}
+
+.doc-prose h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 2rem;
+}
+
+.doc-prose h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.5rem;
+  scroll-margin-top: 2rem;
+}
+
+.doc-prose p {
+  margin: 0 0 1rem;
+}
+
+.doc-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.doc-prose strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.doc-prose ul {
+  list-style: disc;
+}
+
+.doc-prose ol {
+  list-style: decimal;
+}
+
+.doc-prose li {
+  margin: 0.3rem 0;
+}
+
+.doc-prose li > ul,
+.doc-prose li > ol {
+  margin: 0.3rem 0;
+}
+
+.doc-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  background: var(--muted);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+}
+
+.doc-prose pre {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  padding: 0.875rem 1rem;
+  overflow-x: auto;
+  margin: 0 0 1rem;
+}
+
+.doc-prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.doc-prose blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 1rem;
+  margin: 0 0 1rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.doc-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.25rem;
+  font-size: 0.875rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.doc-prose th {
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  white-space: nowrap;
+}
+
+.doc-prose td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  vertical-align: top;
+}
+
+.doc-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}

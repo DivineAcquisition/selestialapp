@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { applyEngagement } from '@/lib/v2/engagement';
-import { bumpClickCounters, isExpired, isSafeDestination, resolveToken } from '@/lib/v2/links';
+import {
+  bumpClickCounters,
+  isExpired,
+  isSafeDestination,
+  resolveTokenSafely,
+} from '@/lib/v2/links';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,11 +24,19 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
-  const link = await resolveToken(token);
+  const resolution = await resolveTokenSafely(token);
 
-  if (!link || link.kind !== 'url') {
+  if (resolution.status === 'unavailable') {
+    console.error('[link] could not resolve token', token, resolution.error);
+    // Not the same as a dead link: tell them to try again rather than sending them away.
+    return NextResponse.redirect(new URL('/link-not-found?retry=1', request.nextUrl.origin));
+  }
+
+  if (resolution.status === 'missing' || resolution.link.kind !== 'url') {
     return NextResponse.redirect(new URL('/link-not-found', request.nextUrl.origin));
   }
+
+  const link = resolution.link;
 
   if (isExpired(link)) {
     return NextResponse.redirect(new URL('/link-expired', request.nextUrl.origin));

@@ -122,9 +122,36 @@ export async function createTrackedLink(params: CreateLinkParams): Promise<strin
   return linkUrl(token, params.kind);
 }
 
+export type TokenResolution =
+  | { status: 'found'; link: TrackedLink }
+  | { status: 'missing' }
+  /** Lookup itself failed — misconfiguration or a database blip, not a bad token. */
+  | { status: 'unavailable'; error: string };
+
+/**
+ * Resolves a token, distinguishing "this token does not exist" from "we could not check".
+ *
+ * The difference matters to the person holding the link: telling someone their link is
+ * dead when the database was briefly unreachable sends them away for good.
+ */
+export async function resolveTokenSafely(token: string): Promise<TokenResolution> {
+  try {
+    const { data, error } = await adminDb()
+      .from('tracked_links')
+      .select('*')
+      .eq('token', token)
+      .maybeSingle();
+
+    if (error) return { status: 'unavailable', error: error.message };
+    return data ? { status: 'found', link: data as TrackedLink } : { status: 'missing' };
+  } catch (err) {
+    return { status: 'unavailable', error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 export async function resolveToken(token: string): Promise<TrackedLink | null> {
-  const { data } = await adminDb().from('tracked_links').select('*').eq('token', token).maybeSingle();
-  return (data as TrackedLink) ?? null;
+  const result = await resolveTokenSafely(token);
+  return result.status === 'found' ? result.link : null;
 }
 
 /** Bumps the denormalized click counters. The authoritative record is the event row. */
