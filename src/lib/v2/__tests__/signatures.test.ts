@@ -10,11 +10,11 @@ import {
 } from '../signatures';
 
 /**
- * A secret in the exact shape Resend issues (`whsec_` + base64). This is a discarded
- * test value, not a live secret — the point is that the parsing path is exercised
- * against the real format rather than a hand-rolled one.
+ * A synthetic secret in the shape Resend issues (`whsec_` + 32 bytes of base64), so the
+ * parsing path is exercised against the real format. Generated for this test and never
+ * used anywhere — deliberately not derived from any live signing secret.
  */
-const SECRET = 'whsec_LoOFR1E65C5AJAQrlq3MoOD/0Vdz28Fh';
+const SECRET = `whsec_${Buffer.from('selestial-signature-test-secret!').toString('base64')}`;
 
 const BODY = JSON.stringify({
   type: 'email.delivered',
