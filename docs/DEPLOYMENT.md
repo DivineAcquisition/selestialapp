@@ -57,7 +57,14 @@ carry transactional reputation that bulk reactivation sending should not be mixe
 
 ---
 
-## GoHighLevel — blocked on token scopes
+## GoHighLevel — two credentials
+
+Selestial uses the agency credential **only** to create and list sub-accounts. Everything
+that happens inside a sub-account uses that sub-account's own Private Integration Token,
+stored on the workspace and entered by the client or the operator. See
+[the provisioning doc](../src/content/docs/ghl-provisioning.md) for the reasoning.
+
+### The agency credential
 
 The supplied Private Integration Token authenticates correctly and resolves the agency:
 
@@ -70,9 +77,22 @@ The supplied Private Integration Token authenticates correctly and resolves the 
 `401 The token is not authorized for this scope` for contacts, conversations, custom
 fields, tags, calendars and opportunities.
 
-That is enough to list sub-accounts on the onboarding screen, and not enough for anything
-else. With this token alone: provisioning fails at the custom-fields step, imported
-contacts are never mirrored, and **no SMS can be sent**.
+For the agency credential's actual job, that means:
+
+| Operation | Status |
+| --- | --- |
+| List sub-accounts (`GET /locations/search`) | **200** — the "connect an existing sub-account" path works today |
+| Read one sub-account (`GET /locations/{id}`) | **200** |
+| Create a sub-account (`POST /locations/`) | **401 Unauthorized** |
+
+Note that creation returns a bare `Unauthorized` rather than the scope message the other
+endpoints give. That is a different failure: GHL restricts sub-account creation to an
+agency OAuth token, and a Private Integration Token is a location-level construct. Adding
+`locations.write` to the PIT and regenerating is worth trying, but **agency OAuth
+(`GHL_CLIENT_ID` / `GHL_CLIENT_SECRET`) is the reliable path for creation.**
+
+Until then, onboarding still works end to end via **Connect an existing sub-account** —
+create the sub-account by hand in GHL, connect it, then paste its token.
 
 ### The token string does not gain scopes retroactively
 

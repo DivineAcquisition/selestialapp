@@ -9,7 +9,11 @@ import {
   ghlPitConfigured,
   resolveAuthMode,
 } from './config';
-import { getAgencyToken, getLocationToken, invalidateLocationToken } from './tokens';
+import {
+  getAgencyToken,
+  invalidateLocationToken,
+  resolveLocationCredential,
+} from './tokens';
 
 export class GhlError extends Error {
   constructor(
@@ -149,18 +153,22 @@ async function writeLog(input: LogInput): Promise<void> {
 // Auth headers
 // ---------------------------------------------------------------------------
 
-async function authHeaders(scope: GhlScope): Promise<{ headers: Record<string, string>; base: string }> {
-  const mode = resolveAuthMode();
-
-  if (!mode) {
-    throw new GhlError(
-      'GoHighLevel is not configured. Set GHL_CLIENT_ID/GHL_CLIENT_SECRET for OAuth, or ' +
-        'GHL_AGENCY_API_KEY / GHL_PRIVATE_INTEGRATION_TOKEN for key-based access.',
+/** Raised when a workspace has no sub-account credential stored yet. */
+export class MissingLocationCredentialError extends GhlError {
+  constructor(readonly locationId: string) {
+    super(
+      `No GoHighLevel token is stored for sub-account ${locationId}. Add the sub-account's ` +
+        'Private Integration Token in the workspace settings before running this step.',
       0,
       null,
       'auth'
     );
+    this.name = 'MissingLocationCredentialError';
   }
+}
+
+async function authHeaders(scope: GhlScope): Promise<{ headers: Record<string, string>; base: string }> {
+  const mode = resolveAuthMode();
 
   if (scope.kind === 'v1') {
     if (!ghlAgencyKeyConfigured()) {
@@ -182,16 +190,39 @@ async function authHeaders(scope: GhlScope): Promise<{ headers: Record<string, s
     Accept: 'application/json',
   };
 
+  // Location scope: the workspace's own sub-account token comes first. This is the
+  // model Selestial is built around — the agency credential creates sub-accounts, and
+  // each workspace then holds its own PIT for everything inside its sub-account.
+  if (scope.kind === 'location') {
+    const credential = await resolveLocationCredential(scope.locationId);
+    if (!credential) throw new MissingLocationCredentialError(scope.locationId);
+
+    return {
+      base: GHL_API_BASE,
+      headers: { ...common, Authorization: `Bearer ${credential.token}` },
+    };
+  }
+
+  // Agency scope: only ever used to create, read and list sub-accounts.
+  if (!mode) {
+    throw new GhlError(
+      'GoHighLevel is not configured. Set GHL_CLIENT_ID/GHL_CLIENT_SECRET for agency OAuth, ' +
+        'or GHL_PRIVATE_INTEGRATION_TOKEN for an agency-level Private Integration Token.',
+      0,
+      null,
+      'auth'
+    );
+  }
+
   if (mode === 'oauth') {
-    const token =
-      scope.kind === 'agency' ? await getAgencyToken() : await getLocationToken(scope.locationId);
+    const token = await getAgencyToken();
     return {
       base: GHL_API_BASE,
       headers: { ...common, Authorization: `Bearer ${token.access_token}` },
     };
   }
 
-  if (mode === 'pit' && ghlPitConfigured()) {
+  if (ghlPitConfigured()) {
     return {
       base: GHL_API_BASE,
       headers: { ...common, Authorization: `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}` },
@@ -199,7 +230,7 @@ async function authHeaders(scope: GhlScope): Promise<{ headers: Record<string, s
   }
 
   throw new GhlError(
-    `Auth mode "${mode}" cannot serve a ${scope.kind}-scoped v2 call. Connect agency OAuth.`,
+    `Auth mode "${mode}" cannot serve an agency-scoped v2 call. Connect agency OAuth.`,
     0,
     null,
     'auth'

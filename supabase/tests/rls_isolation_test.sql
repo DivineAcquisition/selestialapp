@@ -133,6 +133,64 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Sub-account credentials: the status function is security definer, so it reads a
+-- table the caller cannot. The membership check inside it is the only thing
+-- standing between a client and another client's credential status.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_owner_a uuid := gen_random_uuid();
+  v_owner_b uuid := gen_random_uuid();
+  v_ws_a    uuid;
+  v_ws_b    uuid;
+  v_has     boolean;
+  v_count   int;
+begin
+  insert into auth.users (id, email) values
+    (v_owner_a, 'owner-a@cred.test'), (v_owner_b, 'owner-b@cred.test');
+
+  insert into public.workspaces (name, slug, ghl_location_id)
+    values ('Cred A', 'cred-a', 'loc_cred_a') returning id into v_ws_a;
+  insert into public.workspaces (name, slug, ghl_location_id)
+    values ('Cred B', 'cred-b', 'loc_cred_b') returning id into v_ws_b;
+
+  insert into public.workspace_members (workspace_id, user_id, role)
+    values (v_ws_a, v_owner_a, 'client_owner'), (v_ws_b, v_owner_b, 'client_owner');
+
+  -- Only workspace B has a stored sub-account token.
+  insert into public.ghl_oauth_tokens
+    (scope_type, source, workspace_id, location_id, access_token, label)
+    values ('location', 'pit', v_ws_b, 'loc_cred_b', 'pit-secret-value', 'B token');
+
+  set local role authenticated;
+
+  -- Owner A sees their own status.
+  perform set_config('request.jwt.claim.sub', v_owner_a::text, true);
+  select has_token into v_has from public.workspace_ghl_credential_status(v_ws_a);
+  if v_has then raise exception 'FAIL: workspace A reported a token it does not have'; end if;
+
+  -- Owner A must not be able to ask about workspace B.
+  begin
+    perform * from public.workspace_ghl_credential_status(v_ws_b);
+    raise exception 'FAIL: owner A read credential status for workspace B';
+  exception when insufficient_privilege then null;
+  end;
+
+  -- Owner B sees theirs, and the token value is still unreachable.
+  perform set_config('request.jwt.claim.sub', v_owner_b::text, true);
+  select has_token into v_has from public.workspace_ghl_credential_status(v_ws_b);
+  if not v_has then raise exception 'FAIL: workspace B did not report its stored token'; end if;
+
+  select count(*) into v_count from public.ghl_oauth_tokens;
+  if v_count <> 0 then
+    raise exception 'LEAK: a client session read % rows from ghl_oauth_tokens', v_count;
+  end if;
+
+  reset role;
+  raise notice 'sub-account credential isolation: PASS';
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- Every v2 table must have RLS enabled. Catches a table added later without it.
 -- ---------------------------------------------------------------------------
 do $$

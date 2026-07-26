@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/v2/AppShell';
 import { Badge, Card, CardHeader, formatDateTime } from '@/components/v2/Primitives';
+import { SubAccountToken } from '@/components/v2/SubAccountToken';
+import { getCredentialStatus } from '@/lib/v2/credentials';
 import { adminDb } from '@/lib/v2/db';
 import { SHARED_SENDING_DOMAIN } from '@/lib/v2/email';
 import { workspaceNav } from '@/lib/v2/nav';
@@ -33,10 +35,11 @@ export default async function WorkspaceSettingsPage({
 
   const db = adminDb();
 
-  const [steps, { data: identityRow }, { data: members }] = await Promise.all([
+  const [steps, { data: identityRow }, { data: members }, credential] = await Promise.all([
     getProvisioningSteps(workspace.id),
     db.from('sending_identities').select('*').eq('workspace_id', workspace.id).maybeSingle(),
     db.from('workspace_members').select('user_id, role, created_at').eq('workspace_id', workspace.id),
+    getCredentialStatus(workspace.id),
   ]);
 
   const identity = identityRow as SendingIdentity | null;
@@ -80,6 +83,14 @@ export default async function WorkspaceSettingsPage({
         </Card>
 
         <div className="space-y-6">
+          <SubAccountToken
+            workspaceId={workspace.id}
+            locationId={workspace.ghl_location_id}
+            hasToken={credential.hasToken}
+            lastVerifiedAt={credential.lastVerifiedAt}
+            canWrite={role === 'agency_admin' || role === 'client_owner'}
+          />
+
           <Card>
             <CardHeader
               title="GoHighLevel sub-account"

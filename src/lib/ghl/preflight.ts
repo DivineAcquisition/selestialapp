@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { GHL_API_BASE, GHL_API_VERSION, resolveAuthMode } from './config';
-import { getAgencyToken, getLocationToken } from './tokens';
+import { getAgencyToken, resolveLocationCredential } from './tokens';
 
 /**
  * Live capability check against the GoHighLevel API.
@@ -87,25 +87,39 @@ const PROBES: Probe[] = [
 /** Scopes whose absence stops the core loop rather than just degrading it. */
 const CRITICAL = new Set(['contacts', 'conversations']);
 
-async function authHeader(agencyScoped: boolean, locationId: string): Promise<string | null> {
-  const mode = resolveAuthMode();
-  if (!mode) return null;
-
-  if (mode === 'pit') return `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}`;
-
-  if (mode === 'oauth') {
-    const token = agencyScoped ? await getAgencyToken() : await getLocationToken(locationId);
-    return `Bearer ${token.access_token}`;
+async function authHeader(
+  agencyScoped: boolean,
+  locationId: string,
+  overrideToken?: string
+): Promise<string | null> {
+  // Location scope: an explicit token when we are testing one before saving it,
+  // otherwise whatever is stored for this sub-account.
+  if (!agencyScoped) {
+    if (overrideToken) return `Bearer ${overrideToken.trim()}`;
+    const credential = await resolveLocationCredential(locationId);
+    return credential ? `Bearer ${credential.token}` : null;
   }
 
-  // A legacy agency key cannot reach the v2 endpoints these probes use.
+  const mode = resolveAuthMode();
+  if (!mode) return null;
+  if (mode === 'oauth') return `Bearer ${(await getAgencyToken()).access_token}`;
+  if (process.env.GHL_PRIVATE_INTEGRATION_TOKEN) {
+    return `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}`;
+  }
   return null;
 }
 
-export async function runGhlPreflight(locationId: string | null): Promise<PreflightResult> {
+/**
+ * @param locationId    the sub-account to probe, or null to test agency scope only
+ * @param overrideToken a candidate sub-account token to test before storing it
+ */
+export async function runGhlPreflight(
+  locationId: string | null,
+  overrideToken?: string
+): Promise<PreflightResult> {
   const authMode = resolveAuthMode();
 
-  if (!authMode) {
+  if (!authMode && !overrideToken) {
     return {
       authMode: null,
       locationId,
@@ -134,7 +148,12 @@ export async function runGhlPreflight(locationId: string | null): Promise<Prefli
     }
 
     try {
-      const header = await authHeader(probe.agencyScoped ?? false, locationId ?? '');
+      const header = await authHeader(
+        probe.agencyScoped ?? false,
+        locationId ?? '',
+        probe.agencyScoped ? undefined : overrideToken
+      );
+
       if (!header) {
         capabilities.push({
           key: probe.key,
@@ -143,7 +162,9 @@ export async function runGhlPreflight(locationId: string | null): Promise<Prefli
           scope: probe.scope,
           ok: false,
           status: 0,
-          detail: `Auth mode "${authMode}" cannot reach this endpoint`,
+          detail: probe.agencyScoped
+            ? `Auth mode "${authMode ?? 'none'}" cannot reach this endpoint`
+            : 'No sub-account token stored for this workspace yet',
         });
         continue;
       }

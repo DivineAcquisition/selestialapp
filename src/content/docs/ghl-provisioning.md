@@ -10,6 +10,46 @@ order: 2
 Selestial is the source of truth. GoHighLevel is a mirror. State flows one way — from
 Selestial into GHL — with one deliberate exception noted at the bottom.
 
+## Two credentials, deliberately
+
+Selestial uses two different GoHighLevel credentials, and they do different jobs.
+
+**The agency credential** is configured once, by us, and does exactly one thing: create
+sub-accounts during onboarding (and list the existing ones so a client can be connected
+to a sub-account they already have). It never touches contacts or messages.
+
+**The sub-account token** is a Private Integration Token created *inside* the client's own
+sub-account and stored on their workspace. Every call that works inside that sub-account
+— custom fields, tags, mirroring contacts, sending SMS — uses it.
+
+This split matters for two reasons. GHL issues Private Integration Tokens at the location
+level, so this is how the platform actually works rather than something we invented. And
+it means one client's credential cannot reach another client's sub-account: the blast
+radius of a leaked token is one workspace.
+
+Provisioning pauses at **Storing the sub-account token** until that token exists. The step
+shows as "action needed" rather than failing, because nothing is broken — the pipeline is
+waiting on a person, and it resumes the moment the token is saved.
+
+### Creating the sub-account token
+
+In the client's sub-account: **Settings → Private Integrations → New Integration**. Grant
+read and write on contacts, conversations, custom fields and tags. Create it, copy the
+token, and paste it into the workspace — **Agency → the workspace → Sub-account token**,
+or the client can do it themselves from their own **Settings** page.
+
+The token is verified against the live API before it is stored. An under-scoped token is
+rejected at the point of entry with the missing scope named, rather than accepted and
+discovered days later when a campaign quietly fails to send.
+
+Two things worth knowing:
+
+- **Adding scopes does not widen a token that already exists.** After changing scopes you
+  have to regenerate the token and paste the new value. The old string keeps whatever it
+  was minted with, so the dashboard can show the right scopes while every call still 401s.
+- **The token is never shown again** once stored, and is never sent back to the browser.
+  Replace it by pasting a new one.
+
 ## Custom fields
 
 Four contact fields are created in each sub-account. If a field with the same name already

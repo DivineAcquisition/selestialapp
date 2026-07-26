@@ -42,12 +42,18 @@ shows them ticking over live.
 
 1. **Creating the GoHighLevel sub-account** — creates the location under your agency and
    applies your standard snapshot if `GHL_DEFAULT_SNAPSHOT_ID` is set.
-2. **Provisioning custom fields** — creates the four Selestial fields, or reuses them if
+2. **Storing the sub-account token** — pauses here until someone pastes in the Private
+   Integration Token from inside the new sub-account. The agency credential can create a
+   sub-account but cannot work inside one, so everything below needs this.
+3. **Provisioning custom fields** — creates the four Selestial fields, or reuses them if
    they already exist.
-3. **Provisioning the tag taxonomy** — the six `selestial:*` tags.
-4. **Registering webhooks** — see [GHL provisioning](/docs/ghl-provisioning) for why this
+4. **Provisioning the tag taxonomy** — the six `selestial:*` tags.
+5. **Registering webhooks** — see [GHL provisioning](/docs/ghl-provisioning) for why this
    step often lands on "action needed" rather than "done".
-5. **Inviting the client owner** — emails the invite.
+6. **Inviting the client owner** — emails the invite.
+
+Steps 2 and 5 are the two that wait on a human. Both show as "action needed" rather than
+failing, and the pipeline picks up again by itself once the token is saved.
 
 Every step is idempotent. Re-running one that already succeeded does nothing harmful, so
 "Retry" is always safe to press.

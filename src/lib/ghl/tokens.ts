@@ -12,6 +12,8 @@ export interface StoredToken {
   expires_at: string | null;
   scopes: string | null;
   user_type: string | null;
+  /** 'pit' rows are entered by a human and must never be auto-deleted. */
+  source?: 'oauth' | 'pit';
 }
 
 interface TokenResponse {
@@ -215,11 +217,120 @@ export async function getLocationToken(locationId: string): Promise<StoredToken>
   return persist('location', parsed as TokenResponse, locationId);
 }
 
-/** Drops a cached location token, forcing the next call to mint a fresh one. */
-export async function invalidateLocationToken(locationId: string): Promise<void> {
+// ---------------------------------------------------------------------------
+// Sub-account Private Integration Tokens
+// ---------------------------------------------------------------------------
+// The agency credential creates sub-accounts and nothing else. Each workspace then
+// holds its own sub-account PIT, entered by the client or the operator, and every
+// location-scoped call for that workspace uses it. This matches how GHL issues PITs
+// (they are location-level) and means one client's credential cannot reach another
+// client's sub-account.
+
+export interface StoredLocationCredential {
+  token: string;
+  source: 'oauth' | 'pit';
+  lastVerifiedAt: string | null;
+}
+
+/**
+ * The credential to use for a location-scoped call, in preference order:
+ *
+ *   1. The sub-account PIT stored against this location — the intended model.
+ *   2. An OAuth-minted location token, when the agency is connected over OAuth.
+ *   3. The single global PIT from the environment, for a one-sub-account install.
+ *
+ * Returns null when nothing is available, so the caller can say "this workspace has
+ * no sub-account token yet" rather than emitting a confusing 401.
+ */
+export async function resolveLocationCredential(
+  locationId: string
+): Promise<StoredLocationCredential | null> {
+  const stored = await findStored('location', locationId);
+
+  if (stored?.source === 'pit' && stored.access_token) {
+    return { token: stored.access_token, source: 'pit', lastVerifiedAt: null };
+  }
+
+  if (stored && !isExpired(stored)) {
+    return { token: stored.access_token, source: 'oauth', lastVerifiedAt: null };
+  }
+
+  if (await hasAgencyToken()) {
+    try {
+      const minted = await getLocationToken(locationId);
+      return { token: minted.access_token, source: 'oauth', lastVerifiedAt: null };
+    } catch {
+      // Fall through to the environment token.
+    }
+  }
+
+  const envPit = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+  return envPit ? { token: envPit, source: 'pit', lastVerifiedAt: null } : null;
+}
+
+export async function hasLocationCredential(locationId: string): Promise<boolean> {
+  const stored = await findStored('location', locationId);
+  return Boolean(stored?.access_token);
+}
+
+/** Stores (or replaces) the sub-account PIT for a location. */
+export async function storeLocationPit(params: {
+  workspaceId: string;
+  locationId: string;
+  token: string;
+  label?: string | null;
+  verifiedCapabilities?: unknown;
+}): Promise<void> {
+  const db = adminDb();
+
+  const row = {
+    scope_type: 'location' as const,
+    source: 'pit',
+    workspace_id: params.workspaceId,
+    location_id: params.locationId,
+    access_token: params.token.trim(),
+    refresh_token: null,
+    // A PIT does not expire on a schedule; it is revoked in GoHighLevel.
+    expires_at: null,
+    label: params.label ?? null,
+    last_verified_at: new Date().toISOString(),
+    verified_capabilities: params.verifiedCapabilities ?? null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const existing = await findStored('location', params.locationId);
+
+  const { error } = existing
+    ? await db
+        .from('ghl_oauth_tokens')
+        .update(row)
+        .eq('scope_type', 'location')
+        .eq('location_id', params.locationId)
+    : await db.from('ghl_oauth_tokens').insert(row);
+
+  if (error) throw new GhlAuthError('Failed to store the sub-account token', error);
+}
+
+export async function removeLocationCredential(locationId: string): Promise<void> {
   await adminDb()
     .from('ghl_oauth_tokens')
     .delete()
     .eq('scope_type', 'location')
     .eq('location_id', locationId);
+}
+
+/**
+ * Drops a cached OAuth location token after a 401, so the next call mints a fresh one.
+ *
+ * Deliberately scoped to `source = 'oauth'`. A sub-account PIT was typed in by a human
+ * and cannot be re-minted; deleting it on a transient 401 would silently disconnect the
+ * workspace and make someone go find the token again.
+ */
+export async function invalidateLocationToken(locationId: string): Promise<void> {
+  await adminDb()
+    .from('ghl_oauth_tokens')
+    .delete()
+    .eq('scope_type', 'location')
+    .eq('location_id', locationId)
+    .eq('source', 'oauth');
 }

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 
 import { AppShell } from '@/components/v2/AppShell';
 import { Badge, Card, CardHeader, formatDateTime } from '@/components/v2/Primitives';
+import { SubAccountToken } from '@/components/v2/SubAccountToken';
+import { getCredentialStatus } from '@/lib/v2/credentials';
 import { adminDb } from '@/lib/v2/db';
 import { agencyNav } from '@/lib/v2/nav';
 import { getProvisioningSteps } from '@/lib/v2/provisioning';
@@ -32,7 +34,7 @@ export default async function WorkspaceProvisioningPage({
   if (!workspaceRow) notFound();
   const workspace = workspaceRow as Workspace;
 
-  const [steps, { data: logs }] = await Promise.all([
+  const [steps, { data: logs }, credential] = await Promise.all([
     getProvisioningSteps(workspaceId),
     db
       .from('integration_logs')
@@ -40,6 +42,7 @@ export default async function WorkspaceProvisioningPage({
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .limit(30),
+    getCredentialStatus(workspaceId),
   ]);
 
   return (
@@ -62,7 +65,15 @@ export default async function WorkspaceProvisioningPage({
       }
     >
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
+          <SubAccountToken
+            workspaceId={workspaceId}
+            locationId={workspace.ghl_location_id}
+            hasToken={credential.hasToken}
+            lastVerifiedAt={credential.lastVerifiedAt}
+            canWrite
+          />
+
           <ProvisioningPanel
             workspaceId={workspaceId}
             steps={steps}

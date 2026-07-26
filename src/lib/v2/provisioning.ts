@@ -14,10 +14,11 @@ import type { ProvisioningStep, ProvisioningStatus, Workspace } from './types';
  */
 export const PROVISIONING_STEPS = [
   { key: 'create_location', label: 'Creating GoHighLevel sub-account', position: 0 },
-  { key: 'provision_fields', label: 'Provisioning custom fields', position: 1 },
-  { key: 'provision_tags', label: 'Provisioning tag taxonomy', position: 2 },
-  { key: 'register_webhooks', label: 'Registering webhooks', position: 3 },
-  { key: 'invite_owner', label: 'Inviting the client owner', position: 4 },
+  { key: 'store_subaccount_token', label: 'Storing the sub-account token', position: 1 },
+  { key: 'provision_fields', label: 'Provisioning custom fields', position: 2 },
+  { key: 'provision_tags', label: 'Provisioning tag taxonomy', position: 3 },
+  { key: 'register_webhooks', label: 'Registering webhooks', position: 4 },
+  { key: 'invite_owner', label: 'Inviting the client owner', position: 5 },
 ] as const;
 
 export type ProvisioningStepKey = (typeof PROVISIONING_STEPS)[number]['key'];
@@ -135,6 +136,41 @@ async function stepCreateLocation(workspace: Workspace): Promise<Record<string, 
   return { locationId: location.id, created: true };
 }
 
+/**
+ * Waits for the sub-account's own Private Integration Token.
+ *
+ * The agency credential can create a sub-account but cannot work inside one, so
+ * everything after this point needs a token only the client or operator can produce.
+ * The step reports `skipped` — "action needed" in the UI — rather than failing, because
+ * nothing is broken: the pipeline is waiting on a human, and it resumes the moment the
+ * token is saved.
+ */
+async function stepStoreSubAccountToken(
+  workspace: Workspace
+): Promise<{ result: Record<string, unknown>; status: ProvisioningStatus }> {
+  const locationId = await requireLocation(workspace);
+  const { hasLocationCredential } = await import('@/lib/ghl/tokens');
+
+  if (await hasLocationCredential(locationId)) {
+    return {
+      status: 'succeeded',
+      result: { locationId, tokenStored: true },
+    };
+  }
+
+  return {
+    status: 'skipped',
+    result: {
+      locationId,
+      tokenStored: false,
+      awaiting:
+        "The sub-account's Private Integration Token. Create it in this sub-account under " +
+        'Settings > Private Integrations, then paste it into the workspace.',
+      docs: '/docs/ghl-provisioning',
+    },
+  };
+}
+
 async function stepProvisionFields(workspace: Workspace): Promise<Record<string, unknown>> {
   const locationId = await requireLocation(workspace);
   const map = await ghl(workspace.id).ensureCustomFields(locationId);
@@ -223,6 +259,12 @@ export async function runProvisioningStep(
       case 'create_location':
         result = await stepCreateLocation(workspace);
         break;
+      case 'store_subaccount_token': {
+        const outcome = await stepStoreSubAccountToken(workspace);
+        result = outcome.result;
+        status = outcome.status;
+        break;
+      }
       case 'provision_fields':
         result = await stepProvisionFields(workspace);
         break;
@@ -259,18 +301,31 @@ export async function runProvisioningStep(
     return { step: stepKey, status, result };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    await setStep(workspaceId, stepKey, 'failed', { error: message.slice(0, 1000) });
+
+    // A workspace with no sub-account token yet is not a failure, it is a step waiting
+    // on a human. Showing it red would send the operator debugging something that is
+    // working exactly as designed.
+    const awaitingToken =
+      err instanceof Error && err.name === 'MissingLocationCredentialError';
+    const status: ProvisioningStatus = awaitingToken ? 'skipped' : 'failed';
+
+    await setStep(workspaceId, stepKey, status, {
+      error: message.slice(0, 1000),
+      ...(awaitingToken ? { result: { awaitingSubAccountToken: true } } : {}),
+    });
 
     await logActivity({
       workspaceId,
-      action: `provisioning.${stepKey}.failed`,
-      summary: `Provisioning step "${stepKey}" failed: ${message}`,
+      action: `provisioning.${stepKey}.${awaitingToken ? 'awaiting_token' : 'failed'}`,
+      summary: awaitingToken
+        ? `Provisioning step "${stepKey}" is waiting for the sub-account token.`
+        : `Provisioning step "${stepKey}" failed: ${message}`,
       entityType: 'workspace',
       entityId: workspaceId,
       metadata: { error: message },
     });
 
-    return { step: stepKey, status: 'failed', error: message };
+    return { step: stepKey, status, error: message };
   }
 }
 
@@ -298,9 +353,22 @@ export async function runProvisioning(workspaceId: string): Promise<StepOutcome[
     outcomes.push(outcome);
 
     if (outcome.status === 'failed') break;
+
+    // Everything after this point works *inside* the sub-account, so it cannot run
+    // until the sub-account token exists. Stopping here keeps the later steps out of
+    // a failed state they did nothing to earn.
+    if (step.key === 'store_subaccount_token' && outcome.status === 'skipped') break;
   }
 
-  const allDone = outcomes.every((o) => o.status === 'succeeded' || o.status === 'skipped');
+  // Read the persisted state rather than the outcomes collected above: breaking out of
+  // the loop early leaves later steps with no outcome, and treating that as "all done"
+  // would flip the workspace to active with half a sub-account.
+  const finalSteps = await getProvisioningSteps(workspaceId);
+  const allDone =
+    finalSteps.length === PROVISIONING_STEPS.length &&
+    finalSteps.every((s) => s.status === 'succeeded' || s.status === 'skipped') &&
+    finalSteps.find((s) => s.step_key === 'store_subaccount_token')?.status === 'succeeded';
+
   if (allDone) {
     await adminDb().from('workspaces').update({ status: 'active' }).eq('id', workspaceId);
     await logActivity({
