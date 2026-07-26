@@ -7,10 +7,12 @@ export const runtime = 'nodejs';
 
 /**
  * RFC 8058 one-click unsubscribe. Mail clients POST here directly from the
- * `List-Unsubscribe-Post` header, with no page visit.
+ * `List-Unsubscribe` header with no page visit.
  *
- * Only POST is handled: a GET on this path renders the confirmation page instead, so
- * link-prefetching mail scanners cannot unsubscribe someone who never clicked.
+ * It lives on its own path rather than on `/u/[token]` because the human-facing page at
+ * that URL must stay a GET-only confirmation screen — link-prefetching mail scanners
+ * follow GET links, and unsubscribing someone who never clicked would be worse than
+ * making them press a button.
  */
 export async function POST(
   _request: NextRequest,
@@ -32,7 +34,7 @@ export async function POST(
       source: 'list-unsubscribe-header',
     });
   } catch (err) {
-    console.error('[unsubscribe] failed', token, err);
+    console.error('[unsubscribe] one-click failed', token, err);
     return new NextResponse('Error', { status: 500 });
   }
 

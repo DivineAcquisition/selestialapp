@@ -1,0 +1,220 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+
+import { logActivity } from '@/lib/v2/activity';
+import { adminDb } from '@/lib/v2/db';
+import { sendWorkspaceInvite } from '@/lib/v2/invites';
+import {
+  connectExistingLocation,
+  ensureProvisioningSteps,
+  runProvisioning,
+  runProvisioningStep,
+  type ProvisioningStepKey,
+} from '@/lib/v2/provisioning';
+import { replayWebhook } from '@/lib/v2/webhook-replay';
+import { requireAgencyAdmin, uniqueSlug } from '@/lib/v2/workspace';
+
+export interface AgencyActionResult {
+  ok: boolean;
+  error?: string;
+  message?: string;
+  redirectTo?: string;
+}
+
+function fail(err: unknown): AgencyActionResult {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error('[agency-action]', message);
+  return { ok: false, error: message };
+}
+
+/**
+ * Creates the workspace, then provisions the GHL sub-account.
+ *
+ * The workspace row is committed before provisioning starts so a GHL failure leaves a
+ * retryable record rather than losing the operator's input. Provisioning itself runs in
+ * the background, with per-step status on the workspace page.
+ */
+export async function onboardClient(formData: FormData): Promise<AgencyActionResult> {
+  try {
+    const viewer = await requireAgencyAdmin();
+    const db = adminDb();
+
+    const name = String(formData.get('business_name') ?? '').trim();
+    if (!name) return { ok: false, error: 'Business name is required.' };
+
+    const email = String(formData.get('email') ?? '').trim().toLowerCase();
+    if (!email) return { ok: false, error: 'Owner email is required — it is how they get access.' };
+
+    const serviceTypes = String(formData.get('service_types') ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const slug = await uniqueSlug(name);
+
+    const { data: workspace, error } = await db
+      .from('workspaces')
+      .insert({
+        name,
+        slug,
+        status: 'onboarding',
+        owner_name: String(formData.get('owner_name') ?? '').trim() || null,
+        email,
+        phone: String(formData.get('phone') ?? '').trim() || null,
+        website: String(formData.get('website') ?? '').trim() || null,
+        timezone: String(formData.get('timezone') ?? 'America/Chicago'),
+        service_area: String(formData.get('service_area') ?? '').trim() || null,
+        service_types: serviceTypes,
+        physical_address: String(formData.get('physical_address') ?? '').trim() || null,
+        booking_url: String(formData.get('booking_url') ?? '').trim() || null,
+        business_profile: {
+          tone: String(formData.get('tone') ?? '').trim() || undefined,
+          positioning: String(formData.get('positioning') ?? '').trim() || undefined,
+          differentiators: String(formData.get('differentiators') ?? '').trim() || undefined,
+        },
+        created_by: viewer.userId,
+      })
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    const workspaceId = workspace.id as string;
+
+    await ensureProvisioningSteps(workspaceId);
+
+    await logActivity({
+      workspaceId,
+      actorType: 'user',
+      actorId: viewer.userId,
+      action: 'workspace.created',
+      summary: `Onboarded "${name}". Provisioning the GoHighLevel sub-account next.`,
+      entityType: 'workspace',
+      entityId: workspaceId,
+      metadata: { slug, email },
+    });
+
+    const existingLocation = String(formData.get('existing_location_id') ?? '').trim();
+    if (existingLocation) {
+      await connectExistingLocation(workspaceId, existingLocation);
+    }
+
+    // Fire and forget: the UI polls the per-step status rather than blocking on a
+    // sequence of GHL calls that can take tens of seconds.
+    void runProvisioning(workspaceId).catch((err) => {
+      console.error('[onboard] provisioning run failed', workspaceId, err);
+    });
+
+    revalidatePath('/agency');
+    return { ok: true, redirectTo: `/agency/workspaces/${workspaceId}` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function retryProvisioningStep(
+  workspaceId: string,
+  stepKey: string
+): Promise<AgencyActionResult> {
+  try {
+    await requireAgencyAdmin();
+    const outcome = await runProvisioningStep(workspaceId, stepKey as ProvisioningStepKey);
+
+    revalidatePath(`/agency/workspaces/${workspaceId}`);
+
+    return outcome.status === 'failed'
+      ? { ok: false, error: outcome.error ?? 'Step failed.' }
+      : { ok: true, message: `Step "${stepKey}" ${outcome.status}.` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function runAllProvisioning(workspaceId: string): Promise<AgencyActionResult> {
+  try {
+    await requireAgencyAdmin();
+    const outcomes = await runProvisioning(workspaceId);
+    revalidatePath(`/agency/workspaces/${workspaceId}`);
+
+    const failed = outcomes.find((outcome) => outcome.status === 'failed');
+    return failed
+      ? { ok: false, error: `Stopped at "${failed.step}": ${failed.error}` }
+      : { ok: true, message: 'Provisioning complete.' };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function connectExistingSubAccount(
+  workspaceId: string,
+  locationId: string
+): Promise<AgencyActionResult> {
+  try {
+    await requireAgencyAdmin();
+    await connectExistingLocation(workspaceId, locationId.trim());
+
+    // Fields, tags and webhooks still need provisioning against the existing sub-account.
+    void runProvisioning(workspaceId).catch((err) => {
+      console.error('[connect] provisioning run failed', workspaceId, err);
+    });
+
+    revalidatePath(`/agency/workspaces/${workspaceId}`);
+    return { ok: true, message: 'Connected. Provisioning the fields, tags and webhooks now.' };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function resendInvite(workspaceId: string): Promise<AgencyActionResult> {
+  try {
+    const viewer = await requireAgencyAdmin();
+
+    const { data: workspace } = await adminDb()
+      .from('workspaces')
+      .select('email')
+      .eq('id', workspaceId)
+      .maybeSingle();
+
+    if (!workspace?.email) return { ok: false, error: 'This workspace has no owner email.' };
+
+    const invite = await sendWorkspaceInvite({
+      workspaceId,
+      email: workspace.email as string,
+      invitedBy: viewer.userId,
+    });
+
+    return invite.emailSent
+      ? { ok: true, message: `Invite sent to ${workspace.email}.` }
+      : { ok: false, error: 'Invite created but the email could not be sent. Check RESEND_API_KEY.' };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function retryWebhook(webhookId: string): Promise<AgencyActionResult> {
+  try {
+    await requireAgencyAdmin();
+    const result = await replayWebhook(webhookId);
+    revalidatePath('/agency/webhooks');
+
+    return result.ok
+      ? { ok: true, message: 'Processed.' }
+      : { ok: false, error: `Replay failed with status ${result.status}.` };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function discardWebhook(webhookId: string): Promise<AgencyActionResult> {
+  try {
+    await requireAgencyAdmin();
+    await adminDb()
+      .from('inbound_webhooks')
+      .update({ status: 'ignored', error: 'Discarded by an operator' })
+      .eq('id', webhookId);
+    revalidatePath('/agency/webhooks');
+    return { ok: true, message: 'Discarded.' };
+  } catch (err) {
+    return fail(err);
+  }
+}

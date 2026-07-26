@@ -28,9 +28,12 @@ export function AttachmentViewer({
   businessName,
   accent,
 }: Props) {
-  const openedAt = useRef(Date.now());
+  // Set on mount rather than during render: the clock must not be read while
+  // rendering, and mount is when the reader actually started looking anyway.
+  const openedAt = useRef<number | null>(null);
 
   useEffect(() => {
+    openedAt.current ??= Date.now();
     const startedAt = openedAt.current;
 
     const report = () => {

@@ -11,7 +11,6 @@ import {
   mappingConfidence,
   parseCsv,
   type ColumnMapping,
-  type ContactField,
 } from '@/lib/v2/csv';
 import { normalizeEmail, normalizePhone } from '@/lib/v2/normalize';
 import { createCampaignAndImport } from '../../actions';

@@ -7,7 +7,7 @@ import { adminDb } from './db';
 import { sendCampaignEmail } from './email';
 import { recordEvent } from './events';
 import { mirrorContactToGhl } from './ghl-sync';
-import { createTrackedLink } from './links';
+import { createTrackedLink, oneClickUnsubscribeUrl, tokenFromUrl } from './links';
 import { renderMessage } from './render';
 import { isWithinWindow } from './schedule';
 import { newLockToken, windowOf } from './sequence';
@@ -262,7 +262,9 @@ async function sendOne(params: SendParams): Promise<{ ok: boolean; error?: strin
       html: rendered.html ?? rendered.body,
       text: rendered.body,
       idempotencyKey: message.idempotency_key,
-      unsubscribeUrl,
+      // The header must point at a POST-capable endpoint; the body link points at the
+      // confirmation page. Both carry the same token.
+      unsubscribeUrl: unsubscribeUrl ? oneClickUnsubscribeUrl(tokenFromUrl(unsubscribeUrl)) : undefined,
     });
     providerId = outcome.id;
     error = outcome.error;

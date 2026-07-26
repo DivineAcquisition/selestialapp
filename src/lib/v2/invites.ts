@@ -130,6 +130,10 @@ function escapeHtml(value: string): string {
   });
 }
 
+export function isInviteExpired(expiresAt: string): boolean {
+  return new Date(expiresAt).getTime() < Date.now();
+}
+
 export interface AcceptedInvite {
   workspaceId: string;
   workspaceSlug: string;

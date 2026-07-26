@@ -38,6 +38,22 @@ export function linkUrl(token: string, kind: TrackedLink['kind']): string {
   return `${linkBaseUrl()}/${LINK_ROUTES[kind]}/${token}`;
 }
 
+/**
+ * The POST target for the `List-Unsubscribe` header.
+ *
+ * Separate from the `/u/<token>` page on purpose: that page must stay GET-only so mail
+ * scanners cannot unsubscribe someone by prefetching the link. Same token, so both paths
+ * resolve to the same contact.
+ */
+export function oneClickUnsubscribeUrl(token: string): string {
+  return `${linkBaseUrl()}/api/unsubscribe/${token}`;
+}
+
+/** Recovers the token from a URL this module produced. */
+export function tokenFromUrl(url: string): string {
+  return url.split('/').pop() ?? '';
+}
+
 export interface CreateLinkParams {
   workspaceId: string;
   contactId: string | null;

@@ -17,6 +17,16 @@ export interface WeekRange {
   label: string;
 }
 
+/** An ISO timestamp N days in the past, for "recent activity" windows. */
+export function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}
+
+/** An ISO timestamp N hours in the past. */
+export function hoursAgoIso(hours: number): string {
+  return new Date(Date.now() - hours * 3_600_000).toISOString();
+}
+
 /** Weeks run Monday 00:00 to the following Monday 00:00, in the workspace's timezone. */
 export function weekRange(offsetWeeks = 0, reference = new Date()): WeekRange {
   const base = new Date(reference);

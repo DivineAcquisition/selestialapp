@@ -20,11 +20,19 @@ const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', 
 const protectedPrefixes = [
   '/inbox', '/quotes', '/customers', '/sequences', '/retention', 
   '/campaigns', '/analytics', '/connections', '/billing', '/settings', 
-  '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing'
+  '/onboarding', '/launch-checklist', '/admin', '/bookings', '/payments', '/pricing',
+  // Selestial v2: client workspaces and the agency operator view
+  '/w', '/agency', '/no-workspace'
 ]
 
 // Public routes within app domain (no auth required)
-const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback']
+// `/l`, `/v` and `/u` are the tokenized link, attachment and unsubscribe routes: they
+// are reached from a text message or an email, so they must never bounce to a login.
+const appPublicRoutes = [
+  '/login', '/signup', '/forgot-password', '/reset-password', '/verify-email',
+  '/resend-verification', '/auth/callback',
+  '/l', '/v', '/u', '/invite', '/link-not-found', '/link-expired', '/docs',
+]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -78,6 +86,18 @@ export async function middleware(request: NextRequest) {
     }
     // Anything else on access.* (auth pages, dashboard, etc.) → /demo
     return NextResponse.rewrite(new URL('/demo', request.url))
+  }
+
+  // go.selestial.io - Tokenized outreach links (PUBLIC). Short host so an SMS spends
+  // as few characters as possible on the domain.
+  if (subdomain === 'go') {
+    if (pathname === '/') {
+      return NextResponse.rewrite(new URL('/link-not-found', request.url))
+    }
+    // /<token> is treated as a click link; /v/… and /u/… keep their own prefixes.
+    const alreadyPrefixed = /^\/(l|v|u)\//.test(pathname)
+    const target = alreadyPrefixed ? pathname : `/l${pathname}`
+    return NextResponse.rewrite(new URL(target, request.url))
   }
 
   // book.selestial.io - Customer booking widget (PUBLIC)
@@ -155,14 +175,20 @@ export async function middleware(request: NextRequest) {
   )
 
   // Root path (/) handling for app.selestial.io:
-  // - If logged in: show dashboard
-  // - If not logged in: redirect to login
+  // - Not logged in: go to login
+  // - Selestial v2 user: land in their own workspace, or the agency rollup for operators
+  // - Otherwise: fall through to the v1 dashboard, so existing accounts are untouched
   if (pathname === '/') {
-    if (session) {
-      return response
-    } else {
+    if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
+
+    const landing = await v2LandingPath(supabase, session.user.id)
+    if (landing) {
+      return NextResponse.redirect(new URL(landing, request.url))
+    }
+
+    return response
   }
 
   // Public routes within app are always accessible
@@ -183,6 +209,49 @@ export async function middleware(request: NextRequest) {
   }
 
   return response
+}
+
+/**
+ * Where a Selestial v2 user should land from `/`, or null when they are not one.
+ *
+ * Runs under the caller's own session, so RLS decides what comes back — middleware
+ * never sees a workspace the user is not entitled to.
+ */
+async function v2LandingPath(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string
+): Promise<string | null> {
+  try {
+    const { data: admin } = await supabase
+      .from('agency_admins')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (admin) return '/agency'
+
+    const { data: membership } = await supabase
+      .from('workspace_members')
+      .select('workspace_id')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle()
+
+    if (!membership) return null
+
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('slug')
+      .eq('id', membership.workspace_id)
+      .maybeSingle()
+
+    return workspace?.slug ? `/w/${workspace.slug}` : '/no-workspace'
+  } catch {
+    // The v2 tables may not exist yet in a database that has not been migrated.
+    // Falling through to the v1 dashboard is the safe outcome.
+    return null
+  }
 }
 
 export const config = {

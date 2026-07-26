@@ -37,7 +37,6 @@ function clampSms(body: string, maxLength: number): string {
 
 /** GSM-7 vs UCS-2 segment count, used to show the operator what a touch actually costs. */
 export function smsSegments(body: string): number {
-  // eslint-disable-next-line no-control-regex
   const isUnicode = /[^\u0000-\u007F]/.test(body);
   const singleLimit = isUnicode ? 70 : 160;
   const multiLimit = isUnicode ? 67 : 153;
