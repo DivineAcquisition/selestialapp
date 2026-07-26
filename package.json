@@ -73,6 +73,7 @@
     "react-resizable-panels": "^4.2.0",
     "recharts": "^3.6.0",
     "resend": "^6.6.0",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0",
