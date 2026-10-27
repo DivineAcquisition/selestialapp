@@ -6,11 +6,10 @@ import Link from 'next/link'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { SimpleForm as Form } from '@/components/ui/form'
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field'
 import { BottomGradient, FormDivider } from '@/components/ui/bottom-gradient'
-import { Icon, IconName } from '@/components/ui/icon'
+import { Icon } from '@/components/ui/icon'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -115,42 +114,14 @@ export default function SignupPage() {
     }
   }
 
-  const benefits: { text: string; highlight: boolean; icon: IconName }[] = [
-    { text: '14-day free trial', highlight: true, icon: 'gift' },
-    { text: 'No credit card required', highlight: false, icon: 'shield' },
-    { text: 'Cancel anytime', highlight: false, icon: 'bolt' },
-  ]
-
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-3">
-        <Badge className="bg-primary/10 text-primary border-0 px-3 py-1.5">
-          <Icon name="magic" size="xs" className="mr-1.5" />
-          Start free today
-        </Badge>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create your account</h1>
         <p className="text-gray-500">
-          Join the cleaning operations using Selestial to book more jobs
+          For people who already use the Selestial workspace.
         </p>
-      </div>
-
-      {/* Benefits pills */}
-      <div className="flex flex-wrap gap-2">
-        {benefits.map((benefit, i) => (
-          <div 
-            key={i} 
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-300",
-              benefit.highlight 
-                ? 'bg-gradient-to-r from-primary/10 to-[#9D96FF]/10 text-primary font-medium border border-primary/20' 
-                : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-600 border border-gray-200/50 hover:border-primary/30'
-            )}
-          >
-            <Icon name={benefit.icon} size="xs" className={benefit.highlight ? "text-primary" : "text-gray-500"} />
-            {benefit.text}
-          </div>
-        ))}
       </div>
 
       {/* Google Sign Up */}

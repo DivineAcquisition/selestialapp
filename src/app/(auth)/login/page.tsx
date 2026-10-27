@@ -83,12 +83,6 @@ function LoginForm() {
     }
   }
 
-  const features = [
-    { text: 'AI-powered follow-ups', icon: 'robot' as const },
-    { text: 'Automated sequences', icon: 'bolt' as const },
-    { text: 'Smart analytics', icon: 'checkCircle' as const },
-  ]
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -103,21 +97,8 @@ function LoginForm() {
           Sign in to your account
         </h1>
         <p className="text-gray-500">
-          Continue where you left off with your quote follow-ups
+          Sign in to the Selestial workspace.
         </p>
-      </div>
-
-      {/* Features */}
-      <div className="flex flex-wrap gap-2">
-        {features.map((feature) => (
-          <div 
-            key={feature.text}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 cursor-default"
-          >
-            <Icon name={feature.icon} size="xs" className="text-primary" />
-            {feature.text}
-          </div>
-        ))}
       </div>
 
       {/* Google Sign In */}

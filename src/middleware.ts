@@ -24,7 +24,37 @@ const protectedPrefixes = [
 ]
 
 // Public routes within app domain (no auth required)
-const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback']
+const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback', '/site', '/audit']
+
+// Former public marketing URLs. Sent to the agency homepage.
+const legacyMarketingPrefixes = [
+  '/demo',
+  '/retarget',
+  '/offer',
+  '/book-demo',
+  '/demo-booked',
+  '/welcome',
+  '/features',
+  '/about',
+]
+
+function isLegacyMarketingPath(pathname: string) {
+  return legacyMarketingPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+}
+
+function redirectToPublicHome(request: NextRequest) {
+  const url = request.nextUrl.clone()
+  url.pathname = '/'
+  return NextResponse.redirect(url)
+}
+
+function rewriteToAgencyHome(request: NextRequest) {
+  const url = request.nextUrl.clone()
+  url.pathname = '/site'
+  return NextResponse.rewrite(url)
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -57,27 +87,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL(newPath, request.url))
   }
 
-  // access.selestial.io - Single canonical landing page at /demo (PUBLIC).
-  // /welcome is a back-compat redirect to /demo.
+  // access.selestial.io - Public agency site (PUBLIC).
+  // Old cleaning / med-spa marketing URLs redirect to the homepage.
   if (subdomain === 'access') {
-    const accessAllowedPrefixes = [
-      '/demo',
-      '/retarget',
-      '/offer',
-      '/book-demo',
-      '/demo-booked',
-      '/welcome', // redirects to /demo via the page component
-      '/api/booking-page-customization',
-      '/api/onboarding',
-    ]
+    if (isLegacyMarketingPath(pathname)) {
+      return redirectToPublicHome(request)
+    }
     if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/demo', request.url))
+      return rewriteToAgencyHome(request)
     }
-    if (accessAllowedPrefixes.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-      return NextResponse.rewrite(new URL(pathname, request.url))
+    if (pathname === '/site' || pathname === '/audit' || pathname.startsWith('/audit/')) {
+      return NextResponse.next()
     }
-    // Anything else on access.* (auth pages, dashboard, etc.) → /demo
-    return NextResponse.rewrite(new URL('/demo', request.url))
+    return redirectToPublicHome(request)
   }
 
   // book.selestial.io - Customer booking widget (PUBLIC)
@@ -94,12 +116,20 @@ export async function middleware(request: NextRequest) {
 
   // ==========================================================================
   // app.selestial.io - Main Application (AUTHENTICATED)
+  // The public homepage is the agency site. The logged-in app stays at /.
   // ==========================================================================
 
-  // Skip middleware if Supabase is not configured (build time)
+  if (isLegacyMarketingPath(pathname)) {
+    return redirectToPublicHome(request)
+  }
+
+  // Skip session checks if Supabase is not configured (build time / local).
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://placeholder.supabase.co' ||
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url') {
+    if (pathname === '/') {
+      return rewriteToAgencyHome(request)
+    }
     return NextResponse.next()
   }
 
@@ -155,14 +185,13 @@ export async function middleware(request: NextRequest) {
   )
 
   // Root path (/) handling for app.selestial.io:
-  // - If logged in: show dashboard
-  // - If not logged in: redirect to login
+  // - If logged in: show the existing dashboard
+  // - If logged out: show the public agency homepage
   if (pathname === '/') {
     if (session) {
       return response
-    } else {
-      return NextResponse.redirect(new URL('/login', request.url))
     }
+    return rewriteToAgencyHome(request)
   }
 
   // Public routes within app are always accessible

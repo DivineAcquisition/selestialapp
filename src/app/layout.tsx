@@ -6,21 +6,33 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title:
-    "Selestial — The Retention System Built for Residential Cleaning Companies",
+  metadataBase: new URL("https://selestial.io"),
+  title: {
+    default: "Selestial | Qualified In-Home Estimates for Remodelers",
+    template: "%s · Selestial",
+  },
   description:
-    "Branded booking, automated follow-up, referral capture — installed on top of your existing CRM. Stop leaking revenue from customers you already paid to acquire.",
+    "Selestial runs your Meta ads, responds to every lead in minutes, and books qualified homeowners onto your calendar. Book a free Lead Leak Audit.",
   openGraph: {
-    title: "Selestial — Retention System for Residential Cleaning Companies",
+    title: "More qualified in-home estimates. Without chasing leads.",
     description:
-      "Branded booking, automated follow-up, referral capture. Installed on top of your existing CRM.",
+      "Selestial runs your Meta ads, responds to every lead in minutes, and books qualified homeowners onto your calendar. Book a free Lead Leak Audit.",
+    images: [
+      {
+        url: "/marketing/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "More qualified in-home estimates. Without chasing leads.",
+      },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Selestial — Retention System for Residential Cleaning Companies",
+    title: "More qualified in-home estimates. Without chasing leads.",
     description:
-      "Branded booking, automated follow-up, referral capture. Installed on top of your existing CRM.",
+      "Selestial runs your Meta ads, responds to every lead in minutes, and books qualified homeowners onto your calendar. Book a free Lead Leak Audit.",
+    images: ["/marketing/og.jpg"],
   },
   // Icons (favicon, apple-touch-icon, and PNG icon) are picked up
   // automatically from the file-system conventions in this directory:

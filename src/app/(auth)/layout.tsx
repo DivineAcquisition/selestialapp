@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+
+export const metadata: Metadata = {
+  title: 'Account',
+  robots: { index: false, follow: false },
+}
 
 export default function AuthLayout({
   children,
@@ -38,49 +44,15 @@ export default function AuthLayout({
           </Link>
           
           {/* Main content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-5xl font-bold text-white leading-tight">
-                Win more jobs.
-                <br />
-                <span className="text-white/80">Automatically.</span>
-              </h1>
-              <p className="text-xl text-white/70 max-w-md leading-relaxed">
-                Stop losing leads to slow follow-ups. Let AI handle your quote responses while you focus on what matters.
-              </p>
-            </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-4">
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-white">35%</p>
-                <p className="text-sm text-white/60">Higher win rate</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-white">10h+</p>
-                <p className="text-sm text-white/60">Saved weekly</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-white">500+</p>
-                <p className="text-sm text-white/60">Businesses</p>
-              </div>
-            </div>
-            
-            {/* Testimonial */}
-            <div className="mt-8 p-6 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <p className="text-white/90 italic leading-relaxed">
-                &quot;Selestial helped us close 40% more quotes in our first month. The AI responses are so good, customers think they&apos;re talking to me!&quot;
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-semibold">
-                  MJ
-                </div>
-                <div>
-                  <p className="text-white font-medium">Mike Johnson</p>
-                  <p className="text-white/60 text-sm">Johnson Plumbing Co.</p>
-                </div>
-              </div>
-            </div>
+          <div className="space-y-6">
+            <h1 className="text-5xl font-bold text-white leading-tight">
+              Selestial
+              <br />
+              <span className="text-white/80">workspace.</span>
+            </h1>
+            <p className="text-xl text-white/70 max-w-md leading-relaxed">
+              Sign in to the tools your team already uses. Selestial is a Divine Acquisition company.
+            </p>
           </div>
           
           {/* Footer */}

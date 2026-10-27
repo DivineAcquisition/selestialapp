@@ -1,0 +1,13 @@
+.agency-site {
+  font-family: var(--font-inter-agency), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  overflow-x: clip;
+  background: #ffffff;
+  color: #09090b;
+}
+
+.agency-site :is(h1, h2, h3, .font-display) {
+  font-family: var(--font-inter-agency), "Inter Display", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 32;
+}
