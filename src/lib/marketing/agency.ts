@@ -6,10 +6,16 @@
 /** Qualified estimates booked on the calendar each month. */
 export const ESTIMATES_PER_MONTH = 5;
 
-/** Percent of contract value earned when a booked job signs. */
+/**
+ * Percent of contract value earned when a booked job signs.
+ * Kept here for the team. Do not render this number on the public site.
+ */
 export const COMMISSION_PERCENT = 7;
 
-/** What the remodeler pays Meta directly. */
+/**
+ * What the remodeler pays Meta directly.
+ * Kept here for the team. Do not render this range on the public site.
+ */
 export const AD_BUDGET_RANGE = "$1,000 to $2,000 a month";
 
 /** Time to ads live, counted from the day we have account access. */

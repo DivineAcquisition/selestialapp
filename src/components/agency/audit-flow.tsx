@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { BrandButton } from "@/components/marketing/BrandButton";
 import { trackLead, trackSchedule } from "@/components/agency/pixel";
 import {
-  AD_BUDGET_RANGE,
   AD_BUDGET_READY_OPTIONS,
   ANSWERS_STORAGE_KEY,
   BOOKING_URL,
@@ -339,7 +338,7 @@ export function AuditFlow() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="ad-budget" className="text-[#eee9ff]">
-            Can you put {AD_BUDGET_RANGE} into ads?
+            Can you put an ad budget into ads?
           </Label>
           <select
             id="ad-budget"

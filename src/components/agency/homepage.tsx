@@ -17,13 +17,11 @@ import {
 } from "@/components/ui/accordion";
 import { AuditCta } from "@/components/agency/audit-cta";
 import {
-  AD_BUDGET_RANGE,
   CTA_LABEL,
   ESTIMATES_PER_MONTH,
   FOUNDING_PARTNER_OFFER,
   LAUNCH_TIME,
   SHOW_REMODELER_RESULTS,
-  commissionLabel,
   fullHeadline,
   phoneHeadline,
 } from "@/lib/marketing/agency";
@@ -140,7 +138,7 @@ const GOOD_FIT = [
   "You run a remodeling company doing roughly $750K to $3M a year",
   "Your average project is $15K or more",
   "You can take on at least two more projects a month",
-  `You can put ${AD_BUDGET_RANGE} into ads`,
+  "You can put an ad budget into ads",
   "You'll show up to the estimates we book and send proposals within a few days",
   "You'll let us see your job records so commissions are easy to verify",
 ];
@@ -168,7 +166,7 @@ function faqs() {
     ? "Three reasons. You own the ad account and data. We report on signed jobs, not clicks. And as a founding partner you pay nothing monthly; we only earn when a job we booked signs. Start with the free audit and judge us on the numbers."
     : "You own the ad account and data. We report on signed jobs, not clicks. Start with the free audit and judge us on the numbers. Pricing is set after your audit.";
   const commission = FOUNDING_PARTNER_OFFER
-    ? `We earn ${commissionLabel()} of the contract value on jobs that sign from estimates we booked. It's due when you receive the deposit, with a few days' grace. Each job is tagged in your system from the first contact, so there's no guessing about what came from us. Referrals and past customers never count.`
+    ? "We earn a percentage of the contract value on jobs that sign from estimates we booked. It's due when you receive the deposit, with a few days' grace. Each job is tagged in your system from the first contact, so there's no guessing about what came from us. Referrals and past customers never count."
     : "Pricing is set after your audit.";
   const hire = FOUNDING_PARTNER_OFFER
     ? "You can. But the office closes at 5, and homeowners fill out forms at 9 p.m. on a Sunday. A good appointment setter also costs a salary whether jobs sign or not. Our system answers every hour, keeps following up on proposals for weeks, and you only pay when a job signs."
@@ -176,9 +174,8 @@ function faqs() {
   const leave = FOUNDING_PARTNER_OFFER
     ? "Yes. 30 days' notice, no long contract. You keep the ad account, page, and data. Commission still applies to jobs that sign from estimates we already booked."
     : "Yes. 30 days' notice, no long contract. You keep the ad account, page, and data. Pricing is set after your audit.";
-  const adPayers = FOUNDING_PARTNER_OFFER
-    ? `You do, directly to Meta, from your own ad account. Most founding partners run ${AD_BUDGET_RANGE}. We never mark up ad spend.`
-    : `You do, directly to Meta, from your own ad account. The range we usually plan for is ${AD_BUDGET_RANGE}. We never mark up ad spend.`;
+  const adPayers =
+    "You do, directly to Meta, from your own ad account. We agree on the budget at your audit. We never mark up ad spend.";
 
   return [
     { q: "I've been burned by marketing companies before. Why is this different?", a: burned },
@@ -328,7 +325,7 @@ export function Homepage() {
             </div>
             <p className="mt-4 max-w-xl text-[14px] leading-snug text-[#b7aed4]">
               For remodelers with an average project of $15K or more, room for at least two more
-              jobs a month, and {AD_BUDGET_RANGE} to put into ads.
+              jobs a month, and an ad budget to put into ads.
             </p>
             <div className="mt-7">
               <AuditCta label={CTA_LABEL} className="w-full sm:w-auto" />
@@ -497,8 +494,8 @@ export function Homepage() {
             <ul className="mt-6 max-w-2xl space-y-3">
               {[
                 "No setup fee and no monthly fee.",
-                `You pay Meta directly for ads, ${AD_BUDGET_RANGE}, from your own account.`,
-                `We earn ${commissionLabel()} of the contract value on jobs that sign from estimates we booked.`,
+                "You pay Meta directly for ads, from your own account.",
+                "We earn a percentage of the contract value on jobs that sign from estimates we booked.",
                 "Our fee is due when you receive the deposit. Not before.",
                 "Every job is verified against your own records, so you see exactly what you're paying for.",
                 "Leave with 30 days' notice. No long contract.",
