@@ -12,10 +12,10 @@ export default function PrivacyPage() {
       <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#c4b5fd]">
         Placeholder. To be reviewed by counsel.
       </p>
-      <h1 className="font-display mt-3 text-[36px] font-semibold tracking-[-0.03em] text-white">
+      <h1 className="font-display mt-3 text-[36px] font-semibold tracking-[-0.03em] text-zinc-950">
         Privacy Policy
       </h1>
-      <div className="mt-6 space-y-4 text-[16px] leading-snug text-[#ddd6f5]">
+      <div className="mt-6 space-y-4 text-[16px] leading-snug text-zinc-600">
         <p>This page is a placeholder. A lawyer must review it before launch.</p>
         <p>
           {COMPANY_LEGAL_NAME} is a Divine Acquisition company. The Lead Leak Audit form collects

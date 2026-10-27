@@ -228,14 +228,14 @@ function Section({
 
 function Heading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-display max-w-3xl text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-white sm:text-[40px]">
+    <h2 className="font-display max-w-3xl text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-zinc-950 sm:text-[40px]">
       {children}
     </h2>
   );
 }
 
 function Copy({ children }: { children: React.ReactNode }) {
-  return <p className="max-w-xl text-[16px] leading-snug text-[#ddd6f5]">{children}</p>;
+  return <p className="max-w-xl text-[16px] leading-snug text-zinc-600">{children}</p>;
 }
 
 function PageCta() {
@@ -260,9 +260,9 @@ function PlaceholderPhoto({
   className?: string;
 }) {
   return (
-    <figure className={cn("relative overflow-hidden rounded-2xl border border-white/10", className)}>
+    <figure className={cn("relative overflow-hidden rounded-2xl border border-zinc-200", className)}>
       <Image src={src} alt={alt} fill priority={priority} sizes={sizes} className="object-cover" />
-      <figcaption className="absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+      <figcaption className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-700 shadow-sm">
         Placeholder
       </figcaption>
     </figure>
@@ -274,7 +274,7 @@ function Mark({ value, emphasis = false }: { value: string; emphasis?: boolean }
   const isNo = value === "No" || value.startsWith("No,") || value.startsWith("No ");
   if (isYes && emphasis) {
     return (
-      <span className="inline-flex items-center gap-1.5 font-medium text-[#ddd6fe]">
+      <span className="inline-flex items-center gap-1.5 font-medium text-[#4F1FD0]">
         <Check className="size-4 shrink-0" aria-hidden />
         {value === "Yes" ? <span className="sr-only">Yes</span> : value}
       </span>
@@ -288,7 +288,7 @@ function Mark({ value, emphasis = false }: { value: string; emphasis?: boolean }
       </span>
     );
   }
-  return <span className="text-[#ddd6f5]">{value}</span>;
+  return <span className="text-zinc-600">{value}</span>;
 }
 
 export function Homepage() {
@@ -302,13 +302,13 @@ export function Homepage() {
       <section className="overflow-hidden px-5 pb-16 pt-8 sm:pb-24 sm:pt-14">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
           <div>
-            <p className="inline-flex rounded-full border border-[#c4b5fd]/40 bg-[#c4b5fd]/10 px-3 py-1 text-[13px] font-semibold text-[#e4dcff]">
+            <p className="inline-flex rounded-full border border-[#6428F9]/20 bg-[#F2EFFF] px-3 py-1 text-[13px] font-semibold text-[#4F1FD0]">
               Remodeler doing $750K to $3M a year?
             </p>
-            <h1 className="font-display mt-5 text-balance text-[20px] font-semibold leading-[1.12] tracking-[-0.03em] text-white min-[390px]:text-[23px] sm:hidden">
+            <h1 className="font-display mt-5 text-balance text-[20px] font-semibold leading-[1.12] tracking-[-0.03em] text-zinc-950 min-[390px]:text-[23px] sm:hidden">
               {phoneHeadline()}
             </h1>
-            <h1 className="font-display mt-5 hidden text-balance text-[40px] font-semibold leading-[1.08] tracking-[-0.035em] text-white sm:block lg:text-[46px]">
+            <h1 className="font-display mt-5 hidden text-balance text-[40px] font-semibold leading-[1.08] tracking-[-0.035em] text-zinc-950 sm:block lg:text-[46px]">
               {fullHeadline()}
             </h1>
             <div className="mt-5 max-w-xl space-y-3">
@@ -323,7 +323,7 @@ export function Homepage() {
                 <Copy>Pricing is set after your audit.</Copy>
               )}
             </div>
-            <p className="mt-4 max-w-xl text-[14px] leading-snug text-[#b7aed4]">
+            <p className="mt-4 max-w-xl text-[14px] leading-snug text-zinc-500">
               For remodelers with an average project of $15K or more, room for at least two more
               jobs a month, and an ad budget to put into ads.
             </p>
@@ -334,7 +334,7 @@ export function Homepage() {
               {(FOUNDING_PARTNER_OFFER ? ["No monthly fee", "One remodeler per market", "You own the ad account"] : ["One remodeler per market", "You own the ad account"]).map((chip) => (
                 <li
                   key={chip}
-                  className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[13px] text-[#e7e2f8]"
+                  className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[13px] text-zinc-700"
                 >
                   {chip}
                 </li>
@@ -359,14 +359,14 @@ export function Homepage() {
 
       <section className="glow-red px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-display max-w-3xl text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-white sm:text-[40px]">
+          <h2 className="font-display max-w-3xl text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-zinc-950 sm:text-[40px]">
             You&apos;re not short on leads. You&apos;re losing jobs between the inquiry and the signature.
           </h2>
           <div className="mt-5 max-w-xl space-y-3">
-            <p className="text-[16px] leading-snug text-[#f3d7dc]">
+            <p className="text-[16px] leading-snug text-zinc-700">
               Contractors say the same things over and over in public reviews of lead services and agencies.
             </p>
-            <p className="text-[16px] leading-snug text-[#f3d7dc]">
+            <p className="text-[16px] leading-snug text-zinc-700">
               If you&apos;ve run a remodeling company for more than a year, you&apos;ve lived every one of these.
             </p>
           </div>
@@ -374,20 +374,20 @@ export function Homepage() {
             {LEAKS.map((leak) => (
               <li key={leak.title} className="glow-red-card rounded-2xl p-5">
                 <leak.icon className="size-5 text-red-400" aria-hidden />
-                <h3 className="font-display mt-3 text-[18px] font-semibold leading-snug text-white">
+                <h3 className="font-display mt-3 text-[18px] font-semibold leading-snug text-zinc-950">
                   {leak.title}
                 </h3>
                 {leak.lines.map((line) => (
-                  <p key={line} className="mt-2 max-w-xl text-[15px] leading-snug text-[#f6d5da]">
+                  <p key={line} className="mt-2 max-w-xl text-[15px] leading-snug text-zinc-700">
                     {line}
                   </p>
                 ))}
               </li>
             ))}
           </ol>
-          <p className="mt-8 max-w-2xl text-[22px] font-semibold leading-snug text-white sm:text-[26px]">
+          <p className="mt-8 max-w-2xl text-[22px] font-semibold leading-snug text-zinc-950 sm:text-[26px]">
             Every one of these happens after you&apos;ve already paid for the lead.{" "}
-            <span className="text-red-300">That&apos;s the gap, and it&apos;s where your profit goes.</span>
+            <span className="text-red-600">That&apos;s the gap, and it&apos;s where your profit goes.</span>
           </p>
           <PageCta />
         </div>
@@ -412,7 +412,7 @@ export function Homepage() {
         </div>
       </Section>
 
-      <Section className="bg-[#1a0f33]">
+      <Section className="bg-zinc-50">
         <Heading>How Selestial closes every leak</Heading>
         <div className="mt-5 max-w-xl space-y-2">
           <Copy>Three layers working together.</Copy>
@@ -420,12 +420,12 @@ export function Homepage() {
         </div>
         <ol className="mt-8 grid gap-4 lg:grid-cols-2">
           {MECHANISM.map((step, index) => (
-            <li key={step.title} className="rounded-2xl border border-[#c4b5fd]/25 bg-[#241445] p-5 sm:p-6">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#c4b5fd]">{step.tag}</p>
-              <p className="font-display mt-4 text-[13px] font-semibold text-[#c4b5fd]/70">0{index + 1}</p>
-              <h3 className="font-display mt-2 text-[20px] font-semibold leading-snug text-white">{step.title}</h3>
+            <li key={step.title} className="rounded-2xl border border-[#c4b5fd]/25 bg-[#F7F4FF] p-5 sm:p-6">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#6428F9]">{step.tag}</p>
+              <p className="font-display mt-4 text-[13px] font-semibold text-[#6428F9]/70">0{index + 1}</p>
+              <h3 className="font-display mt-2 text-[20px] font-semibold leading-snug text-zinc-950">{step.title}</h3>
               {step.body.map((line) => (
-                <p key={line} className="mt-3 text-[15px] leading-snug text-[#ddd6f5]">
+                <p key={line} className="mt-3 text-[15px] leading-snug text-zinc-600">
                   {line}
                 </p>
               ))}
@@ -438,40 +438,40 @@ export function Homepage() {
       <Section>
         <Heading>What you actually get</Heading>
         <ol className="mt-8 grid gap-4">
-          <li className="rounded-2xl border border-white/10 bg-[#1c1033] p-5 sm:p-6">
-            <h3 className="font-display text-[22px] font-semibold leading-snug text-white">
+          <li className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+            <h3 className="font-display text-[22px] font-semibold leading-snug text-zinc-950">
               {ESTIMATES_PER_MONTH} qualified estimates on your calendar every month.
             </h3>
-            <p className="mt-3 max-w-2xl text-[16px] leading-snug text-[#ddd6f5]">
+            <p className="mt-3 max-w-2xl text-[16px] leading-snug text-zinc-600">
               Each one meets a written definition we agree on before launch: owns the home, in your
               service area, a project type you sell, a budget at or above your minimum, and the
               decision-maker on the appointment.
             </p>
           </li>
-          <li className="rounded-2xl border border-white/10 bg-[#1c1033] p-5 sm:p-6">
-            <h3 className="font-display text-[22px] font-semibold leading-snug text-white">
+          <li className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+            <h3 className="font-display text-[22px] font-semibold leading-snug text-zinc-950">
               Ads live in {LAUNCH_TIME}.
             </h3>
-            <p className="mt-3 max-w-2xl text-[16px] leading-snug text-[#ddd6f5]">
+            <p className="mt-3 max-w-2xl text-[16px] leading-snug text-zinc-600">
               We build the ads, tracking, booking, and follow-up.
             </p>
-            <p className="mt-2 max-w-2xl text-[16px] leading-snug text-[#ddd6f5]">
+            <p className="mt-2 max-w-2xl text-[16px] leading-snug text-zinc-600">
               Your part is a kickoff call, your project photos, access to your ad account, and your calendar.
             </p>
-            <p className="mt-2 max-w-2xl text-[16px] leading-snug text-[#ddd6f5]">
+            <p className="mt-2 max-w-2xl text-[16px] leading-snug text-zinc-600">
               Our team starts calling qualified leads right away, and the automated texting turns on as
               soon as carrier approval clears.
             </p>
           </li>
-          <li className="rounded-2xl border border-white/10 bg-[#1c1033] p-5 sm:p-6">
-            <h3 className="font-display text-[22px] font-semibold leading-snug text-white">You own all of it.</h3>
-            <p className="mt-3 text-[16px] leading-snug text-[#ddd6f5]">Your ad account. Your page. Your lead data.</p>
-            <p className="mt-2 text-[16px] leading-snug text-[#ddd6f5]">
+          <li className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+            <h3 className="font-display text-[22px] font-semibold leading-snug text-zinc-950">You own all of it.</h3>
+            <p className="mt-3 text-[16px] leading-snug text-zinc-600">Your ad account. Your page. Your lead data.</p>
+            <p className="mt-2 text-[16px] leading-snug text-zinc-600">
               If we ever part ways, everything stays with you.
             </p>
           </li>
         </ol>
-        <p className="mt-6 max-w-2xl text-[16px] leading-snug text-[#ddd6f5]">
+        <p className="mt-6 max-w-2xl text-[16px] leading-snug text-zinc-600">
           Every week you get a simple report: ad spend, leads, how fast they got answered, estimates
           booked and held, proposals sent, and jobs signed. No vanity numbers.
         </p>
@@ -483,7 +483,7 @@ export function Homepage() {
         />
       </Section>
 
-      <Section className="bg-[#1a0f33]">
+      <Section className="bg-zinc-50">
         {FOUNDING_PARTNER_OFFER ? (
           <>
             <Heading>You only pay us when a job we booked signs.</Heading>
@@ -501,13 +501,13 @@ export function Homepage() {
                 "Leave with 30 days' notice. No long contract.",
                 "In return, you agree to a short case study interview once we've earned it.",
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[16px] leading-snug text-[#eee9ff]">
-                  <Check className="mt-0.5 size-4 shrink-0 text-[#c4b5fd]" aria-hidden />
+                <li key={item} className="flex items-start gap-3 text-[16px] leading-snug text-zinc-800">
+                  <Check className="mt-0.5 size-4 shrink-0 text-[#6428F9]" aria-hidden />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-6 max-w-xl text-[16px] leading-snug text-[#ddd6f5]">
+            <p className="mt-6 max-w-xl text-[16px] leading-snug text-zinc-600">
               If we don&apos;t book the estimates, we don&apos;t get paid. That&apos;s why we only take one remodeler per market.
             </p>
           </>
@@ -523,13 +523,13 @@ export function Homepage() {
           <table className="w-full min-w-[720px] border-separate border-spacing-0 text-left text-[14px]">
             <thead>
               <tr>
-                <th className="p-3 font-medium text-[#b7aed4]" />
+                <th className="p-3 font-medium text-zinc-500" />
                 {COLUMNS.map((column) => (
                   <th
                     key={column}
                     className={cn(
-                      "p-3 font-semibold text-white",
-                      column === "Selestial" && "rounded-t-xl border border-b-0 border-[#c4b5fd]/50 bg-[#241445]"
+                      "p-3 font-semibold text-zinc-950",
+                      column === "Selestial" && "rounded-t-xl border border-b-0 border-[#c4b5fd]/50 bg-[#F7F4FF]"
                     )}
                   >
                     {column}
@@ -540,13 +540,13 @@ export function Homepage() {
             <tbody>
               {rows.map((row, index) => (
                 <tr key={row.label}>
-                  <th className="p-3 font-medium text-[#eee9ff]">{row.label}</th>
+                  <th className="p-3 font-medium text-zinc-800">{row.label}</th>
                   {row.cells.map((cell, cellIndex) => (
                     <td
                       key={`${row.label}-${cellIndex}`}
                       className={cn(
                         "p-3 align-top",
-                        cellIndex === 3 && "border-x border-[#c4b5fd]/50 bg-[#241445]",
+                        cellIndex === 3 && "border-x border-[#c4b5fd]/50 bg-[#F7F4FF]",
                         cellIndex === 3 && index === rows.length - 1 && "rounded-b-xl border-b"
                       )}
                     >
@@ -564,15 +564,15 @@ export function Homepage() {
             <article
               key={column}
               className={cn(
-                "w-[82vw] max-w-[300px] shrink-0 snap-start rounded-2xl border border-white/10 bg-[#1c1033] p-4",
-                column === "Selestial" && "border-[#c4b5fd]/60 bg-[#241445] shadow-[0_0_32px_-12px_rgba(167,139,250,0.8)]"
+                "w-[82vw] max-w-[300px] shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white p-4",
+                column === "Selestial" && "border-[#c4b5fd]/60 bg-[#F7F4FF] shadow-[0_0_32px_-12px_rgba(167,139,250,0.8)]"
               )}
             >
-              <h3 className="font-display text-[18px] font-semibold text-white">{column}</h3>
+              <h3 className="font-display text-[18px] font-semibold text-zinc-950">{column}</h3>
               <ul className="mt-4 space-y-3">
                 {rows.map((row) => (
                   <li key={row.label}>
-                    <p className="text-[12px] text-[#b7aed4]">{row.label}</p>
+                    <p className="text-[12px] text-zinc-500">{row.label}</p>
                     <div className="mt-1 text-[14px]">
                       <Mark value={row.cells[columnIndex]} emphasis={column === "Selestial"} />
                     </div>
@@ -585,7 +585,7 @@ export function Homepage() {
         </div>
       </Section>
 
-      <Section className="bg-[#1a0f33]">
+      <Section className="bg-zinc-50">
         <Heading>Why is the Lead Leak Audit free?</Heading>
         <Copy>Because most remodelers we talk to are in at least one of these spots:</Copy>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -595,8 +595,8 @@ export function Homepage() {
             "You're missing calls during the day and returning them at night.",
             "You've been burned before and want proof before you spend another dollar.",
           ].map((item) => (
-            <li key={item} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#241445] p-4 text-[15px] leading-snug text-[#eee9ff]">
-              <CalendarCheck className="mt-0.5 size-4 shrink-0 text-[#c4b5fd]" aria-hidden />
+            <li key={item} className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-[#F7F4FF] p-4 text-[15px] leading-snug text-zinc-800">
+              <CalendarCheck className="mt-0.5 size-4 shrink-0 text-[#6428F9]" aria-hidden />
               <span>{item}</span>
             </li>
           ))}
@@ -631,24 +631,24 @@ export function Homepage() {
           )}
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-white/10 bg-[#1c1033] p-6">
-            <p className="font-display text-[42px] font-semibold tracking-[-0.04em] text-[#ddd6fe]">+$16K MRR</p>
-            <p className="mt-2 text-[16px] text-white">Coaching business</p>
-            <p className="mt-2 text-[13px] text-[#b7aed4]">Other industry. Not a remodeling result.</p>
+          <article className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <p className="font-display text-[42px] font-semibold tracking-[-0.04em] text-[#4F1FD0]">+$16K MRR</p>
+            <p className="mt-2 text-[16px] text-zinc-950">Coaching business</p>
+            <p className="mt-2 text-[13px] text-zinc-500">Other industry. Not a remodeling result.</p>
           </article>
-          <article className="rounded-2xl border border-white/10 bg-[#1c1033] p-6">
-            <p className="font-display text-[42px] font-semibold tracking-[-0.04em] text-[#ddd6fe]">+$50K ARR</p>
-            <p className="mt-2 text-[16px] text-white">Cleaning company</p>
-            <p className="mt-2 text-[13px] text-[#b7aed4]">Other industry. Not a remodeling result.</p>
+          <article className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <p className="font-display text-[42px] font-semibold tracking-[-0.04em] text-[#4F1FD0]">+$50K ARR</p>
+            <p className="mt-2 text-[16px] text-zinc-950">Cleaning company</p>
+            <p className="mt-2 text-[13px] text-zinc-500">Other industry. Not a remodeling result.</p>
           </article>
         </div>
         <div className={cn("mt-10", !SHOW_REMODELER_RESULTS && "hidden")} hidden={!SHOW_REMODELER_RESULTS}>
-          <h3 className="font-display text-[24px] font-semibold text-white">Remodeler Results</h3>
+          <h3 className="font-display text-[24px] font-semibold text-zinc-950">Remodeler Results</h3>
           <ul className="mt-4 grid gap-3 md:grid-cols-3">
             {PLACEHOLDER_RESULTS.map((item, index) => (
               <li key={index} className="rounded-2xl border border-dashed border-white/20 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b7aed4]">Placeholder</p>
-                <p className="mt-3 text-[15px] leading-snug text-[#eee9ff]">{item}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Placeholder</p>
+                <p className="mt-3 text-[15px] leading-snug text-zinc-800">{item}</p>
               </li>
             ))}
           </ul>
@@ -658,22 +658,22 @@ export function Homepage() {
       <Section>
         <Heading>Is Selestial a fit?</Heading>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-[#c4b5fd]/40 bg-[#241445] p-5 sm:p-6">
-            <h3 className="font-display text-[22px] font-semibold text-white">Built for you if</h3>
+          <div className="rounded-2xl border border-[#c4b5fd]/40 bg-[#F7F4FF] p-5 sm:p-6">
+            <h3 className="font-display text-[22px] font-semibold text-zinc-950">Built for you if</h3>
             <ul className="mt-4 space-y-3">
               {GOOD_FIT.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[15px] leading-snug text-[#eee9ff]">
-                  <Check className="mt-0.5 size-4 shrink-0 text-[#c4b5fd]" aria-hidden />
+                <li key={item} className="flex items-start gap-3 text-[15px] leading-snug text-zinc-800">
+                  <Check className="mt-0.5 size-4 shrink-0 text-[#6428F9]" aria-hidden />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="glow-red glow-red-card rounded-2xl p-5 sm:p-6">
-            <h3 className="font-display text-[22px] font-semibold text-white">Not a fit if</h3>
+            <h3 className="font-display text-[22px] font-semibold text-zinc-950">Not a fit if</h3>
             <ul className="mt-4 space-y-3">
               {NOT_A_FIT.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[15px] leading-snug text-[#f6d5da]">
+                <li key={item} className="flex items-start gap-3 text-[15px] leading-snug text-zinc-700">
                   <X className="mt-0.5 size-4 shrink-0 text-red-400" aria-hidden />
                   <span>{item}</span>
                 </li>
@@ -684,39 +684,39 @@ export function Homepage() {
       </Section>
 
       <section className="px-5 pb-4">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-[#c4b5fd]/30 bg-[#2a1466] px-6 py-8 text-center">
-          <h2 className="font-display text-[28px] font-semibold tracking-[-0.03em] text-white">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-[#6428F9]/20 bg-[#F4F0FF] px-6 py-8 text-center">
+          <h2 className="font-display text-[28px] font-semibold tracking-[-0.03em] text-zinc-950">
             One remodeler per market.
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-[16px] leading-snug text-[#e4dcff]">
+          <p className="mx-auto mt-3 max-w-xl text-[16px] leading-snug text-zinc-700">
             We work with one remodeling company in each service area, so we&apos;re never running ads against our own client.
           </p>
-          <p className="mt-2 text-[16px] leading-snug text-[#e4dcff]">Once your area is taken, it&apos;s closed.</p>
+          <p className="mt-2 text-[16px] leading-snug text-zinc-700">Once your area is taken, it&apos;s closed.</p>
         </div>
       </section>
 
       <Section id="faq">
         <Heading>FAQ</Heading>
-        <Accordion className="mt-8 max-w-3xl divide-white/10 rounded-2xl border border-white/10 bg-[#1c1033] px-5 sm:px-7">
+        <Accordion className="mt-8 max-w-3xl divide-zinc-200 rounded-2xl border border-zinc-200 bg-white px-5 sm:px-7">
           {faqs().map((item, index) => (
             <AccordionItem key={item.q} value={`faq-${index}`}>
-              <AccordionTrigger className="py-5 text-left text-[16px] font-semibold text-white">
+              <AccordionTrigger className="py-5 text-left text-[16px] font-semibold text-zinc-950">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-[15px] leading-snug text-[#ddd6f5]">{item.a}</AccordionContent>
+              <AccordionContent className="text-[15px] leading-snug text-zinc-600">{item.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       </Section>
 
       <section className="px-5 pb-20 sm:pb-28">
-        <div className="mx-auto max-w-3xl rounded-[28px] border border-[#c4b5fd]/30 bg-[linear-gradient(160deg,#2a1466_0%,#4c1d95_70%,#7c6cf0_140%)] px-6 py-12 text-center sm:px-12 sm:py-16">
-          <h2 className="font-display text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-white sm:text-[40px]">
+        <div className="mx-auto max-w-3xl rounded-[28px] border border-[#6428F9]/15 bg-[#F7F4FF] px-6 py-12 text-center sm:px-12 sm:py-16">
+          <h2 className="font-display text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-zinc-950 sm:text-[40px]">
             Find out how many jobs are leaking out of your pipeline.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-[16px] leading-snug text-[#efeaff]">{finalBody}</p>
+          <p className="mx-auto mt-4 max-w-xl text-[16px] leading-snug text-zinc-600">{finalBody}</p>
           <div className="mt-8 flex justify-center">
-            <AuditCta label={CTA_LABEL} variant="inverted" className="w-full sm:w-auto" />
+            <AuditCta label={CTA_LABEL} className="w-full sm:w-auto" />
           </div>
         </div>
       </section>
