@@ -1,6 +1,13 @@
+html:has(.agency-site),
+body:has(.agency-site) {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 .agency-site {
   font-family: var(--font-inter-agency), Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
+  max-width: 100%;
   overflow-x: clip;
   background: #ffffff;
   color: #18181b;
@@ -10,6 +17,13 @@
   font-family: var(--font-inter-agency), "Inter Display", Inter, ui-sans-serif, system-ui, sans-serif;
   font-optical-sizing: auto;
   font-variation-settings: "opsz" 32;
+}
+
+.agency-scroll-row {
+  contain: paint;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .glow-red {

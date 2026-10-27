@@ -221,7 +221,7 @@ function Section({
 }) {
   return (
     <section id={id} className={cn("px-5 py-16 sm:py-24", className)}>
-      <div className="mx-auto max-w-6xl">{children}</div>
+      <div className="mx-auto min-w-0 max-w-6xl">{children}</div>
     </section>
   );
 }
@@ -299,8 +299,8 @@ export function Homepage() {
 
   return (
     <>
-      <section className="overflow-hidden px-5 pb-16 pt-8 sm:pb-24 sm:pt-14">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
+      <section className="overflow-x-hidden px-5 pb-16 pt-8 sm:pb-24 sm:pt-14">
+        <div className="mx-auto grid min-w-0 max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
           <div>
             <p className="inline-flex rounded-full border border-[#6428F9]/20 bg-[#F2EFFF] px-3 py-1 text-[13px] font-semibold text-[#4F1FD0]">
               Remodeler doing $750K to $3M a year?
@@ -344,7 +344,7 @@ export function Homepage() {
           <div className="relative">
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-8 -z-10 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(167,139,250,0.45),transparent_68%)]"
+              className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(167,139,250,0.35),transparent_68%)]"
             />
             <PlaceholderPhoto
               src="/marketing/kitchen.jpg"
@@ -519,7 +519,8 @@ export function Homepage() {
 
       <Section>
         <Heading>What you&apos;ve tried vs. Selestial</Heading>
-        <div className="mt-8 hidden overflow-x-auto md:block">
+        <div className="mt-8 hidden min-w-0 md:grid">
+        <div className="agency-scroll-row">
           <table className="w-full min-w-[720px] border-separate border-spacing-0 text-left text-[14px]">
             <thead>
               <tr>
@@ -558,7 +559,9 @@ export function Homepage() {
             </tbody>
           </table>
         </div>
-        <div className="mt-8 max-w-full overflow-x-auto overscroll-x-contain md:hidden">
+        </div>
+        <div className="mt-8 grid min-w-0 md:hidden">
+          <div className="agency-scroll-row">
           <div className="flex w-max snap-x snap-mandatory gap-3 pb-2">
           {COLUMNS.map((column, columnIndex) => (
             <article
@@ -581,6 +584,7 @@ export function Homepage() {
               </ul>
             </article>
           ))}
+          </div>
           </div>
         </div>
       </Section>
