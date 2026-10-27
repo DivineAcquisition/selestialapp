@@ -24,7 +24,7 @@ const protectedPrefixes = [
 ]
 
 // Public routes within app domain (no auth required)
-const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback', '/site', '/audit']
+const appPublicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/resend-verification', '/auth/callback', '/site', '/audit', '/privacy', '/terms']
 
 // Former public marketing URLs. Sent to the agency homepage.
 const legacyMarketingPrefixes = [
@@ -96,7 +96,13 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/') {
       return rewriteToAgencyHome(request)
     }
-    if (pathname === '/site' || pathname === '/audit' || pathname.startsWith('/audit/')) {
+    if (
+      pathname === '/site' ||
+      pathname === '/audit' ||
+      pathname.startsWith('/audit/') ||
+      pathname === '/privacy' ||
+      pathname === '/terms'
+    ) {
       return NextResponse.next()
     }
     return redirectToPublicHome(request)

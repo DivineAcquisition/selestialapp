@@ -2,12 +2,25 @@
   font-family: var(--font-inter-agency), Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
   overflow-x: clip;
-  background: #ffffff;
-  color: #09090b;
+  background: #12081f;
+  color: #f6f3ff;
 }
 
 .agency-site :is(h1, h2, h3, .font-display) {
   font-family: var(--font-inter-agency), "Inter Display", Inter, ui-sans-serif, system-ui, sans-serif;
   font-optical-sizing: auto;
   font-variation-settings: "opsz" 32;
+}
+
+.glow-red {
+  background:
+    radial-gradient(ellipse at top, rgba(220, 38, 38, 0.22), transparent 55%),
+    #14060a;
+  box-shadow: inset 0 0 120px rgba(220, 38, 38, 0.16);
+}
+
+.glow-red-card {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: #2a1016;
+  box-shadow: 0 0 28px -6px rgba(239, 68, 68, 0.55);
 }

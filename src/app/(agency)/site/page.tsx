@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Homepage } from "@/components/agency/homepage";
+import { socialHeadline } from "@/lib/marketing/agency";
 
-const title = "Selestial | Qualified In-Home Estimates for Remodelers";
+const title = "Selestial | Pre-Qualified Estimates and Proposal Follow-Up for Remodelers";
 const description =
-  "Selestial runs your Meta ads, responds to every lead in minutes, and books qualified homeowners onto your calendar. Book a free Lead Leak Audit.";
-const socialTitle = "More qualified in-home estimates. Without chasing leads.";
+  "Selestial runs your Meta ads, answers every lead in minutes, books qualified estimates on your calendar, and follows up on every proposal. Founding partners pay only when a job signs.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://selestial.io"),
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description,
   alternates: { canonical: "/" },
   openGraph: {
-    title: socialTitle,
+    title: socialHeadline(),
     description,
     url: "/",
     siteName: "Selestial",
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
         url: "/marketing/og.jpg",
         width: 1200,
         height: 630,
-        alt: socialTitle,
+        alt: socialHeadline(),
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: socialTitle,
+    title: socialHeadline(),
     description,
     images: ["/marketing/og.jpg"],
   },

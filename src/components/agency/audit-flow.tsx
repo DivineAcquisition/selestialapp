@@ -8,24 +8,38 @@ import { Label } from "@/components/ui/label";
 import { BrandButton } from "@/components/marketing/BrandButton";
 import { trackLead, trackSchedule } from "@/components/agency/pixel";
 import {
+  AD_BUDGET_RANGE,
+  AD_BUDGET_READY_OPTIONS,
   ANSWERS_STORAGE_KEY,
   BOOKING_URL,
+  CTA_LABEL,
+  FOUNDING_PARTNER_OFFER,
   JOB_SIZE_OPTIONS,
+  LEAD_SOURCE_OPTIONS,
   TRACKING_STORAGE_KEY,
   type AuditAnswers,
   type TrackingParams,
   buildBookingUrl,
+  consentText,
   isBookingConfirmedMessage,
   isPlaceholderBookingUrl,
+  jobSizeLabel,
   mergeTracking,
+  optionLabel,
   readTrackingRecord,
+  showBookingFitNote,
 } from "@/lib/marketing/agency";
 
 const EMPTY_ANSWERS: AuditAnswers = {
   companyName: "",
-  jobSize: "",
   serviceArea: "",
+  jobSize: "",
+  leadSource: "",
+  adBudgetReady: "",
 };
+
+const fieldClass =
+  "flex h-12 w-full rounded-xl border border-white/15 bg-[#1c1033] px-3 text-[16px] text-white placeholder:text-[#b7aed4] focus:border-[#c4b5fd] focus:outline-none focus:ring-2 focus:ring-[#c4b5fd]/30";
 
 function subscribeToStorage(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -54,7 +68,9 @@ function parseAnswers(raw: string): AuditAnswers | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as AuditAnswers;
-    if (!parsed?.companyName || !parsed.jobSize || !parsed.serviceArea) return null;
+    if (!parsed?.companyName || !parsed.serviceArea || !parsed.jobSize || !parsed.leadSource || !parsed.adBudgetReady) {
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -83,34 +99,32 @@ function PlaceholderCalendar({
   src: string;
   answers: AuditAnswers;
 }) {
-  const job =
-    JOB_SIZE_OPTIONS.find((option) => option.value === answers.jobSize)?.label ?? answers.jobSize;
+  const rows = [
+    ["Company", answers.companyName],
+    ["Service area", answers.serviceArea],
+    ["Average project size", jobSizeLabel(answers.jobSize)],
+    ["Leads today", optionLabel(LEAD_SOURCE_OPTIONS, answers.leadSource)],
+    ["Ad budget", optionLabel(AD_BUDGET_READY_OPTIONS, answers.adBudgetReady)],
+  ];
 
   return (
-    <div className="rounded-2xl border border-dashed border-[#6428F9]/40 bg-[#F7F4FF] p-5 sm:p-7">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6428F9]">
+    <div className="rounded-2xl border border-dashed border-[#c4b5fd]/40 bg-[#1c1033] p-5 sm:p-7">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#c4b5fd]">
         Placeholder calendar
       </p>
-      <p className="mt-3 text-[15px] leading-relaxed text-zinc-700">
-        The scheduling calendar embeds here. This link is a placeholder until the live booking
-        URL is set.
+      <p className="mt-3 text-[15px] leading-snug text-[#ddd6f5]">
+        The scheduling calendar embeds here. This link is a placeholder until the live booking URL is set.
       </p>
-      <p className="mt-4 break-all rounded-lg bg-white px-3 py-2 font-mono text-[12px] text-zinc-600">
+      <p className="mt-4 break-all rounded-lg bg-[#12081f] px-3 py-2 font-mono text-[12px] text-[#ddd6f5]">
         {src}
       </p>
-      <dl className="mt-5 grid gap-2 text-[14px] text-zinc-700">
-        <div className="flex justify-between gap-4">
-          <dt className="text-zinc-500">Company</dt>
-          <dd className="text-right font-medium text-zinc-900">{answers.companyName}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt className="text-zinc-500">Average job size</dt>
-          <dd className="text-right font-medium text-zinc-900">{job}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt className="text-zinc-500">Service area</dt>
-          <dd className="text-right font-medium text-zinc-900">{answers.serviceArea}</dd>
-        </div>
+      <dl className="mt-5 grid gap-2 text-[14px] text-[#ddd6f5]">
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex justify-between gap-4">
+            <dt className="text-[#b7aed4]">{label}</dt>
+            <dd className="text-right font-medium text-white">{value}</dd>
+          </div>
+        ))}
       </dl>
     </div>
   );
@@ -118,9 +132,9 @@ function PlaceholderCalendar({
 
 export function ConfirmationMessage() {
   return (
-    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center">
-      <p className="font-display text-[26px] font-semibold leading-snug tracking-[-0.03em] text-zinc-950 sm:text-[32px]">
-        You&apos;re booked. We&apos;ll review your current lead flow before the call so we can make
+    <div className="rounded-2xl border border-[#c4b5fd]/40 bg-[#241445] px-6 py-10 text-center">
+      <p className="font-display text-[26px] font-semibold leading-snug tracking-[-0.03em] text-white sm:text-[32px]">
+        You&apos;re booked. Before the call, we&apos;ll look at how your leads come in so we can make
         the 30 minutes count.
       </p>
     </div>
@@ -187,11 +201,21 @@ export function AuditFlow() {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!answers.companyName.trim() || !answers.jobSize || !answers.serviceArea.trim()) return;
+    if (
+      !answers.companyName.trim() ||
+      !answers.serviceArea.trim() ||
+      !answers.jobSize ||
+      !answers.leadSource ||
+      !answers.adBudgetReady
+    ) {
+      return;
+    }
     const next = {
       companyName: answers.companyName.trim(),
-      jobSize: answers.jobSize,
       serviceArea: answers.serviceArea.trim(),
+      jobSize: answers.jobSize,
+      leadSource: answers.leadSource,
+      adBudgetReady: answers.adBudgetReady,
     };
     setDraft(next);
     setDidSubmit(true);
@@ -204,20 +228,27 @@ export function AuditFlow() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6428F9]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#c4b5fd]">
         Free 30-minute audit
       </p>
-      <h1 className="font-display mt-3 text-balance text-[32px] font-semibold leading-[1.1] tracking-[-0.03em] text-zinc-950 sm:text-[40px]">
-        Find out how many estimates you&apos;re losing.
+      <h1 className="font-display mt-3 text-balance text-[32px] font-semibold leading-[1.12] tracking-[-0.03em] text-white sm:text-[40px]">
+        Find out how many jobs are leaking out of your pipeline.
       </h1>
-      <p className="mt-4 text-[16px] leading-relaxed text-zinc-600">
-        Book a free 30-minute Lead Leak Audit. We&apos;ll show you where leads are falling through
-        and what it would take to fill your calendar.
-      </p>
+      <div className="mt-4 space-y-3 text-[16px] leading-snug text-[#ddd6f5]">
+        <p>Book your free 30-minute Lead Leak Audit.</p>
+        <p>We&apos;ll show you where your jobs are getting lost and check whether your market is open.</p>
+        {FOUNDING_PARTNER_OFFER ? (
+          <p>We&apos;ll also walk you through the founding partner deal.</p>
+        ) : (
+          <p>Pricing is set after your audit.</p>
+        )}
+      </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="company-name">Company name</Label>
+          <Label htmlFor="company-name" className="text-[#eee9ff]">
+            Company name
+          </Label>
           <Input
             id="company-name"
             name="companyName"
@@ -230,11 +261,32 @@ export function AuditFlow() {
                 companyName: event.target.value,
               }))
             }
-            className="h-12 rounded-xl text-[16px]"
+            className={fieldClass}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="job-size">Average job size</Label>
+          <Label htmlFor="service-area" className="text-[#eee9ff]">
+            Service area
+          </Label>
+          <Input
+            id="service-area"
+            name="serviceArea"
+            required
+            placeholder="City or region"
+            value={answers.serviceArea}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...(current ?? storedAnswers ?? EMPTY_ANSWERS),
+                serviceArea: event.target.value,
+              }))
+            }
+            className={fieldClass}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="job-size" className="text-[#eee9ff]">
+            Average project size
+          </Label>
           <select
             id="job-size"
             name="jobSize"
@@ -246,7 +298,7 @@ export function AuditFlow() {
                 jobSize: event.target.value,
               }))
             }
-            className="flex h-12 w-full rounded-xl border border-gray-200 bg-white px-3 text-[16px] text-zinc-900 focus:border-[#6428F9] focus:outline-none focus:ring-2 focus:ring-[#6428F9]/20"
+            className={fieldClass}
           >
             <option value="" disabled>
               Select a range
@@ -259,25 +311,71 @@ export function AuditFlow() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="service-area">Service area</Label>
-          <Input
-            id="service-area"
-            name="serviceArea"
+          <Label htmlFor="lead-source" className="text-[#eee9ff]">
+            How do you get most of your leads today?
+          </Label>
+          <select
+            id="lead-source"
+            name="leadSource"
             required
-            placeholder="City or metro you serve"
-            value={answers.serviceArea}
+            value={answers.leadSource}
             onChange={(event) =>
               setDraft((current) => ({
                 ...(current ?? storedAnswers ?? EMPTY_ANSWERS),
-                serviceArea: event.target.value,
+                leadSource: event.target.value,
               }))
             }
-            className="h-12 rounded-xl text-[16px]"
-          />
+            className={fieldClass}
+          >
+            <option value="" disabled>
+              Select one
+            </option>
+            {LEAD_SOURCE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="ad-budget" className="text-[#eee9ff]">
+            Can you put {AD_BUDGET_RANGE} into ads?
+          </Label>
+          <select
+            id="ad-budget"
+            name="adBudgetReady"
+            required
+            value={answers.adBudgetReady}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...(current ?? storedAnswers ?? EMPTY_ANSWERS),
+                adBudgetReady: event.target.value,
+              }))
+            }
+            className={fieldClass}
+          >
+            <option value="" disabled>
+              Select one
+            </option>
+            {AD_BUDGET_READY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {showBookingFitNote(answers) ? (
+          <p className="text-[15px] leading-snug text-[#ddd6f5]">
+            Our system works best for projects over $15K with an ad budget in place. We&apos;ll still take a look.
+          </p>
+        ) : null}
         <BrandButton type="submit" size="xl" className="h-12 w-full">
-          Continue to calendar
+          {CTA_LABEL}
         </BrandButton>
+        <p className="text-[13px] leading-snug text-[#ddd6f5]">{consentText()}</p>
+        <p className="text-[12px] leading-snug text-[#b7aed4]">
+          This wording is a placeholder. A lawyer must review it before launch.
+        </p>
       </form>
 
       {submitted && (
